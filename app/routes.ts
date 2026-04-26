@@ -6,4 +6,5 @@ export default [
   route("register", "routes/register.tsx"),
   route("recover-password", "routes/recover-password.tsx"),
   route("dashboard", "routes/dashboard.tsx"),
+  route("my-data", "routes/my-data.tsx"),
 ] satisfies RouteConfig

@@ -1,3 +1,8 @@
+"use client"
+
+import * as React from "react"
+import { Link } from "react-router"
+
 import {
   Avatar,
   AvatarFallback,
@@ -5,8 +10,8 @@ import {
 } from "~/components/ui/avatar"
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -18,7 +23,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "~/components/ui/sidebar"
-import { ChevronsUpDownIcon, SparklesIcon, BadgeCheckIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-react"
+import { applyTheme, getStoredTheme, type ThemeMode } from "~/lib/theme"
+import { ChevronsUpDownIcon, LogOutIcon, MoonIcon, UserRoundIcon } from "lucide-react"
 
 export function NavUser({
   user,
@@ -30,6 +36,20 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const [isDark, setIsDark] = React.useState(false)
+
+  React.useEffect(() => {
+    const stored = getStoredTheme()
+    if (stored === "dark") setIsDark(true)
+    else if (stored === "light") setIsDark(false)
+    else setIsDark(document.documentElement.classList.contains("dark"))
+  }, [])
+
+  function setDarkMode(next: boolean) {
+    const mode: ThemeMode = next ? "dark" : "light"
+    applyTheme(mode)
+    setIsDark(next)
+  }
 
   return (
     <SidebarMenu>
@@ -40,7 +60,7 @@ export function NavUser({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-lg">
+              <Avatar className="size-8 rounded-lg">
                 <AvatarImage src={user.avatar} alt={user.name} />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
@@ -48,7 +68,7 @@ export function NavUser({
                 <span className="truncate font-medium">{user.name}</span>
                 <span className="truncate text-xs">{user.email}</span>
               </div>
-              <ChevronsUpDownIcon className="ms-auto size-4" />
+              <ChevronsUpDownIcon className="ms-auto" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -59,7 +79,7 @@ export function NavUser({
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
+                <Avatar className="size-8 rounded-lg">
                   <AvatarImage src={user.avatar} alt={user.name} />
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
@@ -70,36 +90,25 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <SparklesIcon
-                />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
+            <DropdownMenuItem asChild>
+              <Link to="/my-data">
+                <UserRoundIcon />
+                My data
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuCheckboxItem
+              checked={isDark}
+              onCheckedChange={(c) => setDarkMode(c === true)}
+            >
+              <MoonIcon />
+              Modo escuro
+            </DropdownMenuCheckboxItem>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheckIcon
-                />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCardIcon
-                />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <BellIcon
-                />
-                Notifications
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOutIcon
-              />
-              Log out
+            <DropdownMenuItem asChild>
+              <Link to="/login">
+                <LogOutIcon />
+                Sair
+              </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
