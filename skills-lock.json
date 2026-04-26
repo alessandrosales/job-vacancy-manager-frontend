@@ -1,6 +1,16 @@
 {
   "version": 1,
   "skills": {
+    "inertia-rails-architecture": {
+      "source": "inertia-rails/skills",
+      "sourceType": "github",
+      "computedHash": "0df28a8608906ab197357e7b2668e649f9956b3d549594f00c8979c589b88f01"
+    },
+    "ruby-on-rails-best-practices": {
+      "source": "sergiodxa/agent-skills",
+      "sourceType": "github",
+      "computedHash": "74112454ed35af21a06e076fa9df7283dca2c116f62010618e56f49aa129c656"
+    },
     "shadcn": {
       "source": "shadcn/ui",
       "sourceType": "github",
