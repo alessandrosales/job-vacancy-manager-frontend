@@ -38,10 +38,10 @@ function createId(): string {
 
 export interface Opportunity {
   id: string
-  company: string
+  company_id: string
+  role_id: string
   description: string
   url: string
-  role: string
   status: OpportunityStatus
   /** 0 = nenhum interesse, 5 = muito interesse. */
   interest_level: number
@@ -132,6 +132,44 @@ function normalizeOpportunityStatuses(raw: unknown): OpportunityStatusDefinition
     : DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS.map((s) => ({ ...s }))
 }
 
+function resolveOpportunityCompanyId(
+  o: Record<string, unknown>,
+  companies: Company[]
+): string {
+  const fromId = o.company_id ?? o.companyId
+  if (typeof fromId === "string" && companies.some((c) => c.id === fromId)) {
+    return fromId
+  }
+  const legacy = String(o.company ?? "").trim()
+  if (legacy) {
+    const exact = companies.find((c) => c.name === legacy)
+    if (exact) return exact.id
+    const lower = legacy.toLowerCase()
+    const ci = companies.find((c) => c.name.toLowerCase() === lower)
+    if (ci) return ci.id
+  }
+  return companies[0]?.id ?? ""
+}
+
+function resolveOpportunityRoleId(
+  o: Record<string, unknown>,
+  roles: Role[]
+): string {
+  const fromId = o.role_id ?? o.roleId
+  if (typeof fromId === "string" && roles.some((r) => r.id === fromId)) {
+    return fromId
+  }
+  const legacy = String(o.role ?? "").trim()
+  if (legacy) {
+    const exact = roles.find((r) => r.name === legacy)
+    if (exact) return exact.id
+    const lower = legacy.toLowerCase()
+    const ci = roles.find((r) => r.name.toLowerCase() === lower)
+    if (ci) return ci.id
+  }
+  return roles[0]?.id ?? ""
+}
+
 /** Lê um campo aceitando tanto o nome snake_case (v4) quanto camelCase (v3 legado). */
 function readField<T>(obj: Record<string, unknown>, snake: string, camel: string): T | undefined {
   const v = obj[snake] ?? obj[camel]
@@ -170,6 +208,21 @@ function parseStored(raw: string | null): AppDataState | null {
 
     const fallbackStatus = opportunity_statuses[0]!.id
 
+    const companies: Company[] = data.companies.map((c: Record<string, unknown>) => ({
+      id: c.id,
+      name: c.name,
+      url: c.url,
+      description: c.description,
+      interest_level: normalizeInterestLevel(c.interest_level ?? c.interestLevel),
+    })) as Company[]
+
+    const roles: Role[] = data.roles.map((r: Record<string, unknown>) => ({
+      id: r.id,
+      name: r.name,
+      description: r.description,
+      interest_level: normalizeInterestLevel(r.interest_level ?? r.interestLevel),
+    })) as Role[]
+
     return {
       ...data as Partial<AppDataState>,
       opportunity_statuses,
@@ -186,29 +239,18 @@ function parseStored(raw: string | null): AppDataState | null {
         }
         const raw_interest = o.interest_level ?? o.interestLevel
         return {
-          id: o.id,
-          company: o.company,
-          description: o.description,
-          url: o.url,
-          role: o.role,
+          id: o.id as string,
+          company_id: resolveOpportunityCompanyId(o, companies),
+          role_id: resolveOpportunityRoleId(o, roles),
+          description: o.description as string,
+          url: o.url as string,
           status,
           interest_level: normalizeInterestLevel(raw_interest),
           board_column_id,
         } as Opportunity
       }),
-      companies: data.companies.map((c: Record<string, unknown>) => ({
-        id: c.id,
-        name: c.name,
-        url: c.url,
-        description: c.description,
-        interest_level: normalizeInterestLevel(c.interest_level ?? c.interestLevel),
-      })) as Company[],
-      roles: data.roles.map((r: Record<string, unknown>) => ({
-        id: r.id,
-        name: r.name,
-        description: r.description,
-        interest_level: normalizeInterestLevel(r.interest_level ?? r.interestLevel),
-      })) as Role[],
+      companies,
+      roles,
       skills: data.skills as Skill[],
       kanban_custom_columns,
       kanban_column_order,

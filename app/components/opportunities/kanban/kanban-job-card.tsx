@@ -6,8 +6,13 @@ import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { ExternalLinkIcon, PencilIcon, StarIcon, Trash2Icon } from "lucide-react"
 
+import { useAppData } from "~/components/providers/app-data-provider"
 import type { KanbanCustomColumn, Opportunity } from "~/components/providers/app-data-provider"
 import type { OpportunityStatusDefinition } from "~/lib/labels"
+import {
+  opportunityCompanyName,
+  opportunityRoleName,
+} from "~/lib/opportunity-display"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
 import { Card, CardContent } from "~/components/ui/card"
@@ -32,6 +37,7 @@ export function KanbanJobCardContent({
   opportunityStatuses,
   className,
 }: KanbanJobCardContentProps) {
+  const { companies, roles } = useAppData()
   const columnId = getEffectiveColumnId(opp)
   const badge = getColumnBadgeProps(
     columnId,
@@ -50,7 +56,7 @@ export function KanbanJobCardContent({
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center justify-between gap-2">
             <p className="min-w-0 flex-1 truncate font-medium leading-snug text-foreground">
-              {opp.company}
+              {opportunityCompanyName(opp, companies)}
             </p>
             {opp.url ? (
               <Button variant="ghost" size="icon" className="size-7 shrink-0" asChild>
@@ -67,7 +73,9 @@ export function KanbanJobCardContent({
               </Button>
             ) : null}
           </div>
-          <p className="text-muted-foreground text-sm leading-snug">{opp.role}</p>
+          <p className="text-muted-foreground text-sm leading-snug">
+            {opportunityRoleName(opp, roles)}
+          </p>
         </div>
         {opp.description ? (
           <p className="text-muted-foreground line-clamp-2 text-xs leading-snug">

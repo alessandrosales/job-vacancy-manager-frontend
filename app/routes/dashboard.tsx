@@ -39,6 +39,10 @@ import {
 import { OpportunityDialog } from "~/components/opportunities/opportunity-dialog"
 import { useAppData } from "~/components/providers/app-data-provider"
 import { getColumnBadgeProps, getEffectiveColumnId } from "~/lib/kanban-columns"
+import {
+  opportunityCompanyName,
+  opportunityRoleName,
+} from "~/lib/opportunity-display"
 import { cn } from "~/lib/utils"
 
 function opportunityRecencyScore(opp: Opportunity, indexInList: number): number {
@@ -130,6 +134,8 @@ export default function DashboardPage() {
     opportunities,
     opportunity_statuses: opportunityStatuses,
     kanban_custom_columns: kanbanCustomColumns,
+    companies,
+    roles,
   } = useAppData()
   const [dialogOppId, setDialogOppId] = useState<string | null>(null)
   /** Últimas entradas na ordem do armazenamento (mais recentes ao final do array). */
@@ -252,8 +258,10 @@ export default function DashboardPage() {
                       className="cursor-pointer"
                       onClick={() => setDialogOppId(opp.id)}
                     >
-                      <TableCell className="font-medium">{opp.company}</TableCell>
-                      <TableCell>{opp.role}</TableCell>
+                      <TableCell className="font-medium">
+                        {opportunityCompanyName(opp, companies)}
+                      </TableCell>
+                      <TableCell>{opportunityRoleName(opp, roles)}</TableCell>
                       <TableCell>
                         <InterestStars level={opp.interest_level} />
                       </TableCell>
@@ -307,8 +315,10 @@ export default function DashboardPage() {
                       className="cursor-pointer"
                       onClick={() => setDialogOppId(opp.id)}
                     >
-                      <TableCell className="font-medium">{opp.company}</TableCell>
-                      <TableCell>{opp.role}</TableCell>
+                      <TableCell className="font-medium">
+                        {opportunityCompanyName(opp, companies)}
+                      </TableCell>
+                      <TableCell>{opportunityRoleName(opp, roles)}</TableCell>
                       <TableCell>
                         <InterestStars level={opp.interest_level} />
                       </TableCell>

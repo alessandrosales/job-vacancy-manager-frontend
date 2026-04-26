@@ -68,8 +68,8 @@ function persistColumnIfNeeded(
 
       if (isOpportunityStatusColumnId(columnId, opportunityStatuses)) {
         updateOpportunity(id, {
-          company: opp.company,
-          role: opp.role,
+          company_id: opp.company_id,
+          role_id: opp.role_id,
           description: opp.description,
           url: opp.url,
           status: columnId,
@@ -78,8 +78,8 @@ function persistColumnIfNeeded(
         })
       } else {
         updateOpportunity(id, {
-          company: opp.company,
-          role: opp.role,
+          company_id: opp.company_id,
+          role_id: opp.role_id,
           description: opp.description,
           url: opp.url,
           status: opp.status,

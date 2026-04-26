@@ -13,7 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog"
-import { DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS } from "~/lib/labels"
 import type { InterestLevel, OpportunityStatus } from "~/lib/labels"
 
 const DIALOG_ID_EDIT = "opp-dialog"
@@ -43,54 +42,48 @@ export function OpportunityDialog({
   onCreated,
 }: OpportunityDialogProps) {
   const isCreate = mode === "create"
-  const {
-    opportunities,
-    addOpportunity,
-    updateOpportunity,
-    opportunity_statuses: opportunityStatuses,
-  } = useAppData()
+  const { opportunities, addOpportunity, updateOpportunity } = useAppData()
 
-  const defaultStatusId =
-    opportunityStatuses[0]?.id ?? DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS[0]!.id
   const existing = opportunityId
     ? opportunities.find((o) => o.id === opportunityId)
     : undefined
 
-  const [company, setCompany] = React.useState("")
-  const [role, setRole] = React.useState("")
+  const [companyId, setCompanyId] = React.useState("")
+  const [roleId, setRoleId] = React.useState("")
   const [description, setDescription] = React.useState("")
   const [url, setUrl] = React.useState("")
-  const [status, setStatus] = React.useState<OpportunityStatus>(defaultStatusId)
+  const [status, setStatus] = React.useState<OpportunityStatus>("")
   const [interestLevel, setInterestLevel] = React.useState<InterestLevel>(0)
 
   React.useEffect(() => {
     if (!open) return
     if (isCreate) {
-      setCompany("")
-      setRole("")
+      setCompanyId("")
+      setRoleId("")
       setDescription("")
       setUrl("")
-      setStatus(defaultStatusId)
+      setStatus("")
       setInterestLevel(0)
       return
     }
     if (!existing) return
-    setCompany(existing.company)
-    setRole(existing.role)
+    setCompanyId(existing.company_id)
+    setRoleId(existing.role_id)
     setDescription(existing.description)
     setUrl(existing.url)
     setStatus(existing.status)
     setInterestLevel(
       Math.min(5, Math.max(0, Math.round(existing.interest_level))) as InterestLevel
     )
-  }, [open, isCreate, existing, defaultStatusId])
+  }, [open, isCreate, existing])
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!companyId || !roleId || !status) return
     if (isCreate) {
       const id = addOpportunity({
-        company: company.trim(),
-        role: role.trim(),
+        company_id: companyId,
+        role_id: roleId,
         description: description.trim(),
         url: url.trim(),
         status,
@@ -103,8 +96,8 @@ export function OpportunityDialog({
     }
     if (!opportunityId || !existing) return
     updateOpportunity(opportunityId, {
-      company: company.trim(),
-      role: role.trim(),
+      company_id: companyId,
+      role_id: roleId,
       description: description.trim(),
       url: url.trim(),
       status,
@@ -142,10 +135,10 @@ export function OpportunityDialog({
             <div className="min-h-0 flex-1 overflow-y-auto px-4 py-2">
               <OpportunityFormFields
                 idPrefix={showCreateForm ? DIALOG_ID_CREATE : DIALOG_ID_EDIT}
-                company={company}
-                onCompanyChange={setCompany}
-                role={role}
-                onRoleChange={setRole}
+                companyId={companyId}
+                onCompanyIdChange={setCompanyId}
+                roleId={roleId}
+                onRoleIdChange={setRoleId}
                 description={description}
                 onDescriptionChange={setDescription}
                 url={url}
@@ -154,14 +147,15 @@ export function OpportunityDialog({
                 onStatusChange={setStatus}
                 interestLevel={interestLevel}
                 onInterestLevelChange={setInterestLevel}
-                opportunityStatuses={opportunityStatuses}
               />
             </div>
             <DialogFooter className="mx-0 mb-0 shrink-0 rounded-none border-t bg-muted/30 px-4 py-3 sm:justify-end">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button type="submit">Save</Button>
+              <Button type="submit" disabled={!companyId || !roleId || !status}>
+                Save
+              </Button>
             </DialogFooter>
           </form>
         ) : open && !isCreate && opportunityId && !existing ? (

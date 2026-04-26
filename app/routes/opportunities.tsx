@@ -13,7 +13,9 @@ import {
 import { OpportunitiesKanbanBoard } from "~/components/opportunities/opportunities-kanban-board"
 import {
   useAppData,
+  type Company,
   type Opportunity,
+  type Role,
 } from "~/components/providers/app-data-provider"
 import { AppLayout } from "~/components/layout/app-layout"
 import { Badge } from "~/components/ui/badge"
@@ -37,27 +39,39 @@ import {
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog"
 import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
+import type { InterestLevel, OpportunityStatusDefinition } from "~/lib/labels"
 import {
   getColumnBadgeProps,
   getColumnTitle,
   getEffectiveColumnId,
 } from "~/lib/kanban-columns"
+import {
+  opportunityCompanyName,
+  opportunityRoleName,
+  opportunitySearchBlob,
+} from "~/lib/opportunity-display"
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
 function filterOpportunitiesBySearch(
   rows: readonly Opportunity[],
   needle: string,
-  opportunityStatuses: readonly { id: string; label: string }[],
-  customColumns: readonly { id: string; title: string }[]
+  opportunityStatuses: readonly OpportunityStatusDefinition[],
+  customColumns: readonly { id: string; title: string }[],
+  companies: readonly Company[],
+  roles: readonly Role[]
 ): Opportunity[] {
   if (!needle) return [...rows]
   const q = needle.toLowerCase()
   return rows.filter((opp) => {
     const colId = getEffectiveColumnId(opp)
     const colLabel = getColumnTitle(colId, opportunityStatuses, customColumns)
-    return `${opp.company} ${opp.role} ${opp.description} ${opp.url} ${colLabel} ${opp.status} ${opp.interest_level}`
-      .toLowerCase()
-      .includes(q)
+    const blob = opportunitySearchBlob(
+      opp,
+      companies,
+      roles,
+      `${opp.description} ${opp.url} ${colLabel} ${opp.status} ${opp.interest_level}`
+    )
+    return blob.toLowerCase().includes(q)
   })
 }
 
@@ -71,6 +85,8 @@ export default function OpportunitiesPage() {
     kanban_column_order: kanbanColumnOrder,
     addKanbanColumn,
     setKanbanColumnOrder,
+    companies,
+    roles,
   } = useAppData()
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
   const [dialogOppId, setDialogOppId] = React.useState<string | null>(null)
@@ -84,9 +100,18 @@ export default function OpportunitiesPage() {
         opportunities,
         searchNeedle,
         opportunityStatuses,
-        kanbanCustomColumns
+        kanbanCustomColumns,
+        companies,
+        roles
       ),
-    [opportunities, searchNeedle, opportunityStatuses, kanbanCustomColumns]
+    [
+      opportunities,
+      searchNeedle,
+      opportunityStatuses,
+      kanbanCustomColumns,
+      companies,
+      roles,
+    ]
   )
 
   const {
@@ -163,7 +188,7 @@ export default function OpportunitiesPage() {
                   onAddColumn={addKanbanColumn}
                   updateOpportunity={updateOpportunity}
                   onRequestDelete={setDeleteId}
-                  onOpportunityDoubleClick={(id) => setDialogOppId(id)}
+                  onOpportunityDoubleClick={(id: string) => setDialogOppId(id)}
                 />
               </div>
             )
@@ -226,8 +251,10 @@ export default function OpportunitiesPage() {
                           </Button>
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium">{opp.company}</TableCell>
-                      <TableCell>{opp.role}</TableCell>
+                      <TableCell className="font-medium">
+                        {opportunityCompanyName(opp, companies)}
+                      </TableCell>
+                      <TableCell>{opportunityRoleName(opp, roles)}</TableCell>
                       <TableCell className="max-w-xs truncate text-muted-foreground">
                         {opp.description}
                       </TableCell>
@@ -246,13 +273,18 @@ export default function OpportunitiesPage() {
                       </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <InterestLevelStarPicker
-                          value={opp.interest_level}
+                          value={
+                            Math.min(
+                              5,
+                              Math.max(0, Math.round(opp.interest_level))
+                            ) as InterestLevel
+                          }
                           size="sm"
                           showValueLabel={false}
                           onChange={(nextLevel) =>
                             updateOpportunity(opp.id, {
-                              company: opp.company,
-                              role: opp.role,
+                              company_id: opp.company_id,
+                              role_id: opp.role_id,
                               description: opp.description,
                               url: opp.url,
                               status: opp.status,

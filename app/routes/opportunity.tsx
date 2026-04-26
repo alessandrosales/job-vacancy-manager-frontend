@@ -13,7 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card"
-import { DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS } from "~/lib/labels"
 import type { InterestLevel, OpportunityStatus } from "~/lib/labels"
 
 export default function OpportunityPage() {
@@ -21,35 +20,37 @@ export default function OpportunityPage() {
   const { id } = useParams()
   const isEdit = Boolean(id)
 
-  const {
-    opportunities,
-    addOpportunity,
-    updateOpportunity,
-    opportunity_statuses: opportunityStatuses,
-  } = useAppData()
+  const { opportunities, addOpportunity, updateOpportunity } = useAppData()
   const existing = id ? opportunities.find((o) => o.id === id) : undefined
-  const defaultStatusId =
-    opportunityStatuses[0]?.id ?? DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS[0]!.id
 
-  const [company, setCompany] = React.useState("")
-  const [role, setRole] = React.useState("")
+  const [companyId, setCompanyId] = React.useState("")
+  const [roleId, setRoleId] = React.useState("")
   const [description, setDescription] = React.useState("")
   const [url, setUrl] = React.useState("")
-  const [status, setStatus] = React.useState<OpportunityStatus>(defaultStatusId)
+  const [status, setStatus] = React.useState<OpportunityStatus>("")
   const [interestLevel, setInterestLevel] = React.useState<InterestLevel>(0)
 
   React.useEffect(() => {
     if (existing) {
-      setCompany(existing.company)
-      setRole(existing.role)
+      setCompanyId(existing.company_id)
+      setRoleId(existing.role_id)
       setDescription(existing.description)
       setUrl(existing.url)
       setStatus(existing.status)
       setInterestLevel(
         Math.min(5, Math.max(0, Math.round(existing.interest_level))) as InterestLevel
       )
+      return
     }
-  }, [existing])
+    if (!isEdit) {
+      setCompanyId("")
+      setRoleId("")
+      setStatus("")
+      setDescription("")
+      setUrl("")
+      setInterestLevel(0)
+    }
+  }, [existing, isEdit])
 
   React.useEffect(() => {
     if (isEdit && id && !existing) {
@@ -59,9 +60,10 @@ export default function OpportunityPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!companyId || !roleId || !status) return
     const payload = {
-      company: company.trim(),
-      role: role.trim(),
+      company_id: companyId,
+      role_id: roleId,
       description: description.trim(),
       url: url.trim(),
       status,
@@ -109,10 +111,10 @@ export default function OpportunityPage() {
           <CardContent>
             <OpportunityFormFields
               idPrefix="opp-page"
-              company={company}
-              onCompanyChange={setCompany}
-              role={role}
-              onRoleChange={setRole}
+              companyId={companyId}
+              onCompanyIdChange={setCompanyId}
+              roleId={roleId}
+              onRoleIdChange={setRoleId}
               description={description}
               onDescriptionChange={setDescription}
               url={url}
@@ -121,14 +123,13 @@ export default function OpportunityPage() {
               onStatusChange={setStatus}
               interestLevel={interestLevel}
               onInterestLevelChange={setInterestLevel}
-              opportunityStatuses={opportunityStatuses}
             />
           </CardContent>
           <CardFooter className="flex flex-wrap justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => navigate(-1)}>
               Cancel
             </Button>
-            <Button type="submit">
+            <Button type="submit" disabled={!companyId || !roleId || !status}>
               {isEdit ? "Save changes" : "Save"}
             </Button>
           </CardFooter>

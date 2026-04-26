@@ -74,19 +74,20 @@ function pick<T>(arr: readonly T[], i: number): T {
 
 export function generateMockOpportunities(
   count: number,
-  statusIds: readonly string[]
+  statusIds: readonly string[],
+  companies: Company[],
+  roles: Role[]
 ): Opportunity[] {
   const rows: Opportunity[] = []
+  if (companies.length === 0 || roles.length === 0) {
+    return rows
+  }
   for (let i = 0; i < count; i++) {
-    const companyBase = pick(COMPANY_PREFIXES, i)
-    const suffix = Math.floor(i / COMPANY_PREFIXES.length)
-    const company =
-      suffix > 0 ? `${companyBase} Division ${suffix}` : `${companyBase} Corp`
     const status = pick(statusIds, i)
     rows.push({
       id: `seed-opp-${i}`,
-      company,
-      role: pick(ROLE_TITLES, i + 3),
+      company_id: companies[i % companies.length]!.id,
+      role_id: roles[(i + 3) % roles.length]!.id,
       description: `Position #${i + 1}: build product features, collaborate with cross-functional teams, and ship quality software. Stack varies by team.`,
       url: `https://example.com/jobs/${1000 + i}`,
       status,
@@ -143,10 +144,17 @@ export function generateLargeMockDataset() {
     ...s,
   }))
   const statusIds = opportunity_statuses.map((s) => s.id)
+  const companies = generateMockCompanies(MOCK_SEED_TOTALS.companies)
+  const roles = generateMockRoles(MOCK_SEED_TOTALS.roles)
   return {
-    opportunities: generateMockOpportunities(MOCK_SEED_TOTALS.opportunities, statusIds),
-    companies: generateMockCompanies(MOCK_SEED_TOTALS.companies),
-    roles: generateMockRoles(MOCK_SEED_TOTALS.roles),
+    opportunities: generateMockOpportunities(
+      MOCK_SEED_TOTALS.opportunities,
+      statusIds,
+      companies,
+      roles
+    ),
+    companies,
+    roles,
     skills: generateMockSkills(MOCK_SEED_TOTALS.skills),
     opportunity_statuses,
     kanban_custom_columns: [] as { id: string; title: string }[],
