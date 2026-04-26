@@ -70,6 +70,13 @@ export interface Skill {
   description: string
 }
 
+/** Links de referência (ex.: documentação, boards, ferramentas). */
+export interface ReferenceLink {
+  id: string
+  title: string
+  url: string
+}
+
 export interface WorkExperience {
   id: string
   title: string
@@ -121,6 +128,7 @@ export interface AppDataState {
   companies: Company[]
   roles: Role[]
   skills: Skill[]
+  reference_links: ReferenceLink[]
   /** Status das oportunidades (colunas "nativas" do Kanban). Ordem do array = ordem padrão. */
   opportunity_statuses: OpportunityStatusDefinition[]
   /** Colunas extras do Kanban (além dos status). */
@@ -282,6 +290,22 @@ function parseCertifications(raw: unknown): Certification[] {
   return out
 }
 
+function parseReferenceLinks(raw: unknown): ReferenceLink[] {
+  const arr = Array.isArray(raw) ? raw : []
+  const out: ReferenceLink[] = []
+  for (const item of arr) {
+    if (!item || typeof item !== "object") continue
+    const o = item as Record<string, unknown>
+    if (typeof o.id !== "string") continue
+    out.push({
+      id: o.id,
+      title: asString(o.title),
+      url: asString(o.url),
+    })
+  }
+  return out
+}
+
 function parseEducation(raw: unknown): Education[] {
   const arr = Array.isArray(raw) ? raw : []
   const out: Education[] = []
@@ -392,6 +416,12 @@ function parseStored(raw: string | null): AppDataState | null {
     })) as Role[]
 
     const skills: Skill[] = data.skills as Skill[]
+    const reference_links_raw = readField<unknown>(
+      data,
+      "reference_links",
+      "referenceLinks"
+    )
+    const reference_links = parseReferenceLinks(reference_links_raw)
     const validSkillIds = new Set(skills.map((s) => s.id))
     const work_experiences_raw = readField<unknown>(
       data,
@@ -443,6 +473,7 @@ function parseStored(raw: string | null): AppDataState | null {
       companies,
       roles,
       skills,
+      reference_links,
       work_experiences,
       certifications,
       education,
@@ -482,6 +513,9 @@ interface AppDataContextValue extends AppDataState {
   addSkill: (row: Omit<Skill, "id">) => string
   updateSkill: (id: string, row: Omit<Skill, "id">) => void
   deleteSkill: (id: string) => void
+  addReferenceLink: (row: Omit<ReferenceLink, "id">) => string
+  updateReferenceLink: (id: string, row: Omit<ReferenceLink, "id">) => void
+  deleteReferenceLink: (id: string) => void
   addWorkExperience: (row: Omit<WorkExperience, "id">) => string
   updateWorkExperience: (id: string, row: Omit<WorkExperience, "id">) => void
   deleteWorkExperience: (id: string) => void
@@ -755,6 +789,40 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
               ...r,
               skill_ids: r.skill_ids.filter((sid) => sid !== id),
             })),
+          }
+          persist(next)
+          return next
+        })
+      },
+      addReferenceLink: (row) => {
+        const id = createId()
+        setState((s) => {
+          const next = {
+            ...s,
+            reference_links: [...s.reference_links, { id, ...row }],
+          }
+          persist(next)
+          return next
+        })
+        return id
+      },
+      updateReferenceLink: (id, row) => {
+        setState((s) => {
+          const next = {
+            ...s,
+            reference_links: s.reference_links.map((link) =>
+              link.id === id ? { id, ...row } : link
+            ),
+          }
+          persist(next)
+          return next
+        })
+      },
+      deleteReferenceLink: (id) => {
+        setState((s) => {
+          const next = {
+            ...s,
+            reference_links: s.reference_links.filter((link) => link.id !== id),
           }
           persist(next)
           return next
