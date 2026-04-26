@@ -1,35 +1,47 @@
-export type OpportunityStatus =
-  | "INTERESTED IN"
-  | "SENT RESUME"
-  | "SCHEDULED INTERVIEW"
-  | "WAITING RESPONSE"
+/**
+ * `OpportunityStatus` é o id persistido (string estável), definido em
+ * `OpportunityStatusDefinition` no estado da aplicação — não um enum fixo.
+ */
+export type OpportunityStatus = string
 
-export const OPPORTUNITY_STATUS_OPTIONS: OpportunityStatus[] = [
-  "INTERESTED IN",
-  "SENT RESUME",
-  "SCHEDULED INTERVIEW",
-  "WAITING RESPONSE",
-]
+export type StatusBadgeVariant =
+  | "secondary"
+  | "outline"
+  | "default"
+  | "destructive"
 
-export const statusBadge: Record<
-  OpportunityStatus,
-  { label: string; variant: "secondary" | "outline" | "default" | "destructive" }
-> = {
-  "INTERESTED IN":       { label: "Interested In",       variant: "secondary" },
-  "SENT RESUME":         { label: "Sent Resume",         variant: "outline" },
-  "SCHEDULED INTERVIEW": { label: "Scheduled Interview", variant: "default" },
-  "WAITING RESPONSE":    { label: "Waiting Response",    variant: "destructive" },
+export type OpportunityStatusDefinition = {
+  id: OpportunityStatus
+  label: string
+  description?: string
+  variant: StatusBadgeVariant
 }
 
-export type InterestLevel = "Low" | "Medium" | "High"
+/** Status iniciais (ids legados) — alimentam o Kanban e a migração de dados. */
+export const DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS: readonly OpportunityStatusDefinition[] =
+  [
+    {
+      id: "INTERESTED IN",
+      label: "Interested In",
+      variant: "secondary",
+    },
+    {
+      id: "SENT RESUME",
+      label: "Sent Resume",
+      variant: "outline",
+    },
+    {
+      id: "SCHEDULED INTERVIEW",
+      label: "Scheduled Interview",
+      variant: "default",
+    },
+    {
+      id: "WAITING RESPONSE",
+      label: "Waiting Response",
+      variant: "destructive",
+    },
+  ]
 
-export const INTEREST_LEVEL_OPTIONS: InterestLevel[] = ["Low", "Medium", "High"]
+export type InterestLevel = 0 | 1 | 2 | 3 | 4 | 5
 
-export const interestBadge: Record<
-  InterestLevel,
-  { variant: "outline" | "secondary" | "default" }
-> = {
-  Low:    { variant: "outline" },
-  Medium: { variant: "secondary" },
-  High:   { variant: "default" },
-}
+export const INTEREST_LEVEL_OPTIONS: InterestLevel[] = [0, 1, 2, 3, 4, 5]

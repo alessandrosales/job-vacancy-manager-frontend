@@ -32,7 +32,11 @@ import { CSS } from "@dnd-kit/utilities"
 
 import { KanbanColumn } from "~/components/opportunities/kanban/kanban-column"
 import { KanbanJobCardContent } from "~/components/opportunities/kanban/kanban-job-card"
-import type { KanbanCustomColumn, Opportunity } from "~/components/providers/app-data-provider"
+import type {
+  KanbanCustomColumn,
+  Opportunity,
+} from "~/components/providers/app-data-provider"
+import type { OpportunityStatusDefinition } from "~/lib/labels"
 import { Input } from "~/components/ui/input"
 import {
   applyPersistedColumnOrder,
@@ -40,7 +44,7 @@ import {
   findColumnForItemId,
   getColumnTitle,
   getOrderedKanbanColumnIds,
-  isBuiltInColumnId,
+  isOpportunityStatusColumnId,
   itemsByColumnFromOpportunities,
   parseColumnDroppableId,
   parseColumnSortableId,
@@ -52,6 +56,7 @@ const KANBAN_COLUMN_PAGE_SIZE = 24
 function persistColumnIfNeeded(
   next: Record<string, string[]>,
   opportunityById: Map<string, Opportunity>,
+  opportunityStatuses: readonly OpportunityStatusDefinition[],
   updateOpportunity: (id: string, row: Omit<Opportunity, "id">) => void
 ) {
   for (const [columnId, ids] of Object.entries(next)) {
@@ -61,13 +66,14 @@ function persistColumnIfNeeded(
       const current = opp.boardColumnId ?? opp.status
       if (current === columnId) continue
 
-      if (isBuiltInColumnId(columnId)) {
+      if (isOpportunityStatusColumnId(columnId, opportunityStatuses)) {
         updateOpportunity(id, {
           company: opp.company,
           role: opp.role,
           description: opp.description,
           url: opp.url,
           status: columnId,
+          interestLevel: opp.interestLevel,
           boardColumnId: columnId,
         })
       } else {
@@ -77,6 +83,7 @@ function persistColumnIfNeeded(
           description: opp.description,
           url: opp.url,
           status: opp.status,
+          interestLevel: opp.interestLevel,
           boardColumnId: columnId,
         })
       }
@@ -93,6 +100,7 @@ type SortableBoardColumnProps = {
   onLoadMore: () => void
   opportunityById: Map<string, Opportunity>
   customColumns: readonly KanbanCustomColumn[]
+  opportunityStatuses: readonly OpportunityStatusDefinition[]
   onDelete: (id: string) => void
 }
 
@@ -122,6 +130,7 @@ function SortableBoardColumn(props: SortableBoardColumnProps) {
 export type OpportunitiesKanbanBoardProps = {
   opportunities: readonly Opportunity[]
   customColumns: readonly KanbanCustomColumn[]
+  opportunityStatuses: readonly OpportunityStatusDefinition[]
   columnOrder: readonly string[]
   onColumnOrderChange: (order: string[]) => void
   onAddColumn: (title: string) => void
@@ -135,6 +144,7 @@ export type OpportunitiesKanbanBoardProps = {
 export function OpportunitiesKanbanBoard({
   opportunities,
   customColumns,
+  opportunityStatuses,
   columnOrder,
   onColumnOrderChange,
   onAddColumn,
@@ -142,8 +152,8 @@ export function OpportunitiesKanbanBoard({
   onRequestDelete,
 }: OpportunitiesKanbanBoardProps) {
   const canonicalColumnIds = React.useMemo(
-    () => getOrderedKanbanColumnIds(customColumns),
-    [customColumns]
+    () => getOrderedKanbanColumnIds(opportunityStatuses, customColumns),
+    [opportunityStatuses, customColumns]
   )
 
   const [orderedColumnIds, setOrderedColumnIds] = React.useState<string[]>(() =>
@@ -160,12 +170,20 @@ export function OpportunitiesKanbanBoard({
   opportunityByIdRef.current = opportunityById
 
   const [columnItems, setColumnItems] = React.useState<Record<string, string[]>>(() =>
-    itemsByColumnFromOpportunities(opportunities, orderedColumnIds)
+    itemsByColumnFromOpportunities(
+      opportunities,
+      orderedColumnIds,
+      opportunityStatuses
+    )
   )
   const [visibleCountByColumn, setVisibleCountByColumn] = React.useState<
     Record<string, number>
   >(() => {
-    const initial = itemsByColumnFromOpportunities(opportunities, orderedColumnIds)
+    const initial = itemsByColumnFromOpportunities(
+      opportunities,
+      orderedColumnIds,
+      opportunityStatuses
+    )
     const next: Record<string, number> = {}
     for (const columnId of orderedColumnIds) {
       next[columnId] = Math.min(KANBAN_COLUMN_PAGE_SIZE, initial[columnId]?.length ?? 0)
@@ -183,7 +201,11 @@ export function OpportunitiesKanbanBoard({
     if (activeId !== null) return
     const nextOrder = applyPersistedColumnOrder(canonicalColumnIds, columnOrder)
     setOrderedColumnIds(nextOrder)
-    const nextItems = itemsByColumnFromOpportunities(opportunities, nextOrder)
+    const nextItems = itemsByColumnFromOpportunities(
+      opportunities,
+      nextOrder,
+      opportunityStatuses
+    )
     setColumnItems(nextItems)
     setVisibleCountByColumn((prev) => {
       const next: Record<string, number> = {}
@@ -194,7 +216,7 @@ export function OpportunitiesKanbanBoard({
       }
       return next
     })
-  }, [opportunities, activeId, canonicalColumnIds, columnOrder])
+  }, [opportunities, activeId, canonicalColumnIds, columnOrder, opportunityStatuses])
 
   React.useEffect(() => {
     requestAnimationFrame(() => {
@@ -348,18 +370,33 @@ export function OpportunitiesKanbanBoard({
         const oldIndex = list.indexOf(String(active.id))
         const newIndex = list.indexOf(String(over.id))
         if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) {
-          persistColumnIfNeeded(items, opportunityByIdRef.current, updateOpportunity)
+          persistColumnIfNeeded(
+            items,
+            opportunityByIdRef.current,
+            opportunityStatuses,
+            updateOpportunity
+          )
           return items
         }
         const next = {
           ...items,
           [activeContainer]: arrayMove(list, oldIndex, newIndex),
         }
-        persistColumnIfNeeded(next, opportunityByIdRef.current, updateOpportunity)
+        persistColumnIfNeeded(
+          next,
+          opportunityByIdRef.current,
+          opportunityStatuses,
+          updateOpportunity
+        )
         return next
       }
 
-      persistColumnIfNeeded(items, opportunityByIdRef.current, updateOpportunity)
+      persistColumnIfNeeded(
+        items,
+        opportunityByIdRef.current,
+        opportunityStatuses,
+        updateOpportunity
+      )
       return items
     })
   }
@@ -418,13 +455,18 @@ export function OpportunitiesKanbanBoard({
                 <SortableBoardColumn
                   key={columnId}
                   columnId={columnId}
-                  title={getColumnTitle(columnId, customColumns)}
+                  title={getColumnTitle(
+                    columnId,
+                    opportunityStatuses,
+                    customColumns
+                  )}
                   ids={visibleIds}
                   totalCount={idsForColumn.length}
                   hasMore={hasMore}
                   onLoadMore={() => handleLoadMoreColumn(columnId)}
                   opportunityById={opportunityById}
                   customColumns={customColumns}
+                  opportunityStatuses={opportunityStatuses}
                   onDelete={onRequestDelete}
                 />
               )
@@ -459,6 +501,7 @@ export function OpportunitiesKanbanBoard({
                 opp={activeOpp}
                 onDelete={onRequestDelete}
                 customColumns={customColumns}
+                opportunityStatuses={opportunityStatuses}
               />
             </div>
           ) : null}

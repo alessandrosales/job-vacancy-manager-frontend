@@ -3,10 +3,20 @@
 import * as React from "react"
 
 import { generateLargeMockDataset } from "~/lib/mock-seed"
-import type { InterestLevel, OpportunityStatus } from "~/lib/labels"
+import {
+  DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS,
+  type InterestLevel,
+  type OpportunityStatus,
+  type OpportunityStatusDefinition,
+} from "~/lib/labels"
 
-/** Bumped so new installs pick up the large mock seed; clear storage to reset. */
-const STORAGE_KEY = "job-vacancy-app-data-v2"
+export type {
+  OpportunityStatus,
+  OpportunityStatusDefinition,
+} from "~/lib/labels"
+
+/** Bumped when o schema em localStorage ganha campos novos (ex.: status configuráveis). */
+const STORAGE_KEY = "job-vacancy-app-data-v3"
 
 function createId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -22,6 +32,8 @@ export interface Opportunity {
   url: string
   role: string
   status: OpportunityStatus
+  /** 0 = nenhum interesse, 5 = muito interesse. */
+  interestLevel: number
   /** Coluna do Kanban; ausente = coluna padrão derivada de `status`. */
   boardColumnId?: string
 }
@@ -57,7 +69,9 @@ export interface AppDataState {
   companies: Company[]
   roles: Role[]
   skills: Skill[]
-  /** Colunas extras do Kanban (além dos status padrão). */
+  /** Status das oportunidades (colunas “nativas” do Kanban). Ordem do array = ordem padrão. */
+  opportunityStatuses: OpportunityStatusDefinition[]
+  /** Colunas extras do Kanban (além dos status). */
   kanbanCustomColumns: KanbanCustomColumn[]
   /** Ordem persistida das colunas (status + custom). */
   kanbanColumnOrder: string[]
@@ -65,6 +79,37 @@ export interface AppDataState {
 
 function defaultState(): AppDataState {
   return generateLargeMockDataset()
+}
+
+function normalizeOpportunityStatuses(
+  raw: unknown
+): OpportunityStatusDefinition[] {
+  if (!Array.isArray(raw) || raw.length === 0) {
+    return DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS.map((s) => ({ ...s }))
+  }
+  const next: OpportunityStatusDefinition[] = []
+  for (const item of raw) {
+    if (
+      item &&
+      typeof item === "object" &&
+      typeof (item as OpportunityStatusDefinition).id === "string" &&
+      typeof (item as OpportunityStatusDefinition).label === "string" &&
+      typeof (item as OpportunityStatusDefinition).variant === "string"
+    ) {
+      next.push({
+        id: (item as OpportunityStatusDefinition).id,
+        label: (item as OpportunityStatusDefinition).label,
+        description:
+          typeof (item as OpportunityStatusDefinition).description === "string"
+            ? (item as OpportunityStatusDefinition).description
+            : undefined,
+        variant: (item as OpportunityStatusDefinition).variant,
+      })
+    }
+  }
+  return next.length > 0
+    ? next
+    : DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS.map((s) => ({ ...s }))
 }
 
 function parseStored(raw: string | null): AppDataState | null {
@@ -77,11 +122,43 @@ function parseStored(raw: string | null): AppDataState | null {
       Array.isArray(data.roles) &&
       Array.isArray(data.skills)
     ) {
+      const opportunityStatuses = normalizeOpportunityStatuses(
+        data.opportunityStatuses
+      )
+      const validStatusIds = new Set(opportunityStatuses.map((s) => s.id))
+      const customColumns = Array.isArray(data.kanbanCustomColumns)
+        ? data.kanbanCustomColumns
+        : []
+      const customIds = new Set(customColumns.map((c) => c.id))
+      const fallbackStatus = opportunityStatuses[0]!.id
+
       return {
         ...data,
-        kanbanCustomColumns: Array.isArray(data.kanbanCustomColumns)
-          ? data.kanbanCustomColumns
-          : [],
+        opportunityStatuses,
+        opportunities: data.opportunities.map((o) => {
+          const status = validStatusIds.has(o.status) ? o.status : fallbackStatus
+          let boardColumnId = o.boardColumnId
+          if (boardColumnId != null) {
+            const ok =
+              validStatusIds.has(boardColumnId) || customIds.has(boardColumnId)
+            if (!ok) boardColumnId = undefined
+          }
+          return {
+            ...o,
+            status,
+            interestLevel: normalizeInterestLevel(o.interestLevel),
+            boardColumnId,
+          }
+        }),
+        companies: data.companies.map((c) => ({
+          ...c,
+          interestLevel: normalizeInterestLevel(c.interestLevel),
+        })),
+        roles: data.roles.map((r) => ({
+          ...r,
+          interestLevel: normalizeInterestLevel(r.interestLevel),
+        })),
+        kanbanCustomColumns: customColumns,
         kanbanColumnOrder: Array.isArray(data.kanbanColumnOrder)
           ? data.kanbanColumnOrder
           : [],
@@ -93,12 +170,30 @@ function parseStored(raw: string | null): AppDataState | null {
   return null
 }
 
+function normalizeInterestLevel(value: unknown): InterestLevel {
+  if (typeof value === "number") {
+    const clamped = Math.min(5, Math.max(0, Math.round(value)))
+    return clamped as InterestLevel
+  }
+  if (value === "Low") return 1
+  if (value === "Medium") return 3
+  if (value === "High") return 5
+  return 0
+}
+
 interface AppDataContextValue extends AppDataState {
   addOpportunity: (row: Omit<Opportunity, "id">) => string
   updateOpportunity: (id: string, row: Omit<Opportunity, "id">) => void
   deleteOpportunity: (id: string) => void
   addKanbanColumn: (title: string) => string
   setKanbanColumnOrder: (order: string[]) => void
+  addOpportunityStatus: (row: Omit<OpportunityStatusDefinition, "id">) => string
+  updateOpportunityStatus: (
+    id: string,
+    row: Omit<OpportunityStatusDefinition, "id">
+  ) => void
+  deleteOpportunityStatus: (id: string) => void
+  reorderOpportunityStatuses: (orderedIds: string[]) => void
   addCompany: (row: Omit<Company, "id">) => string
   updateCompany: (id: string, row: Omit<Company, "id">) => void
   deleteCompany: (id: string) => void
@@ -118,7 +213,11 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
   React.useLayoutEffect(() => {
     if (typeof window === "undefined") return
-    const stored = parseStored(window.localStorage.getItem(STORAGE_KEY))
+    let raw = window.localStorage.getItem(STORAGE_KEY)
+    if (!raw) {
+      raw = window.localStorage.getItem("job-vacancy-app-data-v2")
+    }
+    const stored = parseStored(raw)
     if (stored) setState(stored)
     canPersistRef.current = true
   }, [])
@@ -192,6 +291,91 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
           }
           persist(next)
           return next
+        })
+      },
+      addOpportunityStatus: (row) => {
+        const id = `opp-st-${createId()}`
+        setState((s) => {
+          const def: OpportunityStatusDefinition = { id, ...row }
+          const nextStatuses = [...s.opportunityStatuses, def]
+          const customPart = s.kanbanColumnOrder.filter((cid) =>
+            s.kanbanCustomColumns.some((c) => c.id === cid)
+          )
+          const next: AppDataState = {
+            ...s,
+            opportunityStatuses: nextStatuses,
+            kanbanColumnOrder: [...nextStatuses.map((x) => x.id), ...customPart],
+          }
+          persist(next)
+          return next
+        })
+        return id
+      },
+      updateOpportunityStatus: (id, row) => {
+        setState((s) => {
+          const next: AppDataState = {
+            ...s,
+            opportunityStatuses: s.opportunityStatuses.map((st) =>
+              st.id === id ? { id, ...row } : st
+            ),
+          }
+          persist(next)
+          return next
+        })
+      },
+      deleteOpportunityStatus: (id) => {
+        setState((s) => {
+          if (s.opportunityStatuses.length <= 1) {
+            return s
+          }
+          const replacement = s.opportunityStatuses.find((x) => x.id !== id)?.id
+          if (!replacement) return s
+
+          const nextStatuses = s.opportunityStatuses.filter((x) => x.id !== id)
+          const customPart = s.kanbanColumnOrder.filter((cid) =>
+            s.kanbanCustomColumns.some((c) => c.id === cid)
+          )
+          const nextOrder = [
+            ...nextStatuses.map((x) => x.id),
+            ...customPart,
+          ].filter((cid) => cid !== id)
+
+          const nextOpps = s.opportunities.map((o) => {
+            let status = o.status
+            let boardColumnId = o.boardColumnId
+            if (status === id) status = replacement
+            if (boardColumnId === id) boardColumnId = replacement
+            return { ...o, status, boardColumnId }
+          })
+
+          const next: AppDataState = {
+            ...s,
+            opportunityStatuses: nextStatuses,
+            opportunities: nextOpps,
+            kanbanColumnOrder: nextOrder,
+          }
+          persist(next)
+          return next
+        })
+      },
+      reorderOpportunityStatuses: (orderedIds) => {
+        setState((s) => {
+          const byId = new Map(s.opportunityStatuses.map((x) => [x.id, x]))
+          const next = orderedIds
+            .map((id) => byId.get(id))
+            .filter((x): x is OpportunityStatusDefinition => x != null)
+          if (next.length !== s.opportunityStatuses.length) return s
+
+          const customPart = s.kanbanColumnOrder.filter((cid) =>
+            s.kanbanCustomColumns.some((c) => c.id === cid)
+          )
+          const nextState: AppDataState = {
+            ...s,
+            opportunityStatuses: next,
+            kanbanColumnOrder: [...next.map((x) => x.id), ...customPart],
+          }
+          persist(nextState)
+          return nextState
         })
       },
       addCompany: (row) => {
@@ -277,8 +461,6 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       },
     }
   }, [state])
-
-  // Fix getters to read latest state from closure in setState callbacks is wrong for getOpportunity - they use `state` from render when value was built. Actually getOpportunity uses `state.opportunities` from outer closure - it's stale when called from child after update... The useMemo deps [state] so when state updates, new value with fresh getOpportunity. Good.
 
   return (
     <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>

@@ -18,17 +18,9 @@ import {
   FieldLabel,
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select"
 import { Textarea } from "~/components/ui/textarea"
+import { InterestLevelStarPicker } from "~/components/interest-level-star-picker"
 import type { InterestLevel } from "~/lib/labels"
-import { INTEREST_LEVEL_OPTIONS } from "~/lib/labels"
 
 export default function RolePage() {
   const navigate = useNavigate()
@@ -40,7 +32,7 @@ export default function RolePage() {
 
   const [name, setName] = React.useState("")
   const [description, setDescription] = React.useState("")
-  const [interestLevel, setInterestLevel] = React.useState<InterestLevel>("Medium")
+  const [interestLevel, setInterestLevel] = React.useState<InterestLevel>(3)
 
   React.useEffect(() => {
     if (existing) {
@@ -123,24 +115,11 @@ export default function RolePage() {
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="role-interest">Interest level</FieldLabel>
-                <Select
+                <FieldLabel>Interest level</FieldLabel>
+                <InterestLevelStarPicker
                   value={interestLevel}
-                  onValueChange={(v) => setInterestLevel(v as InterestLevel)}
-                >
-                  <SelectTrigger id="role-interest" className="w-full min-w-0">
-                    <SelectValue placeholder="Level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {INTEREST_LEVEL_OPTIONS.map((opt) => (
-                        <SelectItem key={opt} value={opt}>
-                          {opt}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+                  onChange={setInterestLevel}
+                />
               </Field>
             </FieldGroup>
           </CardContent>

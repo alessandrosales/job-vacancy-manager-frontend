@@ -18,6 +18,7 @@ import {
   LayoutDashboardIcon,
   BriefcaseIcon,
   BuildingIcon,
+  ListOrderedIcon,
   UserCogIcon,
   SparklesIcon,
 } from "lucide-react"
@@ -97,6 +98,11 @@ const data = {
       name: "Opportunities",
       url: "/opportunities",
       icon: <BriefcaseIcon />,
+    },
+    {
+      name: "Opportunity statuses",
+      url: "/opportunities/statuses",
+      icon: <ListOrderedIcon />,
     },
     {
       name: "Companies",

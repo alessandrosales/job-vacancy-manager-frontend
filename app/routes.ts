@@ -7,6 +7,8 @@ export default [
   route("recover-password", "routes/recover-password.tsx"),
   route("dashboard", "routes/dashboard.tsx"),
   route("opportunities/opportunity/:id?", "routes/opportunity.tsx"),
+  route("opportunities/statuses", "routes/opportunity-statuses.tsx"),
+  route("opportunities/status/:id?", "routes/opportunity-status.tsx"),
   route("opportunities", "routes/opportunities.tsx"),
   route("companies/company/:id?", "routes/company.tsx"),
   route("companies", "routes/companies.tsx"),

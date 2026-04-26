@@ -1,9 +1,5 @@
 import type { KanbanCustomColumn, Opportunity } from "~/components/providers/app-data-provider"
-import {
-  OPPORTUNITY_STATUS_OPTIONS,
-  statusBadge,
-  type OpportunityStatus,
-} from "~/lib/labels"
+import type { OpportunityStatusDefinition } from "~/lib/labels"
 
 export const COLUMN_DROPPABLE_PREFIX = "column:" as const
 export const COLUMN_SORTABLE_PREFIX = "column-sort:" as const
@@ -30,14 +26,21 @@ export function getEffectiveColumnId(opp: Opportunity): string {
   return opp.boardColumnId ?? opp.status
 }
 
-export function isBuiltInColumnId(id: string): id is OpportunityStatus {
-  return OPPORTUNITY_STATUS_OPTIONS.includes(id as OpportunityStatus)
+export function isOpportunityStatusColumnId(
+  columnId: string,
+  opportunityStatuses: readonly OpportunityStatusDefinition[]
+): boolean {
+  return opportunityStatuses.some((s) => s.id === columnId)
 }
 
 export function getOrderedKanbanColumnIds(
+  opportunityStatuses: readonly OpportunityStatusDefinition[],
   customColumns: readonly KanbanCustomColumn[]
 ): string[] {
-  return [...OPPORTUNITY_STATUS_OPTIONS, ...customColumns.map((c) => c.id)]
+  return [
+    ...opportunityStatuses.map((s) => s.id),
+    ...customColumns.map((c) => c.id),
+  ]
 }
 
 export function applyPersistedColumnOrder(
@@ -55,34 +58,41 @@ export function applyPersistedColumnOrder(
 
 export function getColumnTitle(
   columnId: string,
+  opportunityStatuses: readonly OpportunityStatusDefinition[],
   customColumns: readonly KanbanCustomColumn[]
 ): string {
-  if (isBuiltInColumnId(columnId)) {
-    return statusBadge[columnId].label
-  }
+  const st = opportunityStatuses.find((s) => s.id === columnId)
+  if (st) return st.label
   const c = customColumns.find((x) => x.id === columnId)
   return c?.title ?? columnId
 }
 
 export function getColumnBadgeProps(
   columnId: string,
+  opportunityStatuses: readonly OpportunityStatusDefinition[],
   customColumns: readonly KanbanCustomColumn[]
 ): { label: string; variant: "secondary" | "outline" | "default" | "destructive" } {
-  if (isBuiltInColumnId(columnId)) {
-    return statusBadge[columnId]
+  const st = opportunityStatuses.find((s) => s.id === columnId)
+  if (st) {
+    return { label: st.label, variant: st.variant }
   }
-  return { label: getColumnTitle(columnId, customColumns), variant: "outline" }
+  return {
+    label: getColumnTitle(columnId, opportunityStatuses, customColumns),
+    variant: "outline",
+  }
 }
 
 export function itemsByColumnFromOpportunities(
   rows: readonly Opportunity[],
-  columnIds: readonly string[]
+  columnIds: readonly string[],
+  opportunityStatuses: readonly OpportunityStatusDefinition[]
 ): Record<string, string[]> {
   const next: Record<string, string[]> = {}
   for (const id of columnIds) {
     next[id] = []
   }
-  const fallback = columnIds[0] ?? OPPORTUNITY_STATUS_OPTIONS[0]!
+  const fallback =
+    columnIds[0] ?? opportunityStatuses[0]?.id ?? ""
   for (const o of rows) {
     const col = getEffectiveColumnId(o)
     if (Object.prototype.hasOwnProperty.call(next, col)) {

@@ -4,9 +4,10 @@ import * as React from "react"
 import { Link } from "react-router"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { ExternalLinkIcon, PencilIcon, Trash2Icon } from "lucide-react"
+import { ExternalLinkIcon, PencilIcon, StarIcon, Trash2Icon } from "lucide-react"
 
 import type { KanbanCustomColumn, Opportunity } from "~/components/providers/app-data-provider"
+import type { OpportunityStatusDefinition } from "~/lib/labels"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
 import { Card, CardContent } from "~/components/ui/card"
@@ -17,6 +18,7 @@ export type KanbanJobCardContentProps = {
   opp: Opportunity
   onDelete: (id: string) => void
   customColumns: readonly KanbanCustomColumn[]
+  opportunityStatuses: readonly OpportunityStatusDefinition[]
   className?: string
 }
 
@@ -27,10 +29,15 @@ export function KanbanJobCardContent({
   opp,
   onDelete,
   customColumns,
+  opportunityStatuses,
   className,
 }: KanbanJobCardContentProps) {
   const columnId = getEffectiveColumnId(opp)
-  const badge = getColumnBadgeProps(columnId, customColumns)
+  const badge = getColumnBadgeProps(
+    columnId,
+    opportunityStatuses,
+    customColumns
+  )
 
   return (
     <Card
@@ -66,6 +73,19 @@ export function KanbanJobCardContent({
             {opp.description}
           </p>
         ) : null}
+        <div className="inline-flex items-center gap-0.5">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <StarIcon
+              key={i}
+              className={cn(
+                "size-3",
+                i < opp.interestLevel
+                  ? "fill-current text-amber-500"
+                  : "text-muted-foreground/35"
+              )}
+            />
+          ))}
+        </div>
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-1.5">
           <Badge variant={badge.variant} className="text-xs">
             {badge.label}
@@ -105,12 +125,18 @@ type KanbanJobCardProps = {
   opp: Opportunity
   onDelete: (id: string) => void
   customColumns: readonly KanbanCustomColumn[]
+  opportunityStatuses: readonly OpportunityStatusDefinition[]
 }
 
 /**
  * Card sortable do job (alça de arraste + conteúdo).
  */
-export function KanbanJobCard({ opp, onDelete, customColumns }: KanbanJobCardProps) {
+export function KanbanJobCard({
+  opp,
+  onDelete,
+  customColumns,
+  opportunityStatuses,
+}: KanbanJobCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({
       id: opp.id,
@@ -135,6 +161,7 @@ export function KanbanJobCard({ opp, onDelete, customColumns }: KanbanJobCardPro
         opp={opp}
         onDelete={onDelete}
         customColumns={customColumns}
+        opportunityStatuses={opportunityStatuses}
       />
     </div>
   )

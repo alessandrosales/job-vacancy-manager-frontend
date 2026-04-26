@@ -2,6 +2,7 @@ import * as React from "react"
 import { useNavigate, useParams } from "react-router"
 
 import { useAppData } from "~/components/providers/app-data-provider"
+import { InterestLevelStarPicker } from "~/components/interest-level-star-picker"
 import { AppLayout } from "~/components/layout/app-layout"
 import { Button } from "~/components/ui/button"
 import {
@@ -27,22 +28,26 @@ import {
   SelectValue,
 } from "~/components/ui/select"
 import { Textarea } from "~/components/ui/textarea"
-import type { OpportunityStatus } from "~/lib/labels"
-import { OPPORTUNITY_STATUS_OPTIONS, statusBadge } from "~/lib/labels"
+import { DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS } from "~/lib/labels"
+import type { InterestLevel, OpportunityStatus } from "~/lib/labels"
 
 export default function OpportunityPage() {
   const navigate = useNavigate()
   const { id } = useParams()
   const isEdit = Boolean(id)
 
-  const { opportunities, addOpportunity, updateOpportunity } = useAppData()
+  const { opportunities, addOpportunity, updateOpportunity, opportunityStatuses } =
+    useAppData()
   const existing = id ? opportunities.find((o) => o.id === id) : undefined
+  const defaultStatusId =
+    opportunityStatuses[0]?.id ?? DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS[0]!.id
 
   const [company, setCompany] = React.useState("")
   const [role, setRole] = React.useState("")
   const [description, setDescription] = React.useState("")
   const [url, setUrl] = React.useState("")
-  const [status, setStatus] = React.useState<OpportunityStatus>("INTERESTED IN")
+  const [status, setStatus] = React.useState<OpportunityStatus>(defaultStatusId)
+  const [interestLevel, setInterestLevel] = React.useState<InterestLevel>(0)
 
   React.useEffect(() => {
     if (existing) {
@@ -51,6 +56,9 @@ export default function OpportunityPage() {
       setDescription(existing.description)
       setUrl(existing.url)
       setStatus(existing.status)
+      setInterestLevel(
+        Math.min(5, Math.max(0, Math.round(existing.interestLevel))) as InterestLevel
+      )
     }
   }, [existing])
 
@@ -68,7 +76,8 @@ export default function OpportunityPage() {
       description: description.trim(),
       url: url.trim(),
       status,
-      boardColumnId: status,
+      interestLevel,
+      boardColumnId: existing?.boardColumnId ?? status,
     }
     if (isEdit && id) {
       updateOpportunity(id, payload)
@@ -160,14 +169,18 @@ export default function OpportunityPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      {OPPORTUNITY_STATUS_OPTIONS.map((opt) => (
-                        <SelectItem key={opt} value={opt}>
-                          {statusBadge[opt].label}
+                      {opportunityStatuses.map((st) => (
+                        <SelectItem key={st.id} value={st.id}>
+                          {st.label}
                         </SelectItem>
                       ))}
                     </SelectGroup>
                   </SelectContent>
                 </Select>
+              </Field>
+              <Field>
+                <FieldLabel>Interest level</FieldLabel>
+                <InterestLevelStarPicker value={interestLevel} onChange={setInterestLevel} />
               </Field>
             </FieldGroup>
           </CardContent>

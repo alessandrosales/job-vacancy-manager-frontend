@@ -1,0 +1,22 @@
+---
+description: Enforce contextual folders for new components
+alwaysApply: true
+---
+
+# Component Organization
+
+- Never create new component files directly under `app/components/` without context.
+- Every new component must live inside a feature/domain folder (e.g. `app/components/opportunities/`, `app/components/listing/`, `app/components/layout/`).
+- If no suitable folder exists, create a new contextual folder first, then add the component inside it.
+- Keep shared primitives only in `app/components/ui/`.
+- Keep provider components only in `app/components/providers/`.
+
+## Examples
+
+- Bad: `app/components/interest-level-star-picker.tsx`
+- Good: `app/components/shared/interest-level/star-picker.tsx`
+- Good: `app/components/opportunities/interest-level-star-picker.tsx`
+
+## Refactor Preference
+
+- When touching existing code, prefer moving/colocating orphan components into contextual folders instead of adding more files at the root of `app/components/`.

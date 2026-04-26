@@ -4,9 +4,9 @@ import { Link } from "react-router"
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
 import { ListingPageHeader } from "~/components/listing/listing-page-header"
 import { ListingTableCard } from "~/components/listing/listing-table-card"
+import { InterestLevelStarPicker } from "~/components/interest-level-star-picker"
 import { useAppData, type Role } from "~/components/providers/app-data-provider"
 import { AppLayout } from "~/components/layout/app-layout"
-import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
 import {
   Table,
@@ -27,7 +27,6 @@ import {
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog"
 import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
-import { interestBadge } from "~/lib/labels"
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
 function filterRolesBySearch(rows: readonly Role[], needle: string): Role[] {
@@ -39,7 +38,7 @@ function filterRolesBySearch(rows: readonly Role[], needle: string): Role[] {
 }
 
 export default function RolesPage() {
-  const { roles, deleteRole } = useAppData()
+  const { roles, deleteRole, updateRole } = useAppData()
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
   const searchNeedle = searchQuery.trim()
@@ -107,7 +106,6 @@ export default function RolesPage() {
                 </TableRow>
               ) : (
                 visibleItems.map((role) => {
-                  const cfg = interestBadge[role.interestLevel]
                   return (
                     <TableRow key={role.id}>
                       <TableCell>
@@ -135,7 +133,18 @@ export default function RolesPage() {
                         {role.description}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={cfg.variant}>{role.interestLevel}</Badge>
+                        <InterestLevelStarPicker
+                          value={role.interestLevel}
+                          size="sm"
+                          showValueLabel={false}
+                          onChange={(nextLevel) =>
+                            updateRole(role.id, {
+                              name: role.name,
+                              description: role.description,
+                              interestLevel: nextLevel,
+                            })
+                          }
+                        />
                       </TableCell>
                     </TableRow>
                   )

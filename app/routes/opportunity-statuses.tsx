@@ -4,12 +4,9 @@ import { Link } from "react-router"
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
 import { ListingPageHeader } from "~/components/listing/listing-page-header"
 import { ListingTableCard } from "~/components/listing/listing-table-card"
-import { InterestLevelStarPicker } from "~/components/interest-level-star-picker"
-import {
-  useAppData,
-  type Company,
-} from "~/components/providers/app-data-provider"
+import { useAppData } from "~/components/providers/app-data-provider"
 import { AppLayout } from "~/components/layout/app-layout"
+import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
 import {
   Table,
@@ -30,30 +27,35 @@ import {
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog"
 import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
-import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
+import { ChevronDownIcon, ChevronUpIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
-function filterCompaniesBySearch(
-  rows: readonly Company[],
+function filterBySearch(
+  rows: readonly { id: string; label: string; variant: string }[],
   needle: string
-): Company[] {
+) {
   if (!needle) return [...rows]
   const q = needle.toLowerCase()
-  return rows.filter((c) =>
-    `${c.name} ${c.url} ${c.description} ${c.interestLevel}`
-      .toLowerCase()
-      .includes(q)
+  return rows.filter(
+    (r) =>
+      r.label.toLowerCase().includes(q) ||
+      r.variant.toLowerCase().includes(q) ||
+      r.id.toLowerCase().includes(q)
   )
 }
 
-export default function CompaniesPage() {
-  const { companies, deleteCompany, updateCompany } = useAppData()
+export default function OpportunityStatusesPage() {
+  const {
+    opportunityStatuses,
+    deleteOpportunityStatus,
+    reorderOpportunityStatuses,
+  } = useAppData()
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
   const searchNeedle = searchQuery.trim()
 
-  const filteredCompanies = React.useMemo(
-    () => filterCompaniesBySearch(companies, searchNeedle),
-    [companies, searchNeedle]
+  const filtered = React.useMemo(
+    () => filterBySearch(opportunityStatuses, searchNeedle),
+    [opportunityStatuses, searchNeedle]
   )
 
   const {
@@ -63,19 +65,32 @@ export default function CompaniesPage() {
     hasMore,
     sentinelRef,
     loadNextWindow,
-  } = useInfiniteScrollList(filteredCompanies, { filterKey: searchNeedle })
+  } = useInfiniteScrollList(filtered, { filterKey: searchNeedle })
+
+  function moveId(id: string, direction: "up" | "down") {
+    const list = opportunityStatuses.map((s) => s.id)
+    const i = list.indexOf(id)
+    if (i < 0) return
+    const j = direction === "up" ? i - 1 : i + 1
+    if (j < 0 || j >= list.length) return
+    const next = list.slice()
+    const t = next[i]!
+    next[i] = next[j]!
+    next[j] = t
+    reorderOpportunityStatuses(next)
+  }
 
   return (
-    <AppLayout title="Companies">
+    <AppLayout title="Opportunity statuses">
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
         <ListingPageHeader
-          title="Companies"
-          description="Companies you are tracking for opportunities"
+          title="Opportunity statuses"
+          description="Configure pipeline stages — each status appears as a column on the Kanban board"
           action={
             <Button asChild>
-              <Link to="/companies/company">
+              <Link to="/opportunities/status">
                 <PlusIcon data-icon="inline-start" />
-                Add company
+                Add status
               </Link>
             </Button>
           }
@@ -88,41 +103,45 @@ export default function CompaniesPage() {
           }
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
-          searchPlaceholder="Search companies…"
+          searchPlaceholder="Search statuses…"
         >
-            <Table>
+          <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-28">Actions</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>URL</TableHead>
+                <TableHead className="w-24">Order</TableHead>
+                <TableHead>Label</TableHead>
                 <TableHead>Description</TableHead>
-                <TableHead>Interest Level</TableHead>
+                <TableHead className="w-40">Style</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {companies.length === 0 ? (
+              {opportunityStatuses.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-muted-foreground">
-                    No companies yet. Add one to get started.
+                    No statuses. Add your first stage.
                   </TableCell>
                 </TableRow>
-              ) : filteredCompanies.length === 0 ? (
+              ) : filtered.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-muted-foreground">
                     No matches for your search.
                   </TableCell>
                 </TableRow>
               ) : (
-                visibleItems.map((company) => {
+                visibleItems.map((st) => {
+                  const allIds = opportunityStatuses.map((s) => s.id)
+                  const pos = allIds.indexOf(st.id)
+                  const isFirst = pos <= 0
+                  const isLast = pos < 0 || pos >= allIds.length - 1
                   return (
-                    <TableRow key={company.id}>
+                    <TableRow key={st.id}>
                       <TableCell>
                         <div className="flex justify-start gap-1">
                           <Button variant="ghost" size="icon" asChild>
                             <Link
-                              to={`/companies/company/${encodeURIComponent(company.id)}`}
-                              aria-label="Edit company"
+                              to={`/opportunities/status/${encodeURIComponent(st.id)}`}
+                              aria-label="Edit status"
                             >
                               <PencilIcon />
                             </Link>
@@ -130,41 +149,46 @@ export default function CompaniesPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            aria-label="Delete company"
-                            onClick={() => setDeleteId(company.id)}
+                            aria-label="Delete status"
+                            onClick={() => setDeleteId(st.id)}
+                            disabled={opportunityStatuses.length <= 1}
                           >
                             <Trash2Icon />
                           </Button>
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium">{company.name}</TableCell>
                       <TableCell>
-                        <a
-                          href={company.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary underline-offset-4 hover:underline"
-                        >
-                          {company.url}
-                        </a>
+                        <div className="inline-flex items-center gap-0.5">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="size-8"
+                            aria-label="Move up"
+                            disabled={isFirst}
+                            onClick={() => moveId(st.id, "up")}
+                          >
+                            <ChevronUpIcon />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="size-8"
+                            aria-label="Move down"
+                            disabled={isLast}
+                            onClick={() => moveId(st.id, "down")}
+                          >
+                            <ChevronDownIcon />
+                          </Button>
+                        </div>
                       </TableCell>
-                      <TableCell className="max-w-xs truncate text-muted-foreground">
-                        {company.description}
+                      <TableCell className="font-medium">{st.label}</TableCell>
+                      <TableCell className="text-muted-foreground max-w-xs truncate">
+                        {st.description ?? "—"}
                       </TableCell>
                       <TableCell>
-                        <InterestLevelStarPicker
-                          value={company.interestLevel}
-                          size="sm"
-                          showValueLabel={false}
-                          onChange={(nextLevel) =>
-                            updateCompany(company.id, {
-                              name: company.name,
-                              url: company.url,
-                              description: company.description,
-                              interestLevel: nextLevel,
-                            })
-                          }
-                        />
+                        <Badge variant={st.variant}>{st.label}</Badge>
                       </TableCell>
                     </TableRow>
                   )
@@ -190,9 +214,10 @@ export default function CompaniesPage() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete company?</AlertDialogTitle>
+              <AlertDialogTitle>Delete this status?</AlertDialogTitle>
               <AlertDialogDescription>
-                This removes the company from your list.
+                Opportunities in this column move to another status. Custom Kanban
+                columns are not removed.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -200,7 +225,7 @@ export default function CompaniesPage() {
               <AlertDialogAction
                 variant="destructive"
                 onClick={() => {
-                  if (deleteId) deleteCompany(deleteId)
+                  if (deleteId) deleteOpportunityStatus(deleteId)
                   setDeleteId(null)
                 }}
               >

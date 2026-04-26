@@ -1,0 +1,48 @@
+---
+description: Objeto/JSON alinhado ao banco e API Rails usam propriedades em snake_case
+alwaysApply: true
+---
+
+# Modelos de dados: snake_case (Rails / banco)
+
+O backend segue **Ruby on Rails** (Active Record, JSON:API ou controllers REST). Tudo o que o frontend tratar como **espelho do banco ou do payload HTTP** (tipos, serialização, `fetch`, colunas) deve usar **`snake_case` nos nomes das propriedades**, alinhado ao que o Rails expõe.
+
+## O que se aplica
+
+- `interface` / `type` de **entidades persistidas** (tabelas, atributos de modelo).
+- **Corpos e respostas** de API (`body`, DTO, `Response`).
+- Estruturas **gravadas/ lidas** como JSON fiel ao backend (ex.: `localStorage` se for o mesmo contrato do servidor).
+- Nomes de campos em **migrations conceituais** ou comentários de schema compartilhados com a API.
+
+## O que não precisa (por padrão)
+
+- Estado puramente de UI, handlers do DOM, chaves de `Map` locais, ou utilitários que não trafegam com o backend — podem seguir o estilo do código (p.ex. camelCase) **desde que** a fronteira com o dado de domínio faça o mapeamento explícito quando necessário.
+
+## Convenções
+
+- Preferir chaves exatamente como no Rails/JSON: `interest_level`, `board_column_id`, `created_at`, `opportunity_statuses`.
+- IDs e FKs: `user_id`, `company_id`, `opportunity_id`.
+- **Não** expor `camelCase` em tipos cujo contrato de rede é o do Rails, para evitar divergência com o que o backend envia e espera.
+- Se existir função de **parse/normalização** (API → tela), ela pode produzir um shape de UI, mas a **definição do tipo** do dado vindo/indo para a API continua `snake_case`.
+
+## Exemplos
+
+- Bom (contrato alinhado ao banco / JSON Rails):
+
+  ```ts
+  type OpportunityRow = {
+    id: string
+    company: string
+    interest_level: number
+    board_column_id?: string
+    created_at?: string
+  }
+  ```
+
+- Evitar nesse contexto: `interestLevel`, `boardColumnId`, `createdAt` **nos tipos** que representam a persistência e a API com Rails.
+
+- Ao adicionar um novo recurso, nomear o payload como o time de backend (snake case) e documentar no tipo TypeScript o mesmo padrão.
+
+## Integração com código legado
+
+- Código existente em camelCase no cliente pode permanecer até ser migrado; **novas** entidades e integrações com o backend Ruby devem seguir `snake_case` desde o início, ou mapear numa camada delimitada (adapter) cujo **contrato** com a rede esteja em snake case.

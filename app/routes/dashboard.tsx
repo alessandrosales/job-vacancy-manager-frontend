@@ -34,7 +34,7 @@ import {
   TableRow,
 } from "~/components/ui/table"
 import { useAppData } from "~/components/providers/app-data-provider"
-import { statusBadge } from "~/lib/labels"
+import { getColumnBadgeProps, getEffectiveColumnId } from "~/lib/kanban-columns"
 
 // --- Mock chart data ---
 
@@ -82,7 +82,7 @@ const lineConfig: ChartConfig = {
 }
 
 export default function DashboardPage() {
-  const { opportunities } = useAppData()
+  const { opportunities, opportunityStatuses, kanbanCustomColumns } = useAppData()
   const recent = opportunities.slice(0, 5)
 
   return (
@@ -172,7 +172,11 @@ export default function DashboardPage() {
                 </TableRow>
               ) : (
                 recent.map((opp) => {
-                  const s = statusBadge[opp.status]
+                  const s = getColumnBadgeProps(
+                    getEffectiveColumnId(opp),
+                    opportunityStatuses,
+                    kanbanCustomColumns
+                  )
                   return (
                     <TableRow key={opp.id}>
                       <TableCell className="font-medium">{opp.company}</TableCell>

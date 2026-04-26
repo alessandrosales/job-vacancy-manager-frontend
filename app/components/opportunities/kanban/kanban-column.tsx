@@ -7,6 +7,7 @@ import { Loader2Icon, GripVerticalIcon } from "lucide-react"
 
 import { KanbanJobCard } from "~/components/opportunities/kanban/kanban-job-card"
 import type { KanbanCustomColumn, Opportunity } from "~/components/providers/app-data-provider"
+import type { OpportunityStatusDefinition } from "~/lib/labels"
 import { Badge } from "~/components/ui/badge"
 import { columnDroppableId } from "~/lib/kanban-columns"
 import { cn } from "~/lib/utils"
@@ -20,6 +21,7 @@ export type KanbanColumnProps = {
   onLoadMore: () => void
   opportunityById: Map<string, Opportunity>
   customColumns: readonly KanbanCustomColumn[]
+  opportunityStatuses: readonly OpportunityStatusDefinition[]
   onDelete: (id: string) => void
   dragHandleAttributes?: Record<string, unknown>
   dragHandleListeners?: Record<string, unknown>
@@ -38,6 +40,7 @@ export function KanbanColumn({
   onLoadMore,
   opportunityById,
   customColumns,
+  opportunityStatuses,
   onDelete,
   dragHandleAttributes,
   dragHandleListeners,
@@ -122,6 +125,7 @@ export function KanbanColumn({
                   opp={opp}
                   onDelete={onDelete}
                   customColumns={customColumns}
+                  opportunityStatuses={opportunityStatuses}
                 />
               )
             })}

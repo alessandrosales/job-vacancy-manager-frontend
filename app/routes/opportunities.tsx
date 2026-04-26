@@ -4,6 +4,7 @@ import { Link } from "react-router"
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
 import { ListingPageHeader } from "~/components/listing/listing-page-header"
 import { ListingTableCard } from "~/components/listing/listing-table-card"
+import { InterestLevelStarPicker } from "~/components/interest-level-star-picker"
 import {
   ListingViewModeToggle,
   type ListingViewMode,
@@ -45,14 +46,15 @@ import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 function filterOpportunitiesBySearch(
   rows: readonly Opportunity[],
   needle: string,
+  opportunityStatuses: readonly { id: string; label: string }[],
   customColumns: readonly { id: string; title: string }[]
 ): Opportunity[] {
   if (!needle) return [...rows]
   const q = needle.toLowerCase()
   return rows.filter((opp) => {
     const colId = getEffectiveColumnId(opp)
-    const colLabel = getColumnTitle(colId, customColumns)
-    return `${opp.company} ${opp.role} ${opp.description} ${opp.url} ${colLabel} ${opp.status}`
+    const colLabel = getColumnTitle(colId, opportunityStatuses, customColumns)
+    return `${opp.company} ${opp.role} ${opp.description} ${opp.url} ${colLabel} ${opp.status} ${opp.interestLevel}`
       .toLowerCase()
       .includes(q)
   })
@@ -63,6 +65,7 @@ export default function OpportunitiesPage() {
     opportunities,
     deleteOpportunity,
     updateOpportunity,
+    opportunityStatuses,
     kanbanCustomColumns,
     kanbanColumnOrder,
     addKanbanColumn,
@@ -74,8 +77,14 @@ export default function OpportunitiesPage() {
   const searchNeedle = searchQuery.trim()
 
   const filteredOpportunities = React.useMemo(
-    () => filterOpportunitiesBySearch(opportunities, searchNeedle, kanbanCustomColumns),
-    [opportunities, searchNeedle, kanbanCustomColumns]
+    () =>
+      filterOpportunitiesBySearch(
+        opportunities,
+        searchNeedle,
+        opportunityStatuses,
+        kanbanCustomColumns
+      ),
+    [opportunities, searchNeedle, opportunityStatuses, kanbanCustomColumns]
   )
 
   const {
@@ -139,6 +148,7 @@ export default function OpportunitiesPage() {
                 <OpportunitiesKanbanBoard
                   opportunities={filteredOpportunities}
                   customColumns={kanbanCustomColumns}
+                  opportunityStatuses={opportunityStatuses}
                   columnOrder={kanbanColumnOrder}
                   onColumnOrderChange={setKanbanColumnOrder}
                   onAddColumn={addKanbanColumn}
@@ -157,18 +167,19 @@ export default function OpportunitiesPage() {
                 <TableHead>Description</TableHead>
                 <TableHead>URL</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Interest</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {opportunities.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-muted-foreground">
+                  <TableCell colSpan={7} className="text-muted-foreground">
                     No opportunities yet. Add one to get started.
                   </TableCell>
                 </TableRow>
               ) : filteredOpportunities.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-muted-foreground">
+                  <TableCell colSpan={7} className="text-muted-foreground">
                     No matches for your search.
                   </TableCell>
                 </TableRow>
@@ -176,6 +187,7 @@ export default function OpportunitiesPage() {
                 visibleItems.map((opp) => {
                   const s = getColumnBadgeProps(
                     getEffectiveColumnId(opp),
+                    opportunityStatuses,
                     kanbanCustomColumns
                   )
                   return (
@@ -218,12 +230,30 @@ export default function OpportunitiesPage() {
                       <TableCell>
                         <Badge variant={s.variant}>{s.label}</Badge>
                       </TableCell>
+                      <TableCell>
+                        <InterestLevelStarPicker
+                          value={opp.interestLevel}
+                          size="sm"
+                          showValueLabel={false}
+                          onChange={(nextLevel) =>
+                            updateOpportunity(opp.id, {
+                              company: opp.company,
+                              role: opp.role,
+                              description: opp.description,
+                              url: opp.url,
+                              status: opp.status,
+                              interestLevel: nextLevel,
+                              boardColumnId: opp.boardColumnId ?? opp.status,
+                            })
+                          }
+                        />
+                      </TableCell>
                     </TableRow>
                   )
                 })
               )}
               <InfiniteScrollSentinelRow
-                colSpan={6}
+                colSpan={7}
                 sentinelRef={sentinelRef}
                 hasMore={hasMore}
                 totalCount={totalCount}

@@ -4,10 +4,9 @@ import type {
   Role,
   Skill,
 } from "~/components/providers/app-data-provider"
-import type { InterestLevel, OpportunityStatus } from "~/lib/labels"
 import {
-  INTEREST_LEVEL_OPTIONS,
-  OPPORTUNITY_STATUS_OPTIONS,
+  DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS,
+  type InterestLevel,
 } from "~/lib/labels"
 
 /** Totals used for default seed — tune for stress-testing the UI. */
@@ -73,17 +72,17 @@ function pick<T>(arr: readonly T[], i: number): T {
   return arr[i % arr.length]!
 }
 
-export function generateMockOpportunities(count: number): Opportunity[] {
+export function generateMockOpportunities(
+  count: number,
+  statusIds: readonly string[]
+): Opportunity[] {
   const rows: Opportunity[] = []
   for (let i = 0; i < count; i++) {
     const companyBase = pick(COMPANY_PREFIXES, i)
     const suffix = Math.floor(i / COMPANY_PREFIXES.length)
     const company =
       suffix > 0 ? `${companyBase} Division ${suffix}` : `${companyBase} Corp`
-    const status = pick(
-      OPPORTUNITY_STATUS_OPTIONS,
-      i
-    ) as OpportunityStatus
+    const status = pick(statusIds, i)
     rows.push({
       id: `seed-opp-${i}`,
       company,
@@ -91,6 +90,7 @@ export function generateMockOpportunities(count: number): Opportunity[] {
       description: `Position #${i + 1}: build product features, collaborate with cross-functional teams, and ship quality software. Stack varies by team.`,
       url: `https://example.com/jobs/${1000 + i}`,
       status,
+      interestLevel: i % 6,
     })
   }
   return rows
@@ -100,7 +100,10 @@ export function generateMockCompanies(count: number): Company[] {
   const rows: Company[] = []
   for (let i = 0; i < count; i++) {
     const base = pick(COMPANY_PREFIXES, i * 2)
-    const interestLevel = pick(INTEREST_LEVEL_OPTIONS, i) as InterestLevel
+    const interestLevel = pick(
+      [0, 1, 2, 3, 4, 5] as const,
+      i
+    ) as InterestLevel
     rows.push({
       id: `seed-co-${i}`,
       name: i === 0 ? `${base} Industries` : `${base} ${i + 1}`,
@@ -120,7 +123,7 @@ export function generateMockRoles(count: number): Role[] {
       id: `seed-ro-${i}`,
       name: `${title}${i >= ROLE_TITLES.length ? ` — band ${Math.floor(i / ROLE_TITLES.length)}` : ""}`,
       description: `Role #${i + 1}: responsibilities include delivery, mentoring, and alignment with product goals.`,
-      interestLevel: pick(INTEREST_LEVEL_OPTIONS, i + 1) as InterestLevel,
+      interestLevel: pick([0, 1, 2, 3, 4, 5] as const, i + 1) as InterestLevel,
     })
   }
   return rows
@@ -140,11 +143,19 @@ export function generateMockSkills(count: number): Skill[] {
 }
 
 export function generateLargeMockDataset() {
+  const opportunityStatuses = DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS.map((s) => ({
+    ...s,
+  }))
+  const statusIds = opportunityStatuses.map((s) => s.id)
   return {
-    opportunities: generateMockOpportunities(MOCK_SEED_TOTALS.opportunities),
+    opportunities: generateMockOpportunities(
+      MOCK_SEED_TOTALS.opportunities,
+      statusIds
+    ),
     companies: generateMockCompanies(MOCK_SEED_TOTALS.companies),
     roles: generateMockRoles(MOCK_SEED_TOTALS.roles),
     skills: generateMockSkills(MOCK_SEED_TOTALS.skills),
+    opportunityStatuses,
     kanbanCustomColumns: [] as { id: string; title: string }[],
     kanbanColumnOrder: [] as string[],
   }
