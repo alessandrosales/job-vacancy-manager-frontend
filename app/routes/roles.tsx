@@ -1,17 +1,13 @@
 import * as React from "react"
 import { Link } from "react-router"
 
+import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
+import { ListingPageHeader } from "~/components/listing/listing-page-header"
+import { ListingTableCard } from "~/components/listing/listing-table-card"
 import { useAppData } from "~/components/providers/app-data-provider"
 import { AppLayout } from "~/components/layout/app-layout"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card"
 import {
   Table,
   TableBody,
@@ -30,30 +26,44 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog"
+import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
 import { interestBadge } from "~/lib/labels"
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
 export default function RolesPage() {
   const { roles, deleteRole } = useAppData()
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
+  const {
+    visibleItems,
+    totalCount,
+    loadedCount,
+    hasMore,
+    sentinelRef,
+    loadNextWindow,
+  } = useInfiniteScrollList(roles)
 
   return (
     <AppLayout title="Roles">
-      <Card>
-        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-4">
-          <Button asChild className="shrink-0 self-start sm:self-center">
-            <Link to="/roles/role">
-              <PlusIcon data-icon="inline-start" />
-              Add role
-            </Link>
-          </Button>
-          <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <CardTitle>Roles</CardTitle>
-            <CardDescription>Job roles you are interested in</CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
+      <div className="flex min-h-0 flex-1 flex-col gap-4">
+        <ListingPageHeader
+          title="Roles"
+          description="Job roles you are interested in"
+          stats={
+            totalCount > 0
+              ? `Showing ${loadedCount} of ${totalCount}`
+              : undefined
+          }
+          action={
+            <Button asChild>
+              <Link to="/roles/role">
+                <PlusIcon data-icon="inline-start" />
+                Add role
+              </Link>
+            </Button>
+          }
+        />
+        <ListingTableCard>
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-28">Actions</TableHead>
@@ -70,7 +80,7 @@ export default function RolesPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                roles.map((role) => {
+                visibleItems.map((role) => {
                   const cfg = interestBadge[role.interestLevel]
                   return (
                     <TableRow key={role.id}>
@@ -105,10 +115,18 @@ export default function RolesPage() {
                   )
                 })
               )}
+              <InfiniteScrollSentinelRow
+                colSpan={4}
+                sentinelRef={sentinelRef}
+                hasMore={hasMore}
+                totalCount={totalCount}
+                loadedCount={loadedCount}
+                loadNextWindow={loadNextWindow}
+              />
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </ListingTableCard>
+      </div>
 
       <AlertDialog
         open={deleteId !== null}

@@ -1,17 +1,13 @@
 import * as React from "react"
 import { Link } from "react-router"
 
+import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
+import { ListingPageHeader } from "~/components/listing/listing-page-header"
+import { ListingTableCard } from "~/components/listing/listing-table-card"
 import { useAppData } from "~/components/providers/app-data-provider"
 import { AppLayout } from "~/components/layout/app-layout"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card"
 import {
   Table,
   TableBody,
@@ -30,32 +26,44 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog"
+import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
 import { interestBadge } from "~/lib/labels"
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
 export default function CompaniesPage() {
   const { companies, deleteCompany } = useAppData()
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
+  const {
+    visibleItems,
+    totalCount,
+    loadedCount,
+    hasMore,
+    sentinelRef,
+    loadNextWindow,
+  } = useInfiniteScrollList(companies)
 
   return (
     <AppLayout title="Companies">
-      <Card>
-        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-4">
-          <Button asChild className="shrink-0 self-start sm:self-center">
-            <Link to="/companies/company">
-              <PlusIcon data-icon="inline-start" />
-              Add company
-            </Link>
-          </Button>
-          <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <CardTitle>Companies</CardTitle>
-            <CardDescription>
-              Companies you are tracking for opportunities
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
+      <div className="flex min-h-0 flex-1 flex-col gap-4">
+        <ListingPageHeader
+          title="Companies"
+          description="Companies you are tracking for opportunities"
+          stats={
+            totalCount > 0
+              ? `Showing ${loadedCount} of ${totalCount}`
+              : undefined
+          }
+          action={
+            <Button asChild>
+              <Link to="/companies/company">
+                <PlusIcon data-icon="inline-start" />
+                Add company
+              </Link>
+            </Button>
+          }
+        />
+        <ListingTableCard>
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-28">Actions</TableHead>
@@ -73,7 +81,7 @@ export default function CompaniesPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                companies.map((company) => {
+                visibleItems.map((company) => {
                   const cfg = interestBadge[company.interestLevel]
                   return (
                     <TableRow key={company.id}>
@@ -118,10 +126,18 @@ export default function CompaniesPage() {
                   )
                 })
               )}
+              <InfiniteScrollSentinelRow
+                colSpan={5}
+                sentinelRef={sentinelRef}
+                hasMore={hasMore}
+                totalCount={totalCount}
+                loadedCount={loadedCount}
+                loadNextWindow={loadNextWindow}
+              />
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </ListingTableCard>
+      </div>
 
       <AlertDialog
         open={deleteId !== null}

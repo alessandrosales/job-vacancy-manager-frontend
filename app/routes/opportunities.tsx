@@ -1,17 +1,13 @@
 import * as React from "react"
 import { Link } from "react-router"
 
+import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
+import { ListingPageHeader } from "~/components/listing/listing-page-header"
+import { ListingTableCard } from "~/components/listing/listing-table-card"
 import { useAppData } from "~/components/providers/app-data-provider"
 import { AppLayout } from "~/components/layout/app-layout"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card"
 import {
   Table,
   TableBody,
@@ -30,30 +26,44 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog"
+import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
 import { statusBadge } from "~/lib/labels"
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
 export default function OpportunitiesPage() {
   const { opportunities, deleteOpportunity } = useAppData()
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
+  const {
+    visibleItems,
+    totalCount,
+    loadedCount,
+    hasMore,
+    sentinelRef,
+    loadNextWindow,
+  } = useInfiniteScrollList(opportunities)
 
   return (
     <AppLayout title="Opportunities">
-      <Card>
-        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-4">
-          <Button asChild className="shrink-0 self-start sm:self-center">
-            <Link to="/opportunities/opportunity">
-              <PlusIcon data-icon="inline-start" />
-              Add opportunity
-            </Link>
-          </Button>
-          <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <CardTitle>Opportunities</CardTitle>
-            <CardDescription>All tracked job opportunities</CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
+      <div className="flex min-h-0 flex-1 flex-col gap-4">
+        <ListingPageHeader
+          title="Opportunities"
+          description="All tracked job opportunities"
+          stats={
+            totalCount > 0
+              ? `Showing ${loadedCount} of ${totalCount}`
+              : undefined
+          }
+          action={
+            <Button asChild>
+              <Link to="/opportunities/opportunity">
+                <PlusIcon data-icon="inline-start" />
+                Add opportunity
+              </Link>
+            </Button>
+          }
+        />
+        <ListingTableCard>
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-28">Actions</TableHead>
@@ -72,7 +82,7 @@ export default function OpportunitiesPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                opportunities.map((opp) => {
+                visibleItems.map((opp) => {
                   const s = statusBadge[opp.status]
                   return (
                     <TableRow key={opp.id}>
@@ -118,10 +128,18 @@ export default function OpportunitiesPage() {
                   )
                 })
               )}
+              <InfiniteScrollSentinelRow
+                colSpan={6}
+                sentinelRef={sentinelRef}
+                hasMore={hasMore}
+                totalCount={totalCount}
+                loadedCount={loadedCount}
+                loadNextWindow={loadNextWindow}
+              />
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </ListingTableCard>
+      </div>
 
       <AlertDialog
         open={deleteId !== null}
