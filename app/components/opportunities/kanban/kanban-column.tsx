@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useDroppable } from "@dnd-kit/core"
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
-import { Loader2Icon } from "lucide-react"
+import { Loader2Icon, GripVerticalIcon } from "lucide-react"
 
 import { KanbanJobCard } from "~/components/opportunities/kanban/kanban-job-card"
 import type { KanbanCustomColumn, Opportunity } from "~/components/providers/app-data-provider"
@@ -21,6 +21,9 @@ export type KanbanColumnProps = {
   opportunityById: Map<string, Opportunity>
   customColumns: readonly KanbanCustomColumn[]
   onDelete: (id: string) => void
+  dragHandleAttributes?: Record<string, unknown>
+  dragHandleListeners?: Record<string, unknown>
+  isDraggingColumn?: boolean
 }
 
 /**
@@ -36,6 +39,9 @@ export function KanbanColumn({
   opportunityById,
   customColumns,
   onDelete,
+  dragHandleAttributes,
+  dragHandleListeners,
+  isDraggingColumn = false,
 }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: columnDroppableId(columnId),
@@ -72,9 +78,28 @@ export function KanbanColumn({
         <span className="truncate text-sm font-medium text-foreground" title={title}>
           {title}
         </span>
-        <Badge variant="outline" className="shrink-0 tabular-nums">
-          {ids.length}
-        </Badge>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            aria-label={`Reorder column ${title}`}
+            className={cn(
+              "text-muted-foreground hover:text-foreground inline-flex size-6 cursor-grab items-center justify-center rounded-sm active:cursor-grabbing",
+              isDraggingColumn && "cursor-grabbing"
+            )}
+            {...dragHandleAttributes}
+            {...dragHandleListeners}
+          >
+            <GripVerticalIcon
+              className={cn(
+                "size-4 cursor-grab active:cursor-grabbing",
+                isDraggingColumn && "cursor-grabbing"
+              )}
+            />
+          </button>
+          <Badge variant="outline" className="shrink-0 tabular-nums">
+            {ids.length}
+          </Badge>
+        </div>
       </div>
       <div
         ref={setNodeRef}

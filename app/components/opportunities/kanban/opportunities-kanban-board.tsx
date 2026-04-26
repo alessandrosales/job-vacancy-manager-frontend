@@ -21,19 +21,29 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core"
 import { restrictToWindowEdges, snapCenterToCursor } from "@dnd-kit/modifiers"
-import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable"
+import {
+  SortableContext,
+  arrayMove,
+  horizontalListSortingStrategy,
+  sortableKeyboardCoordinates,
+  useSortable,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 
 import { KanbanColumn } from "~/components/opportunities/kanban/kanban-column"
 import { KanbanJobCardContent } from "~/components/opportunities/kanban/kanban-job-card"
 import type { KanbanCustomColumn, Opportunity } from "~/components/providers/app-data-provider"
 import { Input } from "~/components/ui/input"
 import {
+  applyPersistedColumnOrder,
+  columnSortableId,
   findColumnForItemId,
   getColumnTitle,
   getOrderedKanbanColumnIds,
   isBuiltInColumnId,
   itemsByColumnFromOpportunities,
   parseColumnDroppableId,
+  parseColumnSortableId,
   resolveOverColumn,
 } from "~/lib/kanban-columns"
 
@@ -74,34 +84,75 @@ function persistColumnIfNeeded(
   }
 }
 
+type SortableBoardColumnProps = {
+  columnId: string
+  title: string
+  ids: string[]
+  totalCount: number
+  hasMore: boolean
+  onLoadMore: () => void
+  opportunityById: Map<string, Opportunity>
+  customColumns: readonly KanbanCustomColumn[]
+  onDelete: (id: string) => void
+}
+
+function SortableBoardColumn(props: SortableBoardColumnProps) {
+  const { transform, transition, setNodeRef, attributes, listeners, isDragging } =
+    useSortable({ id: columnSortableId(props.columnId) })
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.6 : undefined,
+      }}
+    >
+      <KanbanColumn
+        {...props}
+        isDraggingColumn={isDragging}
+        dragHandleAttributes={attributes}
+        dragHandleListeners={listeners}
+      />
+    </div>
+  )
+}
+
 export type OpportunitiesKanbanBoardProps = {
   opportunities: readonly Opportunity[]
   customColumns: readonly KanbanCustomColumn[]
+  columnOrder: readonly string[]
+  onColumnOrderChange: (order: string[]) => void
   onAddColumn: (title: string) => void
   updateOpportunity: (id: string, row: Omit<Opportunity, "id">) => void
   onRequestDelete: (id: string) => void
 }
 
 /**
- * Board Kanban: colunas (status + extras), dnd-kit sortable, overlay e ação de nova coluna.
+ * Board Kanban: colunas reordenáveis + cards reordenáveis + carregamento infinito por coluna.
  */
 export function OpportunitiesKanbanBoard({
   opportunities,
   customColumns,
+  columnOrder,
+  onColumnOrderChange,
   onAddColumn,
   updateOpportunity,
   onRequestDelete,
 }: OpportunitiesKanbanBoardProps) {
-  const columnIds = React.useMemo(
+  const canonicalColumnIds = React.useMemo(
     () => getOrderedKanbanColumnIds(customColumns),
     [customColumns]
   )
 
+  const [orderedColumnIds, setOrderedColumnIds] = React.useState<string[]>(() =>
+    applyPersistedColumnOrder(canonicalColumnIds, columnOrder)
+  )
+
   const opportunityById = React.useMemo(() => {
     const m = new Map<string, Opportunity>()
-    for (const o of opportunities) {
-      m.set(o.id, o)
-    }
+    for (const o of opportunities) m.set(o.id, o)
     return m
   }, [opportunities])
 
@@ -109,14 +160,14 @@ export function OpportunitiesKanbanBoard({
   opportunityByIdRef.current = opportunityById
 
   const [columnItems, setColumnItems] = React.useState<Record<string, string[]>>(() =>
-    itemsByColumnFromOpportunities(opportunities, columnIds)
+    itemsByColumnFromOpportunities(opportunities, orderedColumnIds)
   )
   const [visibleCountByColumn, setVisibleCountByColumn] = React.useState<
     Record<string, number>
   >(() => {
-    const initial = itemsByColumnFromOpportunities(opportunities, columnIds)
+    const initial = itemsByColumnFromOpportunities(opportunities, orderedColumnIds)
     const next: Record<string, number> = {}
-    for (const columnId of columnIds) {
+    for (const columnId of orderedColumnIds) {
       next[columnId] = Math.min(KANBAN_COLUMN_PAGE_SIZE, initial[columnId]?.length ?? 0)
     }
     return next
@@ -130,31 +181,20 @@ export function OpportunitiesKanbanBoard({
 
   React.useEffect(() => {
     if (activeId !== null) return
-    const nextItems = itemsByColumnFromOpportunities(opportunities, columnIds)
+    const nextOrder = applyPersistedColumnOrder(canonicalColumnIds, columnOrder)
+    setOrderedColumnIds(nextOrder)
+    const nextItems = itemsByColumnFromOpportunities(opportunities, nextOrder)
     setColumnItems(nextItems)
-    setVisibleCountByColumn(() => {
-      const nextCounts: Record<string, number> = {}
-      for (const columnId of columnIds) {
-        nextCounts[columnId] = Math.min(
-          KANBAN_COLUMN_PAGE_SIZE,
-          nextItems[columnId]?.length ?? 0
-        )
-      }
-      return nextCounts
-    })
-  }, [opportunities, activeId, columnIds])
-
-  React.useEffect(() => {
     setVisibleCountByColumn((prev) => {
       const next: Record<string, number> = {}
-      for (const columnId of columnIds) {
-        const total = columnItems[columnId]?.length ?? 0
-        const current = prev[columnId] ?? Math.min(KANBAN_COLUMN_PAGE_SIZE, total)
-        next[columnId] = Math.min(Math.max(current, 0), total)
+      for (const columnId of nextOrder) {
+        const total = nextItems[columnId]?.length ?? 0
+        const current = prev[columnId] ?? KANBAN_COLUMN_PAGE_SIZE
+        next[columnId] = Math.min(Math.max(current, KANBAN_COLUMN_PAGE_SIZE), total)
       }
       return next
     })
-  }, [columnIds, columnItems])
+  }, [opportunities, activeId, canonicalColumnIds, columnOrder])
 
   React.useEffect(() => {
     requestAnimationFrame(() => {
@@ -163,9 +203,7 @@ export function OpportunitiesKanbanBoard({
   }, [columnItems])
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 6 },
-    }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, {
       activationConstraint: { delay: 120, tolerance: 6 },
     }),
@@ -174,8 +212,14 @@ export function OpportunitiesKanbanBoard({
     })
   )
 
+  const isActiveColumnDrag = activeId != null && parseColumnSortableId(activeId) != null
+
   const collisionDetectionStrategy = React.useCallback<CollisionDetection>(
     (args) => {
+      if (parseColumnSortableId(String(args.active.id)) != null) {
+        return closestCorners(args)
+      }
+
       const pointerIntersections = pointerWithin(args)
       const intersections =
         pointerIntersections.length > 0
@@ -186,7 +230,7 @@ export function OpportunitiesKanbanBoard({
       if (overId != null) {
         const overCol = parseColumnDroppableId(overId)
         if (overCol != null && Object.prototype.hasOwnProperty.call(columnItems, overCol)) {
-          const colIds = columnItems[overCol]!
+          const colIds = columnItems[overCol] ?? []
           if (colIds.length > 0) {
             const closestInCol = closestCorners({
               ...args,
@@ -221,8 +265,10 @@ export function OpportunitiesKanbanBoard({
   function handleDragOver(event: DragOverEvent) {
     const { active, over } = event
     if (!over) return
-    const overId = over.id != null ? String(over.id) : null
-    if (!overId || active.id === over.id) return
+    if (parseColumnSortableId(String(active.id)) != null) return
+
+    const overId = String(over.id)
+    if (active.id === over.id) return
 
     setColumnItems((items) => {
       const activeContainer = findColumnForItemId(String(active.id), items)
@@ -231,25 +277,20 @@ export function OpportunitiesKanbanBoard({
       if (!activeContainer || !overContainer) return items
       if (activeContainer === overContainer) return items
 
-      const activeItems = [...items[activeContainer]!]
-      const overItems = [...items[overContainer]!]
+      const activeItems = [...(items[activeContainer] ?? [])]
+      const overItems = [...(items[overContainer] ?? [])]
       const activeIndex = activeItems.indexOf(String(active.id))
       if (activeIndex < 0) return items
 
       const overIndexInList = overItems.indexOf(overId)
-      let newIndex: number
+      let newIndex = overItems.length
 
-      if (parseColumnDroppableId(overId) === overContainer) {
-        newIndex = overItems.length
-      } else if (overIndexInList >= 0) {
+      if (parseColumnDroppableId(overId) !== overContainer && overIndexInList >= 0) {
         const isBelowOverItem =
-          over &&
           active.rect.current.translated &&
           active.rect.current.translated.top > over.rect.top + over.rect.height
         const modifier = isBelowOverItem ? 1 : 0
-        newIndex = overIndexInList >= 0 ? overIndexInList + modifier : overItems.length
-      } else {
-        newIndex = overItems.length
+        newIndex = overIndexInList + modifier
       }
 
       recentlyMovedToNewContainer.current = true
@@ -277,6 +318,22 @@ export function OpportunitiesKanbanBoard({
       return
     }
 
+    const activeColumnSortableId = parseColumnSortableId(String(active.id))
+    if (activeColumnSortableId) {
+      const overColumnSortableId = parseColumnSortableId(String(over.id))
+      if (!overColumnSortableId || activeColumnSortableId === overColumnSortableId) return
+
+      setOrderedColumnIds((prev) => {
+        const oldIndex = prev.indexOf(activeColumnSortableId)
+        const newIndex = prev.indexOf(overColumnSortableId)
+        if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) return prev
+        const next = arrayMove(prev, oldIndex, newIndex)
+        onColumnOrderChange(next)
+        return next
+      })
+      return
+    }
+
     setColumnItems((items) => {
       const activeContainer = findColumnForItemId(String(active.id), items)
       const overContainer = resolveOverColumn(String(over.id), items)
@@ -291,11 +348,7 @@ export function OpportunitiesKanbanBoard({
         const oldIndex = list.indexOf(String(active.id))
         const newIndex = list.indexOf(String(over.id))
         if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) {
-          persistColumnIfNeeded(
-            items,
-            opportunityByIdRef.current,
-            updateOpportunity
-          )
+          persistColumnIfNeeded(items, opportunityByIdRef.current, updateOpportunity)
           return items
         }
         const next = {
@@ -306,11 +359,7 @@ export function OpportunitiesKanbanBoard({
         return next
       }
 
-      persistColumnIfNeeded(
-        items,
-        opportunityByIdRef.current,
-        updateOpportunity
-      )
+      persistColumnIfNeeded(items, opportunityByIdRef.current, updateOpportunity)
       return items
     })
   }
@@ -339,7 +388,8 @@ export function OpportunitiesKanbanBoard({
     })
   }
 
-  const activeOpp = activeId ? opportunityById.get(activeId) : null
+  const activeOpp =
+    !isActiveColumnDrag && activeId ? opportunityById.get(activeId) : null
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -354,43 +404,49 @@ export function OpportunitiesKanbanBoard({
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <div className="flex min-h-0 flex-1 items-stretch gap-3 overflow-x-auto overflow-y-hidden pb-1">
-          {columnIds.map((columnId) => {
-            const idsForColumn = columnItems[columnId] ?? []
-            const visibleCount = visibleCountByColumn[columnId] ?? 0
-            const visibleIds = idsForColumn.slice(0, visibleCount)
-            const hasMore = visibleCount < idsForColumn.length
-            return (
-              <KanbanColumn
-                key={columnId}
-                columnId={columnId}
-                title={getColumnTitle(columnId, customColumns)}
-                ids={visibleIds}
-                totalCount={idsForColumn.length}
-                hasMore={hasMore}
-                onLoadMore={() => handleLoadMoreColumn(columnId)}
-                opportunityById={opportunityById}
-                customColumns={customColumns}
-                onDelete={onRequestDelete}
-              />
-            )
-          })}
-          <div className="flex min-h-0 w-[min(100%,280px)] shrink-0 flex-col self-stretch sm:w-72">
-            <div className="mb-2 flex shrink-0 items-center gap-2 px-0.5">
-              <Input
-                value={newColumnName}
-                onChange={(event) => setNewColumnName(event.target.value)}
-                placeholder="New column name..."
-                className="h-8 focus-visible:ring-1 focus-visible:ring-inset"
-                onKeyDown={(event) => {
-                  if (event.key !== "Enter") return
-                  event.preventDefault()
-                  handleAddColumn()
-                }}
-              />
+        <SortableContext
+          items={orderedColumnIds.map((id) => columnSortableId(id))}
+          strategy={horizontalListSortingStrategy}
+        >
+          <div className="flex min-h-0 flex-1 items-stretch gap-3 overflow-x-auto overflow-y-hidden pb-1">
+            {orderedColumnIds.map((columnId) => {
+              const idsForColumn = columnItems[columnId] ?? []
+              const visibleCount = visibleCountByColumn[columnId] ?? 0
+              const visibleIds = idsForColumn.slice(0, visibleCount)
+              const hasMore = visibleCount < idsForColumn.length
+              return (
+                <SortableBoardColumn
+                  key={columnId}
+                  columnId={columnId}
+                  title={getColumnTitle(columnId, customColumns)}
+                  ids={visibleIds}
+                  totalCount={idsForColumn.length}
+                  hasMore={hasMore}
+                  onLoadMore={() => handleLoadMoreColumn(columnId)}
+                  opportunityById={opportunityById}
+                  customColumns={customColumns}
+                  onDelete={onRequestDelete}
+                />
+              )
+            })}
+            <div className="flex min-h-0 w-[min(100%,280px)] shrink-0 flex-col self-stretch sm:w-72">
+              <div className="mb-2 flex shrink-0 items-center gap-2 px-0.5">
+                <Input
+                  value={newColumnName}
+                  onChange={(event) => setNewColumnName(event.target.value)}
+                  placeholder="New column name..."
+                  className="h-8 focus-visible:ring-1 focus-visible:ring-inset"
+                  onKeyDown={(event) => {
+                    if (event.key !== "Enter") return
+                    event.preventDefault()
+                    handleAddColumn()
+                  }}
+                />
+              </div>
             </div>
           </div>
-        </div>
+        </SortableContext>
+
         <DragOverlay
           dropAnimation={{
             duration: 180,

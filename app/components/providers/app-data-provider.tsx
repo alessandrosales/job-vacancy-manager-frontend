@@ -59,6 +59,8 @@ export interface AppDataState {
   skills: Skill[]
   /** Colunas extras do Kanban (além dos status padrão). */
   kanbanCustomColumns: KanbanCustomColumn[]
+  /** Ordem persistida das colunas (status + custom). */
+  kanbanColumnOrder: string[]
 }
 
 function defaultState(): AppDataState {
@@ -80,6 +82,9 @@ function parseStored(raw: string | null): AppDataState | null {
         kanbanCustomColumns: Array.isArray(data.kanbanCustomColumns)
           ? data.kanbanCustomColumns
           : [],
+        kanbanColumnOrder: Array.isArray(data.kanbanColumnOrder)
+          ? data.kanbanColumnOrder
+          : [],
       }
     }
   } catch {
@@ -93,6 +98,7 @@ interface AppDataContextValue extends AppDataState {
   updateOpportunity: (id: string, row: Omit<Opportunity, "id">) => void
   deleteOpportunity: (id: string) => void
   addKanbanColumn: (title: string) => string
+  setKanbanColumnOrder: (order: string[]) => void
   addCompany: (row: Omit<Company, "id">) => string
   updateCompany: (id: string, row: Omit<Company, "id">) => void
   deleteCompany: (id: string) => void
@@ -171,11 +177,22 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
           const next: AppDataState = {
             ...s,
             kanbanCustomColumns: [...existing, { id: colId, title: t }],
+            kanbanColumnOrder: [...(s.kanbanColumnOrder ?? []), colId],
           }
           persist(next)
           return next
         })
         return colId
+      },
+      setKanbanColumnOrder: (order) => {
+        setState((s) => {
+          const next: AppDataState = {
+            ...s,
+            kanbanColumnOrder: [...order],
+          }
+          persist(next)
+          return next
+        })
       },
       addCompany: (row) => {
         const id = createId()

@@ -64,7 +64,9 @@ export default function OpportunitiesPage() {
     deleteOpportunity,
     updateOpportunity,
     kanbanCustomColumns,
+    kanbanColumnOrder,
     addKanbanColumn,
+    setKanbanColumnOrder,
   } = useAppData()
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
   const [viewMode, setViewMode] = React.useState<ListingViewMode>("list")
@@ -137,6 +139,8 @@ export default function OpportunitiesPage() {
                 <OpportunitiesKanbanBoard
                   opportunities={filteredOpportunities}
                   customColumns={kanbanCustomColumns}
+                  columnOrder={kanbanColumnOrder}
+                  onColumnOrderChange={setKanbanColumnOrder}
                   onAddColumn={addKanbanColumn}
                   updateOpportunity={updateOpportunity}
                   onRequestDelete={setDeleteId}

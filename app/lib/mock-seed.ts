@@ -146,5 +146,6 @@ export function generateLargeMockDataset() {
     roles: generateMockRoles(MOCK_SEED_TOTALS.roles),
     skills: generateMockSkills(MOCK_SEED_TOTALS.skills),
     kanbanCustomColumns: [] as { id: string; title: string }[],
+    kanbanColumnOrder: [] as string[],
   }
 }
