@@ -6,7 +6,6 @@ import { StarIcon } from "lucide-react"
 import type { InterestLevel } from "~/lib/labels"
 import { cn } from "~/lib/utils"
 
-
 type InterestLevelStarPickerProps = {
   value: InterestLevel
   onChange: (next: InterestLevel) => void

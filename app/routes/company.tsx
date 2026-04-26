@@ -19,7 +19,7 @@ import {
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
-import { InterestLevelStarPicker } from "~/components/interest-level-star-picker"
+import { InterestLevelStarPicker } from "~/components/shared/interest-level-star-picker"
 import type { InterestLevel } from "~/lib/labels"
 
 export default function CompanyPage() {

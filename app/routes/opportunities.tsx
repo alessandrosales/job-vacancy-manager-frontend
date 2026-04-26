@@ -5,7 +5,7 @@ import { OpportunityDialog } from "~/components/opportunities/opportunity-dialog
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
 import { ListingPageHeader } from "~/components/listing/listing-page-header"
 import { ListingTableCard } from "~/components/listing/listing-table-card"
-import { InterestLevelStarPicker } from "~/components/interest-level-star-picker"
+import { InterestLevelStarPicker } from "~/components/shared/interest-level-star-picker"
 import {
   ListingViewModeToggle,
   type ListingViewMode,

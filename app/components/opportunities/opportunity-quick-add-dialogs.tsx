@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { InterestLevelStarPicker } from "~/components/interest-level-star-picker"
+import { InterestLevelStarPicker } from "~/components/shared/interest-level-star-picker"
 import { useAppData } from "~/components/providers/app-data-provider"
 import { Button } from "~/components/ui/button"
 import {

@@ -13,9 +13,9 @@ alwaysApply: true
 
 ## Examples
 
-- Bad: `app/components/interest-level-star-picker.tsx`
-- Good: `app/components/shared/interest-level/star-picker.tsx`
-- Good: `app/components/opportunities/interest-level-star-picker.tsx`
+- Bad: `app/components/interest-level-star-picker.tsx` (solto na raiz de `components/`)
+- Good: `app/components/shared/interest-level-star-picker.tsx` (compartilhado entre domínios)
+- Good: `app/components/opportunities/...` (específico de oportunidades)
 
 ## Refactor Preference
 

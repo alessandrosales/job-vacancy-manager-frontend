@@ -3,7 +3,7 @@
 import * as React from "react"
 import { PlusIcon } from "lucide-react"
 
-import { InterestLevelStarPicker } from "~/components/interest-level-star-picker"
+import { InterestLevelStarPicker } from "~/components/shared/interest-level-star-picker"
 import {
   QuickAddCompanyDialog,
   QuickAddOpportunityStatusDialog,
