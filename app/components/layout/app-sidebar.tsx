@@ -13,14 +13,20 @@ import {
   // SidebarHeader,
   SidebarRail,
 } from "~/components/ui/sidebar"
-import { FrameIcon, PieChartIcon, MapIcon } from "lucide-react"
+import {
+  LayoutDashboardIcon,
+  BriefcaseIcon,
+  BuildingIcon,
+  UserCogIcon,
+  SparklesIcon,
+} from "lucide-react"
 
 // This is sample data.
 const data = {
   user: {
     name: "shadcn",
     email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    avatar: "",
   },
   // TODO: seletor de empresa (TeamSwitcher) — descomente `teams` abaixo, importe GalleryVerticalEndIcon, AudioLinesIcon, TerminalIcon do lucide-react, importe TeamSwitcher + SidebarHeader e o JSX comentado mais abaixo.
   // teams: [
@@ -88,28 +94,29 @@ const data = {
   // ],
   projects: [
     {
-      name: "Design Engineering",
-      url: "#",
-      icon: (
-        <FrameIcon
-        />
-      ),
+      name: "Dashboard",
+      url: "/dashboard",
+      icon: <LayoutDashboardIcon />,
     },
     {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: (
-        <PieChartIcon
-        />
-      ),
+      name: "Opportunities",
+      url: "/opportunities",
+      icon: <BriefcaseIcon />,
     },
     {
-      name: "Travel",
-      url: "#",
-      icon: (
-        <MapIcon
-        />
-      ),
+      name: "Companies",
+      url: "/companies",
+      icon: <BuildingIcon />,
+    },
+    {
+      name: "Roles",
+      url: "/roles",
+      icon: <UserCogIcon />,
+    },
+    {
+      name: "Skills",
+      url: "/skills",
+      icon: <SparklesIcon />,
     },
   ],
 }
