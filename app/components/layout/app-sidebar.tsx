@@ -5,6 +5,7 @@ import * as React from "react"
 // import { NavMain } from "~/components/layout/nav-main"
 import { NavProjects } from "~/components/layout/nav-projects"
 import { NavUser } from "~/components/layout/nav-user"
+import { useSessionUser } from "~/components/providers/session-user-provider"
 // import { TeamSwitcher } from "~/components/layout/team-switcher"
 import {
   Sidebar,
@@ -21,13 +22,7 @@ import {
   SparklesIcon,
 } from "lucide-react"
 
-// This is sample data.
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "",
-  },
   // TODO: seletor de empresa (TeamSwitcher) — descomente `teams` abaixo, importe GalleryVerticalEndIcon, AudioLinesIcon, TerminalIcon do lucide-react, importe TeamSwitcher + SidebarHeader e o JSX comentado mais abaixo.
   // teams: [
   //   {
@@ -122,6 +117,8 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useSessionUser()
+
   return (
     <Sidebar collapsible="icon" {...props}>
       {/* Seletor de empresas (TeamSwitcher) — desativado por enquanto.
@@ -136,7 +133,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

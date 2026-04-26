@@ -9,6 +9,7 @@ import {
 
 import type { Route } from "./+types/root"
 import { AppDataProvider } from "~/components/providers/app-data-provider"
+import { SessionUserProvider } from "~/components/providers/session-user-provider"
 import { themeBootstrapInlineScript } from "~/lib/theme"
 import { TooltipProvider } from "~/components/ui/tooltip"
 import "./app.css"
@@ -29,7 +30,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <TooltipProvider>
-          <AppDataProvider>{children}</AppDataProvider>
+          <AppDataProvider>
+            <SessionUserProvider>{children}</SessionUserProvider>
+          </AppDataProvider>
         </TooltipProvider>
         <ScrollRestoration />
         <Scripts />

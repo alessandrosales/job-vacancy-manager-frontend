@@ -26,6 +26,18 @@ import {
 import { applyTheme, getStoredTheme, type ThemeMode } from "~/lib/theme"
 import { ChevronsUpDownIcon, LogOutIcon, MoonIcon, UserRoundIcon } from "lucide-react"
 
+function initialsFromName(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return "?"
+  if (parts.length === 1) {
+    const w = parts[0]
+    return w.slice(0, 2).toUpperCase()
+  }
+  const a = parts[0][0]
+  const b = parts[parts.length - 1][0]
+  return `${a ?? ""}${b ?? ""}`.toUpperCase() || "?"
+}
+
 export function NavUser({
   user,
 }: {
@@ -64,7 +76,9 @@ export function NavUser({
                 {user.avatar ? (
                   <AvatarImage src={user.avatar} alt={user.name} />
                 ) : null}
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarFallback className="rounded-lg">
+                  {initialsFromName(user.name)}
+                </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-start text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
@@ -85,7 +99,9 @@ export function NavUser({
                   {user.avatar ? (
                     <AvatarImage src={user.avatar} alt={user.name} />
                   ) : null}
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">
+                    {initialsFromName(user.name)}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-start text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
