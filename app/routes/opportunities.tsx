@@ -44,7 +44,7 @@ export default function OpportunitiesPage() {
 
   return (
     <AppLayout title="Opportunities">
-      <div className="flex min-h-0 flex-1 flex-col gap-4">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
         <ListingPageHeader
           title="Opportunities"
           description="All tracked job opportunities"
@@ -139,36 +139,36 @@ export default function OpportunitiesPage() {
             </TableBody>
           </Table>
         </ListingTableCard>
-      </div>
 
-      <AlertDialog
-        open={deleteId !== null}
-        onOpenChange={(open) => {
-          if (!open) setDeleteId(null)
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete opportunity?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This removes the opportunity from your list. You can add it again
-              later.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              onClick={() => {
-                if (deleteId) deleteOpportunity(deleteId)
-                setDeleteId(null)
-              }}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        <AlertDialog
+          open={deleteId !== null}
+          onOpenChange={(open) => {
+            if (!open) setDeleteId(null)
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete opportunity?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This removes the opportunity from your list. You can add it
+                again later.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                variant="destructive"
+                onClick={() => {
+                  if (deleteId) deleteOpportunity(deleteId)
+                  setDeleteId(null)
+                }}
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
     </AppLayout>
   )
 }

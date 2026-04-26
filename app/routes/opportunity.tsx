@@ -93,6 +93,7 @@ export default function OpportunityPage() {
         { label: crumbAction },
       ]}
     >
+      <div className="min-h-0 flex-1 overflow-y-auto">
       <Card className="max-w-xl">
         <CardHeader>
           <CardTitle>{title}</CardTitle>
@@ -179,6 +180,7 @@ export default function OpportunityPage() {
           </CardFooter>
         </form>
       </Card>
+      </div>
     </AppLayout>
   )
 }

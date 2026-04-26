@@ -44,7 +44,7 @@ export default function RolesPage() {
 
   return (
     <AppLayout title="Roles">
-      <div className="flex min-h-0 flex-1 flex-col gap-4">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
         <ListingPageHeader
           title="Roles"
           description="Job roles you are interested in"
@@ -126,35 +126,35 @@ export default function RolesPage() {
             </TableBody>
           </Table>
         </ListingTableCard>
-      </div>
 
-      <AlertDialog
-        open={deleteId !== null}
-        onOpenChange={(open) => {
-          if (!open) setDeleteId(null)
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete role?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This removes the role from your list.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              onClick={() => {
-                if (deleteId) deleteRole(deleteId)
-                setDeleteId(null)
-              }}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        <AlertDialog
+          open={deleteId !== null}
+          onOpenChange={(open) => {
+            if (!open) setDeleteId(null)
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete role?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This removes the role from your list.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                variant="destructive"
+                onClick={() => {
+                  if (deleteId) deleteRole(deleteId)
+                  setDeleteId(null)
+                }}
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
     </AppLayout>
   )
 }

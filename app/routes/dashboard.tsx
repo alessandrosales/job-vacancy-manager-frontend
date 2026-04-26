@@ -87,6 +87,7 @@ export default function DashboardPage() {
 
   return (
     <AppLayout title="Dashboard">
+      <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto">
       {/* Charts row */}
       <div className="grid gap-4 md:grid-cols-3">
         {/* Pie — by status */}
@@ -187,6 +188,7 @@ export default function DashboardPage() {
           </Table>
         </CardContent>
       </Card>
+      </div>
     </AppLayout>
   )
 }

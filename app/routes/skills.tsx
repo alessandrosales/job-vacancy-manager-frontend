@@ -42,7 +42,7 @@ export default function SkillsPage() {
 
   return (
     <AppLayout title="Skills">
-      <div className="flex min-h-0 flex-1 flex-col gap-4">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
         <ListingPageHeader
           title="Skills"
           description="Technical skills relevant to your job search"
@@ -117,35 +117,35 @@ export default function SkillsPage() {
             </TableBody>
           </Table>
         </ListingTableCard>
-      </div>
 
-      <AlertDialog
-        open={deleteId !== null}
-        onOpenChange={(open) => {
-          if (!open) setDeleteId(null)
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete skill?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This removes the skill from your list.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              onClick={() => {
-                if (deleteId) deleteSkill(deleteId)
-                setDeleteId(null)
-              }}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        <AlertDialog
+          open={deleteId !== null}
+          onOpenChange={(open) => {
+            if (!open) setDeleteId(null)
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete skill?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This removes the skill from your list.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                variant="destructive"
+                onClick={() => {
+                  if (deleteId) deleteSkill(deleteId)
+                  setDeleteId(null)
+                }}
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
     </AppLayout>
   )
 }

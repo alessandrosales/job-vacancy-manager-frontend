@@ -74,6 +74,7 @@ export default function SkillPage() {
         { label: crumbAction },
       ]}
     >
+      <div className="min-h-0 flex-1 overflow-y-auto">
       <Card className="max-w-xl">
         <CardHeader>
           <CardTitle>{title}</CardTitle>
@@ -120,6 +121,7 @@ export default function SkillPage() {
           </CardFooter>
         </form>
       </Card>
+      </div>
     </AppLayout>
   )
 }

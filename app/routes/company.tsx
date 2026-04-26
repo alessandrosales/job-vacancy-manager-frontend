@@ -90,6 +90,7 @@ export default function CompanyPage() {
         { label: crumbAction },
       ]}
     >
+      <div className="min-h-0 flex-1 overflow-y-auto">
       <Card className="max-w-xl">
         <CardHeader>
           <CardTitle>{title}</CardTitle>
@@ -167,6 +168,7 @@ export default function CompanyPage() {
           </CardFooter>
         </form>
       </Card>
+      </div>
     </AppLayout>
   )
 }
