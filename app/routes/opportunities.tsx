@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Link } from "react-router"
 
+import { OpportunityDialog } from "~/components/opportunities/opportunity-dialog"
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
 import { ListingPageHeader } from "~/components/listing/listing-page-header"
 import { ListingTableCard } from "~/components/listing/listing-table-card"
@@ -72,6 +73,7 @@ export default function OpportunitiesPage() {
     setKanbanColumnOrder,
   } = useAppData()
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
+  const [dialogOppId, setDialogOppId] = React.useState<string | null>(null)
   const [viewMode, setViewMode] = React.useState<ListingViewMode>("list")
   const [searchQuery, setSearchQuery] = React.useState("")
   const searchNeedle = searchQuery.trim()
@@ -100,6 +102,13 @@ export default function OpportunitiesPage() {
 
   return (
     <AppLayout title="Opportunities">
+      <OpportunityDialog
+        open={dialogOppId !== null}
+        onOpenChange={(open) => {
+          if (!open) setDialogOppId(null)
+        }}
+        opportunityId={dialogOppId}
+      />
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
         <ListingPageHeader
           title="Opportunities"
@@ -154,6 +163,7 @@ export default function OpportunitiesPage() {
                   onAddColumn={addKanbanColumn}
                   updateOpportunity={updateOpportunity}
                   onRequestDelete={setDeleteId}
+                  onOpportunityDoubleClick={(id) => setDialogOppId(id)}
                 />
               </div>
             )
@@ -191,8 +201,12 @@ export default function OpportunitiesPage() {
                     kanbanCustomColumns
                   )
                   return (
-                    <TableRow key={opp.id}>
-                      <TableCell>
+                    <TableRow
+                      key={opp.id}
+                      className="cursor-pointer"
+                      onClick={() => setDialogOppId(opp.id)}
+                    >
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-start gap-1">
                           <Button variant="ghost" size="icon" asChild>
                             <Link
@@ -217,7 +231,7 @@ export default function OpportunitiesPage() {
                       <TableCell className="max-w-xs truncate text-muted-foreground">
                         {opp.description}
                       </TableCell>
-                      <TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         <a
                           href={opp.url}
                           target="_blank"
@@ -230,7 +244,7 @@ export default function OpportunitiesPage() {
                       <TableCell>
                         <Badge variant={s.variant}>{s.label}</Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         <InterestLevelStarPicker
                           value={opp.interest_level}
                           size="sm"

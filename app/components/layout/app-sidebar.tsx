@@ -1,8 +1,10 @@
 "use client"
 
 import * as React from "react"
+import { useNavigate } from "react-router"
 
 // import { NavMain } from "~/components/layout/nav-main"
+import { OpportunityDialog } from "~/components/opportunities/opportunity-dialog"
 import { NavProjects } from "~/components/layout/nav-projects"
 import { NavUser } from "~/components/layout/nav-user"
 import { useSessionUser } from "~/components/providers/session-user-provider"
@@ -11,8 +13,13 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
   // SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
   SidebarRail,
+  SidebarSeparator,
 } from "~/components/ui/sidebar"
 import {
   LayoutDashboardIcon,
@@ -21,6 +28,7 @@ import {
   ListOrderedIcon,
   UserCogIcon,
   SparklesIcon,
+  CirclePlusIcon,
 } from "lucide-react"
 
 const data = {
@@ -124,8 +132,20 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useSessionUser()
+  const navigate = useNavigate()
+  const [newOpportunityOpen, setNewOpportunityOpen] = React.useState(false)
 
   return (
+    <>
+      <OpportunityDialog
+        mode="create"
+        open={newOpportunityOpen}
+        onOpenChange={setNewOpportunityOpen}
+        opportunityId={null}
+        onCreated={(id) =>
+          navigate(`/opportunities/opportunity/${encodeURIComponent(id)}`)
+        }
+      />
     <Sidebar collapsible="icon" {...props}>
       {/* Seletor de empresas (TeamSwitcher) — desativado por enquanto.
       <SidebarHeader>
@@ -136,6 +156,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {/* Platform (NavMain + subníveis) — desativado por enquanto.
         <NavMain items={data.navMain} />
         */}
+        <SidebarGroup>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                type="button"
+                tooltip="New opportunity"
+                onClick={() => setNewOpportunityOpen(true)}
+              >
+                <CirclePlusIcon />
+                <span>New opportunity</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+        <SidebarSeparator />
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
@@ -143,5 +178,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
+    </>
   )
 }

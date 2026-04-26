@@ -102,7 +102,7 @@ export function RegisterForm({
                 <FieldDescription className="text-center">
                   Já tem uma conta?{" "}
                   <Link
-                    to="/login"
+                    to="/"
                     className="underline-offset-4 hover:underline"
                   >
                     Entrar

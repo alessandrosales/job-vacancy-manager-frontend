@@ -125,7 +125,7 @@ export function NavUser({
             </DropdownMenuCheckboxItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link to="/login">
+              <Link to="/">
                 <LogOutIcon />
                 Sair
               </Link>

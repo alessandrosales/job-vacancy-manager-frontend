@@ -23,6 +23,7 @@ export type KanbanColumnProps = {
   customColumns: readonly KanbanCustomColumn[]
   opportunityStatuses: readonly OpportunityStatusDefinition[]
   onDelete: (id: string) => void
+  onOpportunityDoubleClick?: (id: string) => void
   dragHandleAttributes?: Record<string, unknown>
   dragHandleListeners?: Record<string, unknown>
   isDraggingColumn?: boolean
@@ -42,6 +43,7 @@ export function KanbanColumn({
   customColumns,
   opportunityStatuses,
   onDelete,
+  onOpportunityDoubleClick,
   dragHandleAttributes,
   dragHandleListeners,
   isDraggingColumn = false,
@@ -124,6 +126,7 @@ export function KanbanColumn({
                   key={id}
                   opp={opp}
                   onDelete={onDelete}
+                  onOpportunityDoubleClick={onOpportunityDoubleClick}
                   customColumns={customColumns}
                   opportunityStatuses={opportunityStatuses}
                 />

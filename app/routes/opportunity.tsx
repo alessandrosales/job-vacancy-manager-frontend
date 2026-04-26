@@ -1,8 +1,8 @@
 import * as React from "react"
 import { useNavigate, useParams } from "react-router"
 
+import { OpportunityFormFields } from "~/components/opportunities/opportunity-form-fields"
 import { useAppData } from "~/components/providers/app-data-provider"
-import { InterestLevelStarPicker } from "~/components/interest-level-star-picker"
 import { AppLayout } from "~/components/layout/app-layout"
 import { Button } from "~/components/ui/button"
 import {
@@ -13,21 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card"
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from "~/components/ui/field"
-import { Input } from "~/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select"
-import { Textarea } from "~/components/ui/textarea"
 import { DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS } from "~/lib/labels"
 import type { InterestLevel, OpportunityStatus } from "~/lib/labels"
 
@@ -122,71 +107,22 @@ export default function OpportunityPage() {
           className="flex flex-col gap-4"
         >
           <CardContent>
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="opp-company">Company</FieldLabel>
-                <Input
-                  id="opp-company"
-                  value={company}
-                  onChange={(e) => setCompany(e.target.value)}
-                  required
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="opp-role">Role</FieldLabel>
-                <Input
-                  id="opp-role"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  required
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="opp-desc">Description</FieldLabel>
-                <Textarea
-                  id="opp-desc"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  required
-                  rows={4}
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="opp-url">URL</FieldLabel>
-                <Input
-                  id="opp-url"
-                  type="url"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  placeholder="https://"
-                  required
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="opp-status">Status</FieldLabel>
-                <Select
-                  value={status}
-                  onValueChange={(v) => setStatus(v as OpportunityStatus)}
-                >
-                  <SelectTrigger id="opp-status" className="w-full min-w-0">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {opportunityStatuses.map((st) => (
-                        <SelectItem key={st.id} value={st.id}>
-                          {st.label}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field>
-                <FieldLabel>Interest level</FieldLabel>
-                <InterestLevelStarPicker value={interestLevel} onChange={setInterestLevel} />
-              </Field>
-            </FieldGroup>
+            <OpportunityFormFields
+              idPrefix="opp-page"
+              company={company}
+              onCompanyChange={setCompany}
+              role={role}
+              onRoleChange={setRole}
+              description={description}
+              onDescriptionChange={setDescription}
+              url={url}
+              onUrlChange={setUrl}
+              status={status}
+              onStatusChange={setStatus}
+              interestLevel={interestLevel}
+              onInterestLevelChange={setInterestLevel}
+              opportunityStatuses={opportunityStatuses}
+            />
           </CardContent>
           <CardFooter className="flex flex-wrap justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => navigate(-1)}>

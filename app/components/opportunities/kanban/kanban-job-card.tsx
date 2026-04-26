@@ -60,6 +60,7 @@ export function KanbanJobCardContent({
                   rel="noopener noreferrer"
                   aria-label="Open opportunity link"
                   onPointerDown={(e) => e.stopPropagation()}
+                  onDoubleClick={(e) => e.stopPropagation()}
                 >
                   <ExternalLinkIcon />
                 </a>
@@ -90,12 +91,16 @@ export function KanbanJobCardContent({
           <Badge variant={badge.variant} className="text-xs">
             {badge.label}
           </Badge>
-          <div className="flex items-center gap-0.5">
+          <div
+            className="flex items-center gap-0.5"
+            onDoubleClick={(e) => e.stopPropagation()}
+          >
             <Button variant="ghost" size="icon" className="size-7" asChild>
               <Link
                 to={`/opportunities/opportunity/${encodeURIComponent(opp.id)}`}
                 aria-label="Edit opportunity"
                 onPointerDown={(e) => e.stopPropagation()}
+                onDoubleClick={(e) => e.stopPropagation()}
               >
                 <PencilIcon />
               </Link>
@@ -124,6 +129,7 @@ export function KanbanJobCardContent({
 type KanbanJobCardProps = {
   opp: Opportunity
   onDelete: (id: string) => void
+  onOpportunityDoubleClick?: (id: string) => void
   customColumns: readonly KanbanCustomColumn[]
   opportunityStatuses: readonly OpportunityStatusDefinition[]
 }
@@ -134,6 +140,7 @@ type KanbanJobCardProps = {
 export function KanbanJobCard({
   opp,
   onDelete,
+  onOpportunityDoubleClick,
   customColumns,
   opportunityStatuses,
 }: KanbanJobCardProps) {
@@ -154,6 +161,10 @@ export function KanbanJobCard({
       ref={setNodeRef}
       style={style}
       className="touch-none cursor-grab active:cursor-grabbing"
+      onDoubleClick={(e) => {
+        e.stopPropagation()
+        onOpportunityDoubleClick?.(opp.id)
+      }}
       {...listeners}
       {...attributes}
     >

@@ -102,6 +102,7 @@ type SortableBoardColumnProps = {
   customColumns: readonly KanbanCustomColumn[]
   opportunityStatuses: readonly OpportunityStatusDefinition[]
   onDelete: (id: string) => void
+  onOpportunityDoubleClick?: (id: string) => void
 }
 
 function SortableBoardColumn(props: SortableBoardColumnProps) {
@@ -136,6 +137,7 @@ export type OpportunitiesKanbanBoardProps = {
   onAddColumn: (title: string) => void
   updateOpportunity: (id: string, row: Omit<Opportunity, "id">) => void
   onRequestDelete: (id: string) => void
+  onOpportunityDoubleClick?: (id: string) => void
 }
 
 /**
@@ -150,6 +152,7 @@ export function OpportunitiesKanbanBoard({
   onAddColumn,
   updateOpportunity,
   onRequestDelete,
+  onOpportunityDoubleClick,
 }: OpportunitiesKanbanBoardProps) {
   const canonicalColumnIds = React.useMemo(
     () => getOrderedKanbanColumnIds(opportunityStatuses, customColumns),
@@ -468,6 +471,7 @@ export function OpportunitiesKanbanBoard({
                   customColumns={customColumns}
                   opportunityStatuses={opportunityStatuses}
                   onDelete={onRequestDelete}
+                  onOpportunityDoubleClick={onOpportunityDoubleClick}
                 />
               )
             })}

@@ -47,7 +47,7 @@ export function RecoverPasswordForm({
                 <Button type="submit">Enviar link</Button>
                 <FieldDescription className="text-center">
                   <Link
-                    to="/login"
+                    to="/"
                     className="underline-offset-4 hover:underline"
                   >
                     Voltar ao login

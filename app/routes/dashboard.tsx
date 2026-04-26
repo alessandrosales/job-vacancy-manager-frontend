@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react"
 import {
   Bar,
   BarChart,
@@ -9,7 +10,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
+import { StarIcon } from "lucide-react"
 
+import type { Opportunity } from "~/components/providers/app-data-provider"
 import { AppLayout } from "~/components/layout/app-layout"
 import { Badge } from "~/components/ui/badge"
 import {
@@ -33,8 +36,47 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table"
+import { OpportunityDialog } from "~/components/opportunities/opportunity-dialog"
 import { useAppData } from "~/components/providers/app-data-provider"
 import { getColumnBadgeProps, getEffectiveColumnId } from "~/lib/kanban-columns"
+import { cn } from "~/lib/utils"
+
+function opportunityRecencyScore(opp: Opportunity, indexInList: number): number {
+  const m = /^seed-opp-(\d+)$/.exec(opp.id)
+  if (m) return Number.parseInt(m[1]!, 10)
+  return indexInList
+}
+
+function compareTopJobs(
+  a: { opp: Opportunity; index: number },
+  b: { opp: Opportunity; index: number }
+): number {
+  const byLevel = b.opp.interest_level - a.opp.interest_level
+  if (byLevel !== 0) return byLevel
+  return (
+    opportunityRecencyScore(b.opp, b.index) -
+    opportunityRecencyScore(a.opp, a.index)
+  )
+}
+
+function InterestStars({ level }: { level: number }) {
+  return (
+    <div
+      className="inline-flex items-center gap-0.5"
+      aria-label={`Interest level ${level} of 5`}
+    >
+      {Array.from({ length: 5 }).map((_, i) => (
+        <StarIcon
+          key={i}
+          className={cn(
+            "size-3.5",
+            i < level ? "fill-current text-amber-500" : "text-muted-foreground/35"
+          )}
+        />
+      ))}
+    </div>
+  )
+}
 
 // --- Mock chart data ---
 
@@ -81,17 +123,36 @@ const lineConfig: ChartConfig = {
   waiting:    { label: "Waiting Response",     color: "var(--chart-4)" },
 }
 
+const DASHBOARD_TABLE_LIMIT = 10
+
 export default function DashboardPage() {
   const {
     opportunities,
     opportunity_statuses: opportunityStatuses,
     kanban_custom_columns: kanbanCustomColumns,
   } = useAppData()
-  const recent = opportunities.slice(0, 5)
+  const [dialogOppId, setDialogOppId] = useState<string | null>(null)
+  /** Últimas entradas na ordem do armazenamento (mais recentes ao final do array). */
+  const recent = opportunities.slice(-DASHBOARD_TABLE_LIMIT)
+
+  const topJobs = useMemo(() => {
+    return [...opportunities]
+      .map((opp, index) => ({ opp, index }))
+      .sort(compareTopJobs)
+      .slice(0, DASHBOARD_TABLE_LIMIT)
+      .map(({ opp }) => opp)
+  }, [opportunities])
 
   return (
     <AppLayout title="Dashboard">
-      <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto">
+      <OpportunityDialog
+        open={dialogOppId !== null}
+        onOpenChange={(open) => {
+          if (!open) setDialogOppId(null)
+        }}
+        opportunityId={dialogOppId}
+      />
+      <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto [&>*]:shrink-0">
       {/* Charts row */}
       <div className="grid gap-4 md:grid-cols-3">
         {/* Pie — by status */}
@@ -152,25 +213,84 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Recent opportunities table */}
-      <Card>
+      {/* Top jobs — higher interest_level first, then more recent */}
+      <Card className="overflow-visible">
         <CardHeader>
-          <CardTitle>Recent Opportunities</CardTitle>
-          <CardDescription>Last registered entries</CardDescription>
+          <CardTitle>Top jobs</CardTitle>
+          <CardDescription>
+            Até {DASHBOARD_TABLE_LIMIT} vagas: maior interesse primeiro; em empate, mais
+            recentes. A tabela acompanha a altura do conteúdo.
+          </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-visible">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Company</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead className="w-36">Interesse</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {topJobs.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-muted-foreground">
+                    No opportunities yet. Add some under Opportunities.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                topJobs.map((opp) => {
+                  const s = getColumnBadgeProps(
+                    getEffectiveColumnId(opp),
+                    opportunityStatuses,
+                    kanbanCustomColumns
+                  )
+                  return (
+                    <TableRow
+                      key={opp.id}
+                      className="cursor-pointer"
+                      onClick={() => setDialogOppId(opp.id)}
+                    >
+                      <TableCell className="font-medium">{opp.company}</TableCell>
+                      <TableCell>{opp.role}</TableCell>
+                      <TableCell>
+                        <InterestStars level={opp.interest_level} />
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={s.variant}>{s.label}</Badge>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* Recent opportunities table */}
+      <Card className="overflow-visible">
+        <CardHeader>
+          <CardTitle>Recent Opportunities</CardTitle>
+          <CardDescription>
+            Últimas {DASHBOARD_TABLE_LIMIT} oportunidades adicionadas (ordem do registro)
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="overflow-visible">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Company</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead className="w-36">Interesse</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {recent.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-muted-foreground">
+                  <TableCell colSpan={4} className="text-muted-foreground">
                     No opportunities yet. Add some under Opportunities.
                   </TableCell>
                 </TableRow>
@@ -182,9 +302,16 @@ export default function DashboardPage() {
                     kanbanCustomColumns
                   )
                   return (
-                    <TableRow key={opp.id}>
+                    <TableRow
+                      key={opp.id}
+                      className="cursor-pointer"
+                      onClick={() => setDialogOppId(opp.id)}
+                    >
                       <TableCell className="font-medium">{opp.company}</TableCell>
                       <TableCell>{opp.role}</TableCell>
+                      <TableCell>
+                        <InterestStars level={opp.interest_level} />
+                      </TableCell>
                       <TableCell>
                         <Badge variant={s.variant}>{s.label}</Badge>
                       </TableCell>
