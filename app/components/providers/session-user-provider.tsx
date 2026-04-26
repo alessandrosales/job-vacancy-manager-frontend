@@ -7,17 +7,27 @@ const STORAGE_KEY = "job-vacancy-session-user-v1"
 export interface SessionUser {
   name: string
   email: string
+  phone: string
   /** Profile image URL (optional). */
   avatar: string
   bio: string
+  age: string
+  fullAddress: string
+  relationshipStatus: string
+  gender: string
 }
 
 function defaultUser(): SessionUser {
   return {
     name: "shadcn",
     email: "m@example.com",
+    phone: "",
     avatar: "",
     bio: "",
+    age: "",
+    fullAddress: "",
+    relationshipStatus: "",
+    gender: "",
   }
 }
 
@@ -34,8 +44,17 @@ function parseStored(raw: string | null): SessionUser | null {
       return {
         name: data.name,
         email: data.email,
+        phone: typeof data.phone === "string" ? data.phone : "",
         avatar: data.avatar,
         bio: data.bio,
+        age: typeof data.age === "string" ? data.age : "",
+        fullAddress:
+          typeof data.fullAddress === "string" ? data.fullAddress : "",
+        relationshipStatus:
+          typeof data.relationshipStatus === "string"
+            ? data.relationshipStatus
+            : "",
+        gender: typeof data.gender === "string" ? data.gender : "",
       }
     }
   } catch {

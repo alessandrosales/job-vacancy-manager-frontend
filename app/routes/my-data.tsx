@@ -27,14 +27,26 @@ export default function MyDataPage() {
 
   const [name, setName] = React.useState(user.name)
   const [email, setEmail] = React.useState(user.email)
+  const [phone, setPhone] = React.useState(user.phone)
   const [avatar, setAvatar] = React.useState(user.avatar)
   const [bio, setBio] = React.useState(user.bio)
+  const [age, setAge] = React.useState(user.age)
+  const [fullAddress, setFullAddress] = React.useState(user.fullAddress)
+  const [relationshipStatus, setRelationshipStatus] = React.useState(
+    user.relationshipStatus
+  )
+  const [gender, setGender] = React.useState(user.gender)
 
   React.useEffect(() => {
     setName(user.name)
     setEmail(user.email)
+    setPhone(user.phone)
     setAvatar(user.avatar)
     setBio(user.bio)
+    setAge(user.age)
+    setFullAddress(user.fullAddress)
+    setRelationshipStatus(user.relationshipStatus)
+    setGender(user.gender)
   }, [user])
 
   function handleSubmit(e: React.FormEvent) {
@@ -42,8 +54,13 @@ export default function MyDataPage() {
     updateUser({
       name: name.trim(),
       email: email.trim(),
+      phone: phone.trim(),
       avatar: avatar.trim(),
       bio: bio.trim(),
+      age: age.trim(),
+      fullAddress: fullAddress.trim(),
+      relationshipStatus: relationshipStatus.trim(),
+      gender: gender.trim(),
     })
   }
 
@@ -92,6 +109,16 @@ export default function MyDataPage() {
                   />
                 </Field>
                 <Field>
+                  <FieldLabel htmlFor="profile-phone">Phone</FieldLabel>
+                  <Input
+                    id="profile-phone"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    autoComplete="tel"
+                  />
+                </Field>
+                <Field>
                   <FieldLabel htmlFor="profile-avatar">Avatar URL</FieldLabel>
                   <Input
                     id="profile-avatar"
@@ -112,6 +139,48 @@ export default function MyDataPage() {
                     onChange={(e) => setBio(e.target.value)}
                     rows={4}
                     placeholder="Short description about you"
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="profile-age">Age</FieldLabel>
+                  <Input
+                    id="profile-age"
+                    inputMode="numeric"
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    autoComplete="off"
+                    placeholder="e.g. 32"
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="profile-address">Full address</FieldLabel>
+                  <Textarea
+                    id="profile-address"
+                    value={fullAddress}
+                    onChange={(e) => setFullAddress(e.target.value)}
+                    rows={3}
+                    autoComplete="street-address"
+                    placeholder="Street, number, city, postal code"
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="profile-relationship">
+                    Relationship status
+                  </FieldLabel>
+                  <Input
+                    id="profile-relationship"
+                    value={relationshipStatus}
+                    onChange={(e) => setRelationshipStatus(e.target.value)}
+                    autoComplete="off"
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="profile-gender">Gender</FieldLabel>
+                  <Input
+                    id="profile-gender"
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
+                    autoComplete="sex"
                   />
                 </Field>
               </FieldGroup>
