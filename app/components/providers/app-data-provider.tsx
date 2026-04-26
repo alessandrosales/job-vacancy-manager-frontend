@@ -22,6 +22,8 @@ export interface Opportunity {
   url: string
   role: string
   status: OpportunityStatus
+  /** Coluna do Kanban; ausente = coluna padrão derivada de `status`. */
+  boardColumnId?: string
 }
 
 export interface Company {
@@ -45,11 +47,18 @@ export interface Skill {
   description: string
 }
 
+export interface KanbanCustomColumn {
+  id: string
+  title: string
+}
+
 export interface AppDataState {
   opportunities: Opportunity[]
   companies: Company[]
   roles: Role[]
   skills: Skill[]
+  /** Colunas extras do Kanban (além dos status padrão). */
+  kanbanCustomColumns: KanbanCustomColumn[]
 }
 
 function defaultState(): AppDataState {
@@ -66,7 +75,12 @@ function parseStored(raw: string | null): AppDataState | null {
       Array.isArray(data.roles) &&
       Array.isArray(data.skills)
     ) {
-      return data
+      return {
+        ...data,
+        kanbanCustomColumns: Array.isArray(data.kanbanCustomColumns)
+          ? data.kanbanCustomColumns
+          : [],
+      }
     }
   } catch {
     /* ignore */
@@ -78,6 +92,7 @@ interface AppDataContextValue extends AppDataState {
   addOpportunity: (row: Omit<Opportunity, "id">) => string
   updateOpportunity: (id: string, row: Omit<Opportunity, "id">) => void
   deleteOpportunity: (id: string) => void
+  addKanbanColumn: (title: string) => string
   addCompany: (row: Omit<Company, "id">) => string
   updateCompany: (id: string, row: Omit<Company, "id">) => void
   deleteCompany: (id: string) => void
@@ -147,6 +162,20 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
           persist(next)
           return next
         })
+      },
+      addKanbanColumn: (title) => {
+        const colId = `kanban-col-${createId()}`
+        const t = title.trim() || "New column"
+        setState((s) => {
+          const existing = s.kanbanCustomColumns ?? []
+          const next: AppDataState = {
+            ...s,
+            kanbanCustomColumns: [...existing, { id: colId, title: t }],
+          }
+          persist(next)
+          return next
+        })
+        return colId
       },
       addCompany: (row) => {
         const id = createId()

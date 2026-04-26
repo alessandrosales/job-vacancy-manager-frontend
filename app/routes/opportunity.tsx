@@ -68,6 +68,7 @@ export default function OpportunityPage() {
       description: description.trim(),
       url: url.trim(),
       status,
+      boardColumnId: status,
     }
     if (isEdit && id) {
       updateOpportunity(id, payload)

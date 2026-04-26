@@ -1,0 +1,413 @@
+"use client"
+
+import * as React from "react"
+import {
+  DndContext,
+  DragOverlay,
+  KeyboardSensor,
+  MeasuringStrategy,
+  PointerSensor,
+  TouchSensor,
+  closestCorners,
+  getFirstCollision,
+  pointerWithin,
+  rectIntersection,
+  useSensor,
+  useSensors,
+  type CollisionDetection,
+  type DragCancelEvent,
+  type DragEndEvent,
+  type DragOverEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core"
+import { restrictToWindowEdges, snapCenterToCursor } from "@dnd-kit/modifiers"
+import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable"
+
+import { KanbanColumn } from "~/components/opportunities/kanban/kanban-column"
+import { KanbanJobCardContent } from "~/components/opportunities/kanban/kanban-job-card"
+import type { KanbanCustomColumn, Opportunity } from "~/components/providers/app-data-provider"
+import { Input } from "~/components/ui/input"
+import {
+  findColumnForItemId,
+  getColumnTitle,
+  getOrderedKanbanColumnIds,
+  isBuiltInColumnId,
+  itemsByColumnFromOpportunities,
+  parseColumnDroppableId,
+  resolveOverColumn,
+} from "~/lib/kanban-columns"
+
+const KANBAN_COLUMN_PAGE_SIZE = 24
+
+function persistColumnIfNeeded(
+  next: Record<string, string[]>,
+  opportunityById: Map<string, Opportunity>,
+  updateOpportunity: (id: string, row: Omit<Opportunity, "id">) => void
+) {
+  for (const [columnId, ids] of Object.entries(next)) {
+    for (const id of ids) {
+      const opp = opportunityById.get(id)
+      if (!opp) continue
+      const current = opp.boardColumnId ?? opp.status
+      if (current === columnId) continue
+
+      if (isBuiltInColumnId(columnId)) {
+        updateOpportunity(id, {
+          company: opp.company,
+          role: opp.role,
+          description: opp.description,
+          url: opp.url,
+          status: columnId,
+          boardColumnId: columnId,
+        })
+      } else {
+        updateOpportunity(id, {
+          company: opp.company,
+          role: opp.role,
+          description: opp.description,
+          url: opp.url,
+          status: opp.status,
+          boardColumnId: columnId,
+        })
+      }
+    }
+  }
+}
+
+export type OpportunitiesKanbanBoardProps = {
+  opportunities: readonly Opportunity[]
+  customColumns: readonly KanbanCustomColumn[]
+  onAddColumn: (title: string) => void
+  updateOpportunity: (id: string, row: Omit<Opportunity, "id">) => void
+  onRequestDelete: (id: string) => void
+}
+
+/**
+ * Board Kanban: colunas (status + extras), dnd-kit sortable, overlay e ação de nova coluna.
+ */
+export function OpportunitiesKanbanBoard({
+  opportunities,
+  customColumns,
+  onAddColumn,
+  updateOpportunity,
+  onRequestDelete,
+}: OpportunitiesKanbanBoardProps) {
+  const columnIds = React.useMemo(
+    () => getOrderedKanbanColumnIds(customColumns),
+    [customColumns]
+  )
+
+  const opportunityById = React.useMemo(() => {
+    const m = new Map<string, Opportunity>()
+    for (const o of opportunities) {
+      m.set(o.id, o)
+    }
+    return m
+  }, [opportunities])
+
+  const opportunityByIdRef = React.useRef(opportunityById)
+  opportunityByIdRef.current = opportunityById
+
+  const [columnItems, setColumnItems] = React.useState<Record<string, string[]>>(() =>
+    itemsByColumnFromOpportunities(opportunities, columnIds)
+  )
+  const [visibleCountByColumn, setVisibleCountByColumn] = React.useState<
+    Record<string, number>
+  >(() => {
+    const initial = itemsByColumnFromOpportunities(opportunities, columnIds)
+    const next: Record<string, number> = {}
+    for (const columnId of columnIds) {
+      next[columnId] = Math.min(KANBAN_COLUMN_PAGE_SIZE, initial[columnId]?.length ?? 0)
+    }
+    return next
+  })
+
+  const [newColumnName, setNewColumnName] = React.useState("")
+  const [activeId, setActiveId] = React.useState<string | null>(null)
+  const lastOverId = React.useRef<string | null>(null)
+  const recentlyMovedToNewContainer = React.useRef(false)
+  const snapshotRef = React.useRef(columnItems)
+
+  React.useEffect(() => {
+    if (activeId !== null) return
+    const nextItems = itemsByColumnFromOpportunities(opportunities, columnIds)
+    setColumnItems(nextItems)
+    setVisibleCountByColumn(() => {
+      const nextCounts: Record<string, number> = {}
+      for (const columnId of columnIds) {
+        nextCounts[columnId] = Math.min(
+          KANBAN_COLUMN_PAGE_SIZE,
+          nextItems[columnId]?.length ?? 0
+        )
+      }
+      return nextCounts
+    })
+  }, [opportunities, activeId, columnIds])
+
+  React.useEffect(() => {
+    setVisibleCountByColumn((prev) => {
+      const next: Record<string, number> = {}
+      for (const columnId of columnIds) {
+        const total = columnItems[columnId]?.length ?? 0
+        const current = prev[columnId] ?? Math.min(KANBAN_COLUMN_PAGE_SIZE, total)
+        next[columnId] = Math.min(Math.max(current, 0), total)
+      }
+      return next
+    })
+  }, [columnIds, columnItems])
+
+  React.useEffect(() => {
+    requestAnimationFrame(() => {
+      recentlyMovedToNewContainer.current = false
+    })
+  }, [columnItems])
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 6 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 120, tolerance: 6 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  const collisionDetectionStrategy = React.useCallback<CollisionDetection>(
+    (args) => {
+      const pointerIntersections = pointerWithin(args)
+      const intersections =
+        pointerIntersections.length > 0
+          ? pointerIntersections
+          : rectIntersection(args)
+      let overId = getFirstCollision(intersections, "id") as string | null
+
+      if (overId != null) {
+        const overCol = parseColumnDroppableId(overId)
+        if (overCol != null && Object.prototype.hasOwnProperty.call(columnItems, overCol)) {
+          const colIds = columnItems[overCol]!
+          if (colIds.length > 0) {
+            const closestInCol = closestCorners({
+              ...args,
+              droppableContainers: args.droppableContainers.filter(
+                (c) => c.id !== overId && colIds.includes(String(c.id))
+              ),
+            })
+            if (closestInCol[0]) {
+              overId = String(closestInCol[0].id)
+            }
+          }
+        }
+        lastOverId.current = overId
+        return [{ id: overId }]
+      }
+
+      if (recentlyMovedToNewContainer.current && activeId) {
+        lastOverId.current = activeId
+      }
+
+      return lastOverId.current ? [{ id: lastOverId.current }] : []
+    },
+    [activeId, columnItems]
+  )
+
+  function handleDragStart(event: DragStartEvent) {
+    snapshotRef.current = columnItems
+    setActiveId(String(event.active.id))
+    lastOverId.current = null
+  }
+
+  function handleDragOver(event: DragOverEvent) {
+    const { active, over } = event
+    if (!over) return
+    const overId = over.id != null ? String(over.id) : null
+    if (!overId || active.id === over.id) return
+
+    setColumnItems((items) => {
+      const activeContainer = findColumnForItemId(String(active.id), items)
+      const overContainer = resolveOverColumn(overId, items)
+
+      if (!activeContainer || !overContainer) return items
+      if (activeContainer === overContainer) return items
+
+      const activeItems = [...items[activeContainer]!]
+      const overItems = [...items[overContainer]!]
+      const activeIndex = activeItems.indexOf(String(active.id))
+      if (activeIndex < 0) return items
+
+      const overIndexInList = overItems.indexOf(overId)
+      let newIndex: number
+
+      if (parseColumnDroppableId(overId) === overContainer) {
+        newIndex = overItems.length
+      } else if (overIndexInList >= 0) {
+        const isBelowOverItem =
+          over &&
+          active.rect.current.translated &&
+          active.rect.current.translated.top > over.rect.top + over.rect.height
+        const modifier = isBelowOverItem ? 1 : 0
+        newIndex = overIndexInList >= 0 ? overIndexInList + modifier : overItems.length
+      } else {
+        newIndex = overItems.length
+      }
+
+      recentlyMovedToNewContainer.current = true
+
+      const movingId = String(active.id)
+      return {
+        ...items,
+        [activeContainer]: activeItems.filter((i) => i !== movingId),
+        [overContainer]: [
+          ...overItems.slice(0, newIndex),
+          movingId,
+          ...overItems.slice(newIndex),
+        ],
+      }
+    })
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    setActiveId(null)
+    lastOverId.current = null
+
+    if (!over) {
+      setColumnItems(snapshotRef.current)
+      return
+    }
+
+    setColumnItems((items) => {
+      const activeContainer = findColumnForItemId(String(active.id), items)
+      const overContainer = resolveOverColumn(String(over.id), items)
+
+      if (
+        activeContainer &&
+        overContainer &&
+        activeContainer === overContainer &&
+        active.id !== over.id
+      ) {
+        const list = [...(items[activeContainer] ?? [])]
+        const oldIndex = list.indexOf(String(active.id))
+        const newIndex = list.indexOf(String(over.id))
+        if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) {
+          persistColumnIfNeeded(
+            items,
+            opportunityByIdRef.current,
+            updateOpportunity
+          )
+          return items
+        }
+        const next = {
+          ...items,
+          [activeContainer]: arrayMove(list, oldIndex, newIndex),
+        }
+        persistColumnIfNeeded(next, opportunityByIdRef.current, updateOpportunity)
+        return next
+      }
+
+      persistColumnIfNeeded(
+        items,
+        opportunityByIdRef.current,
+        updateOpportunity
+      )
+      return items
+    })
+  }
+
+  function handleDragCancel(_event: DragCancelEvent) {
+    setActiveId(null)
+    lastOverId.current = null
+    setColumnItems(snapshotRef.current)
+  }
+
+  function handleAddColumn() {
+    const trimmed = newColumnName.trim()
+    const nextNumber = customColumns.length + 1
+    onAddColumn(trimmed || `New column ${nextNumber}`)
+    setNewColumnName("")
+  }
+
+  function handleLoadMoreColumn(columnId: string) {
+    setVisibleCountByColumn((prev) => {
+      const current = prev[columnId] ?? 0
+      const total = columnItems[columnId]?.length ?? 0
+      return {
+        ...prev,
+        [columnId]: Math.min(current + KANBAN_COLUMN_PAGE_SIZE, total),
+      }
+    })
+  }
+
+  const activeOpp = activeId ? opportunityById.get(activeId) : null
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <DndContext
+        sensors={sensors}
+        collisionDetection={collisionDetectionStrategy}
+        measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
+        autoScroll={{ acceleration: 12, interval: 5 }}
+        modifiers={[snapCenterToCursor, restrictToWindowEdges]}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
+      >
+        <div className="flex min-h-0 flex-1 items-stretch gap-3 overflow-x-auto overflow-y-hidden pb-1">
+          {columnIds.map((columnId) => {
+            const idsForColumn = columnItems[columnId] ?? []
+            const visibleCount = visibleCountByColumn[columnId] ?? 0
+            const visibleIds = idsForColumn.slice(0, visibleCount)
+            const hasMore = visibleCount < idsForColumn.length
+            return (
+              <KanbanColumn
+                key={columnId}
+                columnId={columnId}
+                title={getColumnTitle(columnId, customColumns)}
+                ids={visibleIds}
+                totalCount={idsForColumn.length}
+                hasMore={hasMore}
+                onLoadMore={() => handleLoadMoreColumn(columnId)}
+                opportunityById={opportunityById}
+                customColumns={customColumns}
+                onDelete={onRequestDelete}
+              />
+            )
+          })}
+          <div className="flex min-h-0 w-[min(100%,280px)] shrink-0 flex-col self-stretch sm:w-72">
+            <div className="mb-2 flex shrink-0 items-center gap-2 px-0.5">
+              <Input
+                value={newColumnName}
+                onChange={(event) => setNewColumnName(event.target.value)}
+                placeholder="New column name..."
+                className="h-8 focus-visible:ring-1 focus-visible:ring-inset"
+                onKeyDown={(event) => {
+                  if (event.key !== "Enter") return
+                  event.preventDefault()
+                  handleAddColumn()
+                }}
+              />
+            </div>
+          </div>
+        </div>
+        <DragOverlay
+          dropAnimation={{
+            duration: 180,
+            easing: "cubic-bezier(0.25, 1, 0.5, 1)",
+          }}
+        >
+          {activeOpp ? (
+            <div className="w-[260px] cursor-grabbing">
+              <KanbanJobCardContent
+                opp={activeOpp}
+                onDelete={onRequestDelete}
+                customColumns={customColumns}
+              />
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
+    </div>
+  )
+}

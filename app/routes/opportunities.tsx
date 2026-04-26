@@ -5,6 +5,11 @@ import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-
 import { ListingPageHeader } from "~/components/listing/listing-page-header"
 import { ListingTableCard } from "~/components/listing/listing-table-card"
 import {
+  ListingViewModeToggle,
+  type ListingViewMode,
+} from "~/components/listing/listing-view-mode-toggle"
+import { OpportunitiesKanbanBoard } from "~/components/opportunities/opportunities-kanban-board"
+import {
   useAppData,
   type Opportunity,
 } from "~/components/providers/app-data-provider"
@@ -30,32 +35,45 @@ import {
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog"
 import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
-import { statusBadge } from "~/lib/labels"
+import {
+  getColumnBadgeProps,
+  getColumnTitle,
+  getEffectiveColumnId,
+} from "~/lib/kanban-columns"
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
 function filterOpportunitiesBySearch(
   rows: readonly Opportunity[],
-  needle: string
+  needle: string,
+  customColumns: readonly { id: string; title: string }[]
 ): Opportunity[] {
   if (!needle) return [...rows]
   const q = needle.toLowerCase()
   return rows.filter((opp) => {
-    const s = statusBadge[opp.status]
-    return `${opp.company} ${opp.role} ${opp.description} ${opp.url} ${s.label} ${opp.status}`
+    const colId = getEffectiveColumnId(opp)
+    const colLabel = getColumnTitle(colId, customColumns)
+    return `${opp.company} ${opp.role} ${opp.description} ${opp.url} ${colLabel} ${opp.status}`
       .toLowerCase()
       .includes(q)
   })
 }
 
 export default function OpportunitiesPage() {
-  const { opportunities, deleteOpportunity } = useAppData()
+  const {
+    opportunities,
+    deleteOpportunity,
+    updateOpportunity,
+    kanbanCustomColumns,
+    addKanbanColumn,
+  } = useAppData()
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
+  const [viewMode, setViewMode] = React.useState<ListingViewMode>("list")
   const [searchQuery, setSearchQuery] = React.useState("")
   const searchNeedle = searchQuery.trim()
 
   const filteredOpportunities = React.useMemo(
-    () => filterOpportunitiesBySearch(opportunities, searchNeedle),
-    [opportunities, searchNeedle]
+    () => filterOpportunitiesBySearch(opportunities, searchNeedle, kanbanCustomColumns),
+    [opportunities, searchNeedle, kanbanCustomColumns]
   )
 
   const {
@@ -75,6 +93,15 @@ export default function OpportunitiesPage() {
         <ListingPageHeader
           title="Opportunities"
           description="All tracked job opportunities"
+          titleAccessory={
+            <ListingViewModeToggle
+              value={viewMode}
+              onValueChange={setViewMode}
+              groupLabel="Opportunity view"
+              listLabel="List view"
+              kanbanLabel="Kanban board"
+            />
+          }
           action={
             <Button asChild>
               <Link to="/opportunities/opportunity">
@@ -86,14 +113,37 @@ export default function OpportunitiesPage() {
         />
         <ListingTableCard
           stats={
-            totalCount > 0
+            viewMode === "list" && totalCount > 0
               ? `Showing ${loadedCount} of ${totalCount}`
-              : undefined
+              : viewMode === "kanban" && filteredOpportunities.length > 0
+                ? `${filteredOpportunities.length} opportunit${filteredOpportunities.length === 1 ? "y" : "ies"}`
+                : undefined
           }
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
           searchPlaceholder="Search opportunities…"
         >
+          {viewMode === "kanban" ? (
+            opportunities.length === 0 ? (
+              <p className="text-muted-foreground py-8 text-center text-sm">
+                No opportunities yet. Add one to get started.
+              </p>
+            ) : filteredOpportunities.length === 0 ? (
+              <p className="text-muted-foreground py-8 text-center text-sm">
+                No matches for your search.
+              </p>
+            ) : (
+              <div className="flex min-h-0 flex-1 flex-col">
+                <OpportunitiesKanbanBoard
+                  opportunities={filteredOpportunities}
+                  customColumns={kanbanCustomColumns}
+                  onAddColumn={addKanbanColumn}
+                  updateOpportunity={updateOpportunity}
+                  onRequestDelete={setDeleteId}
+                />
+              </div>
+            )
+          ) : (
             <Table>
             <TableHeader>
               <TableRow>
@@ -120,7 +170,10 @@ export default function OpportunitiesPage() {
                 </TableRow>
               ) : (
                 visibleItems.map((opp) => {
-                  const s = statusBadge[opp.status]
+                  const s = getColumnBadgeProps(
+                    getEffectiveColumnId(opp),
+                    kanbanCustomColumns
+                  )
                   return (
                     <TableRow key={opp.id}>
                       <TableCell>
@@ -175,6 +228,7 @@ export default function OpportunitiesPage() {
               />
             </TableBody>
           </Table>
+          )}
         </ListingTableCard>
 
         <AlertDialog
