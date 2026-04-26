@@ -11,6 +11,11 @@ export type UseInfiniteScrollListOptions = {
    * sentinel does not fire duplicate requests while a page is in flight.
    */
   isFetchingNextPage?: boolean
+  /**
+   * When this string changes (e.g. search query), the loaded window resets to the first page.
+   * Do not tie this to total row count — only to intentional filter changes.
+   */
+  filterKey?: string
 }
 
 export type UseInfiniteScrollListResult<T> = {
@@ -43,6 +48,7 @@ export function useInfiniteScrollList<T>(
     pageSize = DEFAULT_PAGE_SIZE,
     rootMargin = DEFAULT_ROOT_MARGIN,
     isFetchingNextPage = false,
+    filterKey = "",
   } = options
 
   const totalCount = items.length
@@ -74,7 +80,15 @@ export function useInfiniteScrollList<T>(
   const loadNextWindowRef = React.useRef(loadNextWindow)
   loadNextWindowRef.current = loadNextWindow
 
+  const totalCountRef = React.useRef(totalCount)
+  totalCountRef.current = totalCount
+
   const sentinelRef = React.useRef<HTMLTableRowElement | null>(null)
+
+  React.useEffect(() => {
+    const tc = totalCountRef.current
+    setEndIndex(tc === 0 ? 0 : Math.min(pageSize, tc))
+  }, [filterKey, pageSize])
 
   React.useLayoutEffect(() => {
     const node = sentinelRef.current

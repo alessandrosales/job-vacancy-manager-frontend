@@ -4,7 +4,7 @@ import { Link } from "react-router"
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
 import { ListingPageHeader } from "~/components/listing/listing-page-header"
 import { ListingTableCard } from "~/components/listing/listing-table-card"
-import { useAppData } from "~/components/providers/app-data-provider"
+import { useAppData, type Role } from "~/components/providers/app-data-provider"
 import { AppLayout } from "~/components/layout/app-layout"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
@@ -30,9 +30,25 @@ import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
 import { interestBadge } from "~/lib/labels"
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
+function filterRolesBySearch(rows: readonly Role[], needle: string): Role[] {
+  if (!needle) return [...rows]
+  const q = needle.toLowerCase()
+  return rows.filter((r) =>
+    `${r.name} ${r.description} ${r.interestLevel}`.toLowerCase().includes(q)
+  )
+}
+
 export default function RolesPage() {
   const { roles, deleteRole } = useAppData()
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = React.useState("")
+  const searchNeedle = searchQuery.trim()
+
+  const filteredRoles = React.useMemo(
+    () => filterRolesBySearch(roles, searchNeedle),
+    [roles, searchNeedle]
+  )
+
   const {
     visibleItems,
     totalCount,
@@ -40,7 +56,7 @@ export default function RolesPage() {
     hasMore,
     sentinelRef,
     loadNextWindow,
-  } = useInfiniteScrollList(roles)
+  } = useInfiniteScrollList(filteredRoles, { filterKey: searchNeedle })
 
   return (
     <AppLayout title="Roles">
@@ -48,11 +64,6 @@ export default function RolesPage() {
         <ListingPageHeader
           title="Roles"
           description="Job roles you are interested in"
-          stats={
-            totalCount > 0
-              ? `Showing ${loadedCount} of ${totalCount}`
-              : undefined
-          }
           action={
             <Button asChild>
               <Link to="/roles/role">
@@ -62,7 +73,16 @@ export default function RolesPage() {
             </Button>
           }
         />
-        <ListingTableCard>
+        <ListingTableCard
+          stats={
+            totalCount > 0
+              ? `Showing ${loadedCount} of ${totalCount}`
+              : undefined
+          }
+          searchValue={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder="Search roles…"
+        >
             <Table>
             <TableHeader>
               <TableRow>
@@ -77,6 +97,12 @@ export default function RolesPage() {
                 <TableRow>
                   <TableCell colSpan={4} className="text-muted-foreground">
                     No roles yet. Add one to get started.
+                  </TableCell>
+                </TableRow>
+              ) : filteredRoles.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-muted-foreground">
+                    No matches for your search.
                   </TableCell>
                 </TableRow>
               ) : (

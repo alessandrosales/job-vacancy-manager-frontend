@@ -4,7 +4,10 @@ import { Link } from "react-router"
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
 import { ListingPageHeader } from "~/components/listing/listing-page-header"
 import { ListingTableCard } from "~/components/listing/listing-table-card"
-import { useAppData } from "~/components/providers/app-data-provider"
+import {
+  useAppData,
+  type Company,
+} from "~/components/providers/app-data-provider"
 import { AppLayout } from "~/components/layout/app-layout"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
@@ -30,9 +33,30 @@ import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
 import { interestBadge } from "~/lib/labels"
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
+function filterCompaniesBySearch(
+  rows: readonly Company[],
+  needle: string
+): Company[] {
+  if (!needle) return [...rows]
+  const q = needle.toLowerCase()
+  return rows.filter((c) =>
+    `${c.name} ${c.url} ${c.description} ${c.interestLevel}`
+      .toLowerCase()
+      .includes(q)
+  )
+}
+
 export default function CompaniesPage() {
   const { companies, deleteCompany } = useAppData()
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = React.useState("")
+  const searchNeedle = searchQuery.trim()
+
+  const filteredCompanies = React.useMemo(
+    () => filterCompaniesBySearch(companies, searchNeedle),
+    [companies, searchNeedle]
+  )
+
   const {
     visibleItems,
     totalCount,
@@ -40,7 +64,7 @@ export default function CompaniesPage() {
     hasMore,
     sentinelRef,
     loadNextWindow,
-  } = useInfiniteScrollList(companies)
+  } = useInfiniteScrollList(filteredCompanies, { filterKey: searchNeedle })
 
   return (
     <AppLayout title="Companies">
@@ -48,11 +72,6 @@ export default function CompaniesPage() {
         <ListingPageHeader
           title="Companies"
           description="Companies you are tracking for opportunities"
-          stats={
-            totalCount > 0
-              ? `Showing ${loadedCount} of ${totalCount}`
-              : undefined
-          }
           action={
             <Button asChild>
               <Link to="/companies/company">
@@ -62,7 +81,16 @@ export default function CompaniesPage() {
             </Button>
           }
         />
-        <ListingTableCard>
+        <ListingTableCard
+          stats={
+            totalCount > 0
+              ? `Showing ${loadedCount} of ${totalCount}`
+              : undefined
+          }
+          searchValue={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder="Search companies…"
+        >
             <Table>
             <TableHeader>
               <TableRow>
@@ -78,6 +106,12 @@ export default function CompaniesPage() {
                 <TableRow>
                   <TableCell colSpan={5} className="text-muted-foreground">
                     No companies yet. Add one to get started.
+                  </TableCell>
+                </TableRow>
+              ) : filteredCompanies.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-muted-foreground">
+                    No matches for your search.
                   </TableCell>
                 </TableRow>
               ) : (

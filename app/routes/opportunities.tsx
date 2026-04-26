@@ -4,7 +4,10 @@ import { Link } from "react-router"
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
 import { ListingPageHeader } from "~/components/listing/listing-page-header"
 import { ListingTableCard } from "~/components/listing/listing-table-card"
-import { useAppData } from "~/components/providers/app-data-provider"
+import {
+  useAppData,
+  type Opportunity,
+} from "~/components/providers/app-data-provider"
 import { AppLayout } from "~/components/layout/app-layout"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
@@ -30,9 +33,31 @@ import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
 import { statusBadge } from "~/lib/labels"
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
+function filterOpportunitiesBySearch(
+  rows: readonly Opportunity[],
+  needle: string
+): Opportunity[] {
+  if (!needle) return [...rows]
+  const q = needle.toLowerCase()
+  return rows.filter((opp) => {
+    const s = statusBadge[opp.status]
+    return `${opp.company} ${opp.role} ${opp.description} ${opp.url} ${s.label} ${opp.status}`
+      .toLowerCase()
+      .includes(q)
+  })
+}
+
 export default function OpportunitiesPage() {
   const { opportunities, deleteOpportunity } = useAppData()
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = React.useState("")
+  const searchNeedle = searchQuery.trim()
+
+  const filteredOpportunities = React.useMemo(
+    () => filterOpportunitiesBySearch(opportunities, searchNeedle),
+    [opportunities, searchNeedle]
+  )
+
   const {
     visibleItems,
     totalCount,
@@ -40,7 +65,9 @@ export default function OpportunitiesPage() {
     hasMore,
     sentinelRef,
     loadNextWindow,
-  } = useInfiniteScrollList(opportunities)
+  } = useInfiniteScrollList(filteredOpportunities, {
+    filterKey: searchNeedle,
+  })
 
   return (
     <AppLayout title="Opportunities">
@@ -48,11 +75,6 @@ export default function OpportunitiesPage() {
         <ListingPageHeader
           title="Opportunities"
           description="All tracked job opportunities"
-          stats={
-            totalCount > 0
-              ? `Showing ${loadedCount} of ${totalCount}`
-              : undefined
-          }
           action={
             <Button asChild>
               <Link to="/opportunities/opportunity">
@@ -62,7 +84,16 @@ export default function OpportunitiesPage() {
             </Button>
           }
         />
-        <ListingTableCard>
+        <ListingTableCard
+          stats={
+            totalCount > 0
+              ? `Showing ${loadedCount} of ${totalCount}`
+              : undefined
+          }
+          searchValue={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder="Search opportunities…"
+        >
             <Table>
             <TableHeader>
               <TableRow>
@@ -79,6 +110,12 @@ export default function OpportunitiesPage() {
                 <TableRow>
                   <TableCell colSpan={6} className="text-muted-foreground">
                     No opportunities yet. Add one to get started.
+                  </TableCell>
+                </TableRow>
+              ) : filteredOpportunities.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-muted-foreground">
+                    No matches for your search.
                   </TableCell>
                 </TableRow>
               ) : (

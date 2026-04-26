@@ -5,20 +5,18 @@ import { cn } from "~/lib/utils"
 type ListingPageHeaderProps = {
   title: string
   description: string
-  /** e.g. “Showing 40 of 240” */
-  stats?: React.ReactNode
   /** Primary action (e.g. Add button) — rendered on the right on larger screens */
   action: React.ReactNode
   className?: string
 }
 
 /**
- * Page heading above a listing card: title stack on the left, action on the right.
+ * Page heading above a listing card: title and description on the left, primary action on the right.
+ * Record count and quick search live in `ListingTableCard`.
  */
 export function ListingPageHeader({
   title,
   description,
-  stats,
   action,
   className,
 }: ListingPageHeaderProps) {
@@ -34,9 +32,6 @@ export function ListingPageHeader({
           {title}
         </h1>
         <p className="text-sm text-muted-foreground">{description}</p>
-        {stats ? (
-          <p className="text-xs text-muted-foreground">{stats}</p>
-        ) : null}
       </div>
       <div className="flex shrink-0 self-end sm:self-start sm:pt-0.5">{action}</div>
     </div>

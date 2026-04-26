@@ -4,7 +4,7 @@ import { Link } from "react-router"
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
 import { ListingPageHeader } from "~/components/listing/listing-page-header"
 import { ListingTableCard } from "~/components/listing/listing-table-card"
-import { useAppData } from "~/components/providers/app-data-provider"
+import { useAppData, type Skill } from "~/components/providers/app-data-provider"
 import { AppLayout } from "~/components/layout/app-layout"
 import { Button } from "~/components/ui/button"
 import {
@@ -28,9 +28,25 @@ import {
 import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
+function filterSkillsBySearch(rows: readonly Skill[], needle: string): Skill[] {
+  if (!needle) return [...rows]
+  const q = needle.toLowerCase()
+  return rows.filter((s) =>
+    `${s.name} ${s.description}`.toLowerCase().includes(q)
+  )
+}
+
 export default function SkillsPage() {
   const { skills, deleteSkill } = useAppData()
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = React.useState("")
+  const searchNeedle = searchQuery.trim()
+
+  const filteredSkills = React.useMemo(
+    () => filterSkillsBySearch(skills, searchNeedle),
+    [skills, searchNeedle]
+  )
+
   const {
     visibleItems,
     totalCount,
@@ -38,7 +54,7 @@ export default function SkillsPage() {
     hasMore,
     sentinelRef,
     loadNextWindow,
-  } = useInfiniteScrollList(skills)
+  } = useInfiniteScrollList(filteredSkills, { filterKey: searchNeedle })
 
   return (
     <AppLayout title="Skills">
@@ -46,11 +62,6 @@ export default function SkillsPage() {
         <ListingPageHeader
           title="Skills"
           description="Technical skills relevant to your job search"
-          stats={
-            totalCount > 0
-              ? `Showing ${loadedCount} of ${totalCount}`
-              : undefined
-          }
           action={
             <Button asChild>
               <Link to="/skills/skill">
@@ -60,7 +71,16 @@ export default function SkillsPage() {
             </Button>
           }
         />
-        <ListingTableCard>
+        <ListingTableCard
+          stats={
+            totalCount > 0
+              ? `Showing ${loadedCount} of ${totalCount}`
+              : undefined
+          }
+          searchValue={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder="Search skills…"
+        >
             <Table>
             <TableHeader>
               <TableRow>
@@ -74,6 +94,12 @@ export default function SkillsPage() {
                 <TableRow>
                   <TableCell colSpan={3} className="text-muted-foreground">
                     No skills yet. Add one to get started.
+                  </TableCell>
+                </TableRow>
+              ) : filteredSkills.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={3} className="text-muted-foreground">
+                    No matches for your search.
                   </TableCell>
                 </TableRow>
               ) : (
