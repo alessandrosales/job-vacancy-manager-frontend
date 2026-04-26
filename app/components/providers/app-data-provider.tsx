@@ -70,6 +70,47 @@ export interface Skill {
   description: string
 }
 
+export interface WorkExperience {
+  id: string
+  title: string
+  company_name: string
+  is_remote: boolean
+  date_from: string
+  date_to: string
+  skill_ids: string[]
+}
+
+export interface Certification {
+  id: string
+  name: string
+  date_from: string
+  date_to: string
+}
+
+export interface Education {
+  id: string
+  institution_name: string
+  degree: string
+  field_of_study: string
+  date_from: string
+  date_to: string
+}
+
+/** Saved CV document (distinct from the collapsible “History” menu section). */
+export interface ResumeDocument {
+  id: string
+  title: string
+  description: string
+  /** YYYY-MM-DD — última atualização. */
+  updated_at: string
+  /** Exactly one role (FK). */
+  role_id: string
+  work_experience_ids: string[]
+  certification_ids: string[]
+  education_ids: string[]
+  skill_ids: string[]
+}
+
 export interface KanbanCustomColumn {
   id: string
   title: string
@@ -86,6 +127,12 @@ export interface AppDataState {
   kanban_custom_columns: KanbanCustomColumn[]
   /** Ordem persistida das colunas (status + custom). */
   kanban_column_order: string[]
+  work_experiences: WorkExperience[]
+  certifications: Certification[]
+  /** Academic entries (one row per program or degree). */
+  education: Education[]
+  /** Currículos salvos (listagem em cards). */
+  resumes: ResumeDocument[]
 }
 
 // ---------------------------------------------------------------------------
@@ -176,6 +223,127 @@ function readField<T>(obj: Record<string, unknown>, snake: string, camel: string
   return v as T | undefined
 }
 
+function asString(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : fallback
+}
+
+function asBoolean(value: unknown, fallback = false): boolean {
+  if (typeof value === "boolean") return value
+  return fallback
+}
+
+function normalizeSkillIds(raw: unknown, validIds: Set<string>): string[] {
+  const arr = Array.isArray(raw) ? raw : []
+  const ids = arr.filter((x): x is string => typeof x === "string")
+  return ids.filter((id) => validIds.has(id))
+}
+
+function parseWorkExperiences(
+  raw: unknown,
+  validSkillIds: Set<string>
+): WorkExperience[] {
+  const arr = Array.isArray(raw) ? raw : []
+  const out: WorkExperience[] = []
+  for (const item of arr) {
+    if (!item || typeof item !== "object") continue
+    const o = item as Record<string, unknown>
+    if (typeof o.id !== "string") continue
+    const skill_ids = normalizeSkillIds(
+      o.skill_ids ?? o.skillIds,
+      validSkillIds
+    )
+    out.push({
+      id: o.id,
+      title: asString(o.title),
+      company_name: asString(o.company_name ?? o.companyName),
+      is_remote: asBoolean(o.is_remote ?? o.isRemote),
+      date_from: asString(o.date_from ?? o.dateFrom),
+      date_to: asString(o.date_to ?? o.dateTo),
+      skill_ids,
+    })
+  }
+  return out
+}
+
+function parseCertifications(raw: unknown): Certification[] {
+  const arr = Array.isArray(raw) ? raw : []
+  const out: Certification[] = []
+  for (const item of arr) {
+    if (!item || typeof item !== "object") continue
+    const o = item as Record<string, unknown>
+    if (typeof o.id !== "string") continue
+    out.push({
+      id: o.id,
+      name: asString(o.name),
+      date_from: asString(o.date_from ?? o.dateFrom),
+      date_to: asString(o.date_to ?? o.dateTo),
+    })
+  }
+  return out
+}
+
+function parseEducation(raw: unknown): Education[] {
+  const arr = Array.isArray(raw) ? raw : []
+  const out: Education[] = []
+  for (const item of arr) {
+    if (!item || typeof item !== "object") continue
+    const o = item as Record<string, unknown>
+    if (typeof o.id !== "string") continue
+    out.push({
+      id: o.id,
+      institution_name: asString(o.institution_name ?? o.institutionName),
+      degree: asString(o.degree),
+      field_of_study: asString(o.field_of_study ?? o.fieldOfStudy),
+      date_from: asString(o.date_from ?? o.dateFrom),
+      date_to: asString(o.date_to ?? o.dateTo),
+    })
+  }
+  return out
+}
+
+function parseResumes(
+  raw: unknown,
+  ctx: {
+    validWorkExperienceIds: Set<string>
+    validCertificationIds: Set<string>
+    validEducationIds: Set<string>
+    validSkillIds: Set<string>
+    validRoleIds: Set<string>
+  }
+): ResumeDocument[] {
+  const arr = Array.isArray(raw) ? raw : []
+  const out: ResumeDocument[] = []
+  for (const item of arr) {
+    if (!item || typeof item !== "object") continue
+    const o = item as Record<string, unknown>
+    if (typeof o.id !== "string") continue
+    const roleRaw = o.role_id ?? o.roleId
+    const role_id =
+      typeof roleRaw === "string" && ctx.validRoleIds.has(roleRaw) ? roleRaw : ""
+    out.push({
+      id: o.id,
+      title: asString(o.title),
+      description: asString(o.description),
+      updated_at: asString(o.updated_at ?? o.updatedAt),
+      role_id,
+      work_experience_ids: normalizeSkillIds(
+        o.work_experience_ids ?? o.workExperienceIds,
+        ctx.validWorkExperienceIds
+      ),
+      certification_ids: normalizeSkillIds(
+        o.certification_ids ?? o.certificationIds,
+        ctx.validCertificationIds
+      ),
+      education_ids: normalizeSkillIds(
+        o.education_ids ?? o.educationIds,
+        ctx.validEducationIds
+      ),
+      skill_ids: normalizeSkillIds(o.skill_ids ?? o.skillIds, ctx.validSkillIds),
+    })
+  }
+  return out
+}
+
 function parseStored(raw: string | null): AppDataState | null {
   if (!raw) return null
   try {
@@ -223,6 +391,29 @@ function parseStored(raw: string | null): AppDataState | null {
       interest_level: normalizeInterestLevel(r.interest_level ?? r.interestLevel),
     })) as Role[]
 
+    const skills: Skill[] = data.skills as Skill[]
+    const validSkillIds = new Set(skills.map((s) => s.id))
+    const work_experiences_raw = readField<unknown>(
+      data,
+      "work_experiences",
+      "workExperiences"
+    )
+    const work_experiences = parseWorkExperiences(work_experiences_raw, validSkillIds)
+    const certifications_raw = readField<unknown>(data, "certifications", "certifications")
+    const certifications = parseCertifications(
+      Array.isArray(certifications_raw) ? certifications_raw : []
+    )
+    const education_raw = readField<unknown>(data, "education", "education")
+    const education = parseEducation(Array.isArray(education_raw) ? education_raw : [])
+    const resumes_raw = readField<unknown>(data, "resumes", "resumes")
+    const resumes = parseResumes(Array.isArray(resumes_raw) ? resumes_raw : [], {
+      validWorkExperienceIds: new Set(work_experiences.map((w) => w.id)),
+      validCertificationIds: new Set(certifications.map((c) => c.id)),
+      validEducationIds: new Set(education.map((e) => e.id)),
+      validSkillIds,
+      validRoleIds: new Set(roles.map((r) => r.id)),
+    })
+
     return {
       ...data as Partial<AppDataState>,
       opportunity_statuses,
@@ -251,7 +442,11 @@ function parseStored(raw: string | null): AppDataState | null {
       }),
       companies,
       roles,
-      skills: data.skills as Skill[],
+      skills,
+      work_experiences,
+      certifications,
+      education,
+      resumes,
       kanban_custom_columns,
       kanban_column_order,
     }
@@ -287,6 +482,18 @@ interface AppDataContextValue extends AppDataState {
   addSkill: (row: Omit<Skill, "id">) => string
   updateSkill: (id: string, row: Omit<Skill, "id">) => void
   deleteSkill: (id: string) => void
+  addWorkExperience: (row: Omit<WorkExperience, "id">) => string
+  updateWorkExperience: (id: string, row: Omit<WorkExperience, "id">) => void
+  deleteWorkExperience: (id: string) => void
+  addCertification: (row: Omit<Certification, "id">) => string
+  updateCertification: (id: string, row: Omit<Certification, "id">) => void
+  deleteCertification: (id: string) => void
+  addEducation: (row: Omit<Education, "id">) => string
+  updateEducation: (id: string, row: Omit<Education, "id">) => void
+  deleteEducation: (id: string) => void
+  addResume: (row: Omit<ResumeDocument, "id">) => string
+  updateResume: (id: string, row: Omit<ResumeDocument, "id">) => void
+  deleteResume: (id: string) => void
 }
 
 const AppDataContext = React.createContext<AppDataContextValue | null>(null)
@@ -505,7 +712,13 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       },
       deleteRole: (id) => {
         setState((s) => {
-          const next = { ...s, roles: s.roles.filter((r) => r.id !== id) }
+          const next: AppDataState = {
+            ...s,
+            roles: s.roles.filter((role) => role.id !== id),
+            resumes: s.resumes.map((doc) =>
+              doc.role_id === id ? { ...doc, role_id: "" } : doc
+            ),
+          }
           persist(next)
           return next
         })
@@ -531,7 +744,147 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       },
       deleteSkill: (id) => {
         setState((s) => {
-          const next = { ...s, skills: s.skills.filter((sk) => sk.id !== id) }
+          const next: AppDataState = {
+            ...s,
+            skills: s.skills.filter((sk) => sk.id !== id),
+            work_experiences: s.work_experiences.map((we) => ({
+              ...we,
+              skill_ids: we.skill_ids.filter((sid) => sid !== id),
+            })),
+            resumes: s.resumes.map((r) => ({
+              ...r,
+              skill_ids: r.skill_ids.filter((sid) => sid !== id),
+            })),
+          }
+          persist(next)
+          return next
+        })
+      },
+      addWorkExperience: (row) => {
+        const id = createId()
+        setState((s) => {
+          const next = { ...s, work_experiences: [...s.work_experiences, { id, ...row }] }
+          persist(next)
+          return next
+        })
+        return id
+      },
+      updateWorkExperience: (id, row) => {
+        setState((s) => {
+          const next = {
+            ...s,
+            work_experiences: s.work_experiences.map((we) =>
+              we.id === id ? { id, ...row } : we
+            ),
+          }
+          persist(next)
+          return next
+        })
+      },
+      deleteWorkExperience: (id) => {
+        setState((s) => {
+          const next: AppDataState = {
+            ...s,
+            work_experiences: s.work_experiences.filter((we) => we.id !== id),
+            resumes: s.resumes.map((r) => ({
+              ...r,
+              work_experience_ids: r.work_experience_ids.filter((wid) => wid !== id),
+            })),
+          }
+          persist(next)
+          return next
+        })
+      },
+      addCertification: (row) => {
+        const id = createId()
+        setState((s) => {
+          const next = { ...s, certifications: [...s.certifications, { id, ...row }] }
+          persist(next)
+          return next
+        })
+        return id
+      },
+      updateCertification: (id, row) => {
+        setState((s) => {
+          const next = {
+            ...s,
+            certifications: s.certifications.map((c) =>
+              c.id === id ? { id, ...row } : c
+            ),
+          }
+          persist(next)
+          return next
+        })
+      },
+      deleteCertification: (id) => {
+        setState((s) => {
+          const next: AppDataState = {
+            ...s,
+            certifications: s.certifications.filter((c) => c.id !== id),
+            resumes: s.resumes.map((r) => ({
+              ...r,
+              certification_ids: r.certification_ids.filter((cid) => cid !== id),
+            })),
+          }
+          persist(next)
+          return next
+        })
+      },
+      addEducation: (row) => {
+        const id = createId()
+        setState((s) => {
+          const next = { ...s, education: [...s.education, { id, ...row }] }
+          persist(next)
+          return next
+        })
+        return id
+      },
+      updateEducation: (id, row) => {
+        setState((s) => {
+          const next = {
+            ...s,
+            education: s.education.map((e) => (e.id === id ? { id, ...row } : e)),
+          }
+          persist(next)
+          return next
+        })
+      },
+      deleteEducation: (id) => {
+        setState((s) => {
+          const next: AppDataState = {
+            ...s,
+            education: s.education.filter((e) => e.id !== id),
+            resumes: s.resumes.map((r) => ({
+              ...r,
+              education_ids: r.education_ids.filter((eid) => eid !== id),
+            })),
+          }
+          persist(next)
+          return next
+        })
+      },
+      addResume: (row) => {
+        const id = createId()
+        setState((s) => {
+          const next = { ...s, resumes: [...s.resumes, { id, ...row }] }
+          persist(next)
+          return next
+        })
+        return id
+      },
+      updateResume: (id, row) => {
+        setState((s) => {
+          const next = {
+            ...s,
+            resumes: s.resumes.map((r) => (r.id === id ? { id, ...row } : r)),
+          }
+          persist(next)
+          return next
+        })
+      },
+      deleteResume: (id) => {
+        setState((s) => {
+          const next = { ...s, resumes: s.resumes.filter((r) => r.id !== id) }
           persist(next)
           return next
         })

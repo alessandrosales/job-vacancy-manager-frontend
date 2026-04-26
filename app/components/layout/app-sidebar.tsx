@@ -29,6 +29,12 @@ import {
   UserCogIcon,
   SparklesIcon,
   CirclePlusIcon,
+  FileStackIcon,
+  HistoryIcon,
+  AwardIcon,
+  GraduationCapIcon,
+  FolderTreeIcon,
+  ScrollTextIcon,
 } from "lucide-react"
 
 const data = {
@@ -96,7 +102,7 @@ const data = {
   //     ],
   //   },
   // ],
-  projects: [
+  menuTop: [
     {
       name: "Dashboard",
       url: "/dashboard",
@@ -107,6 +113,13 @@ const data = {
       url: "/opportunities",
       icon: <BriefcaseIcon />,
     },
+    {
+      name: "Resumes",
+      url: "/resumes",
+      icon: <FileStackIcon />,
+    },
+  ],
+  menuReference: [
     {
       name: "Opportunity statuses",
       url: "/opportunities/statuses",
@@ -126,6 +139,23 @@ const data = {
       name: "Skills",
       url: "/skills",
       icon: <SparklesIcon />,
+    },
+  ],
+  historyProjects: [
+    {
+      name: "Work experience",
+      url: "/work-experiences",
+      icon: <HistoryIcon />,
+    },
+    {
+      name: "Certifications",
+      url: "/certifications",
+      icon: <AwardIcon />,
+    },
+    {
+      name: "Education",
+      url: "/educations",
+      icon: <GraduationCapIcon />,
     },
   ],
 }
@@ -171,7 +201,24 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenu>
         </SidebarGroup>
         <SidebarSeparator />
-        <NavProjects projects={data.projects} />
+        <NavProjects
+          label="Menu"
+          items={data.menuTop}
+          submenus={[
+            {
+              title: "History",
+              icon: <ScrollTextIcon />,
+              defaultOpen: true,
+              items: data.historyProjects,
+            },
+            {
+              title: "Reference",
+              icon: <FolderTreeIcon />,
+              defaultOpen: true,
+              items: data.menuReference,
+            },
+          ]}
+        />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

@@ -2,6 +2,7 @@ import * as React from "react"
 import { Link } from "react-router"
 
 import { AppSidebar } from "~/components/layout/app-sidebar"
+import { FloatingAgentAssistant } from "~/components/layout/floating-agent-assistant"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -83,6 +84,7 @@ export function AppLayout({ title, breadcrumbs, children }: AppLayoutProps) {
         <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden p-4 pt-0">
           {children}
         </div>
+        <FloatingAgentAssistant />
       </SidebarInset>
     </SidebarProvider>
   )
