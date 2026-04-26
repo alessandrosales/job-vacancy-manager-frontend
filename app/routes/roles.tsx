@@ -33,7 +33,7 @@ function filterRolesBySearch(rows: readonly Role[], needle: string): Role[] {
   if (!needle) return [...rows]
   const q = needle.toLowerCase()
   return rows.filter((r) =>
-    `${r.name} ${r.description} ${r.interestLevel}`.toLowerCase().includes(q)
+    `${r.name} ${r.description} ${r.interest_level}`.toLowerCase().includes(q)
   )
 }
 
@@ -134,14 +134,14 @@ export default function RolesPage() {
                       </TableCell>
                       <TableCell>
                         <InterestLevelStarPicker
-                          value={role.interestLevel}
+                          value={role.interest_level}
                           size="sm"
                           showValueLabel={false}
                           onChange={(nextLevel) =>
                             updateRole(role.id, {
                               name: role.name,
                               description: role.description,
-                              interestLevel: nextLevel,
+                              interest_level: nextLevel,
                             })
                           }
                         />

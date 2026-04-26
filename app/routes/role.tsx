@@ -38,7 +38,7 @@ export default function RolePage() {
     if (existing) {
       setName(existing.name)
       setDescription(existing.description)
-      setInterestLevel(existing.interestLevel)
+      setInterestLevel(existing.interest_level)
     }
   }, [existing])
 
@@ -53,7 +53,7 @@ export default function RolePage() {
     const payload = {
       name: name.trim(),
       description: description.trim(),
-      interestLevel,
+      interest_level: interestLevel,
     }
     if (isEdit && id) {
       updateRole(id, payload)

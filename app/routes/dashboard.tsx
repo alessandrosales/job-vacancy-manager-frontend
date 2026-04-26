@@ -82,7 +82,11 @@ const lineConfig: ChartConfig = {
 }
 
 export default function DashboardPage() {
-  const { opportunities, opportunityStatuses, kanbanCustomColumns } = useAppData()
+  const {
+    opportunities,
+    opportunity_statuses: opportunityStatuses,
+    kanban_custom_columns: kanbanCustomColumns,
+  } = useAppData()
   const recent = opportunities.slice(0, 5)
 
   return (

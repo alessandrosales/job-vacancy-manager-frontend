@@ -45,7 +45,7 @@ function filterBySearch(
 
 export default function OpportunityStatusesPage() {
   const {
-    opportunityStatuses,
+    opportunity_statuses: opportunityStatuses,
     deleteOpportunityStatus,
     reorderOpportunityStatuses,
   } = useAppData()

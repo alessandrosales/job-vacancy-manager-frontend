@@ -54,7 +54,7 @@ function filterOpportunitiesBySearch(
   return rows.filter((opp) => {
     const colId = getEffectiveColumnId(opp)
     const colLabel = getColumnTitle(colId, opportunityStatuses, customColumns)
-    return `${opp.company} ${opp.role} ${opp.description} ${opp.url} ${colLabel} ${opp.status} ${opp.interestLevel}`
+    return `${opp.company} ${opp.role} ${opp.description} ${opp.url} ${colLabel} ${opp.status} ${opp.interest_level}`
       .toLowerCase()
       .includes(q)
   })
@@ -65,9 +65,9 @@ export default function OpportunitiesPage() {
     opportunities,
     deleteOpportunity,
     updateOpportunity,
-    opportunityStatuses,
-    kanbanCustomColumns,
-    kanbanColumnOrder,
+    opportunity_statuses: opportunityStatuses,
+    kanban_custom_columns: kanbanCustomColumns,
+    kanban_column_order: kanbanColumnOrder,
     addKanbanColumn,
     setKanbanColumnOrder,
   } = useAppData()
@@ -232,7 +232,7 @@ export default function OpportunitiesPage() {
                       </TableCell>
                       <TableCell>
                         <InterestLevelStarPicker
-                          value={opp.interestLevel}
+                          value={opp.interest_level}
                           size="sm"
                           showValueLabel={false}
                           onChange={(nextLevel) =>
@@ -242,8 +242,8 @@ export default function OpportunitiesPage() {
                               description: opp.description,
                               url: opp.url,
                               status: opp.status,
-                              interestLevel: nextLevel,
-                              boardColumnId: opp.boardColumnId ?? opp.status,
+                              interest_level: nextLevel,
+                              board_column_id: opp.board_column_id ?? opp.status,
                             })
                           }
                         />

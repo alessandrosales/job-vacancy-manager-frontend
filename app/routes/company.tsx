@@ -40,7 +40,7 @@ export default function CompanyPage() {
       setName(existing.name)
       setUrl(existing.url)
       setDescription(existing.description)
-      setInterestLevel(existing.interestLevel)
+      setInterestLevel(existing.interest_level)
     }
   }, [existing])
 
@@ -56,7 +56,7 @@ export default function CompanyPage() {
       name: name.trim(),
       url: url.trim(),
       description: description.trim(),
-      interestLevel,
+      interest_level: interestLevel,
     }
     if (isEdit && id) {
       updateCompany(id, payload)

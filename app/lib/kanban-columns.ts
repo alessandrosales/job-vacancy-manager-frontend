@@ -23,7 +23,7 @@ export function parseColumnSortableId(id: string): string | null {
 }
 
 export function getEffectiveColumnId(opp: Opportunity): string {
-  return opp.boardColumnId ?? opp.status
+  return opp.board_column_id ?? opp.status
 }
 
 export function isOpportunityStatusColumnId(

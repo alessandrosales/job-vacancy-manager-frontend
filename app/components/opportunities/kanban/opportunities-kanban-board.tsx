@@ -63,7 +63,7 @@ function persistColumnIfNeeded(
     for (const id of ids) {
       const opp = opportunityById.get(id)
       if (!opp) continue
-      const current = opp.boardColumnId ?? opp.status
+      const current = opp.board_column_id ?? opp.status
       if (current === columnId) continue
 
       if (isOpportunityStatusColumnId(columnId, opportunityStatuses)) {
@@ -73,8 +73,8 @@ function persistColumnIfNeeded(
           description: opp.description,
           url: opp.url,
           status: columnId,
-          interestLevel: opp.interestLevel,
-          boardColumnId: columnId,
+          interest_level: opp.interest_level,
+          board_column_id: columnId,
         })
       } else {
         updateOpportunity(id, {
@@ -83,8 +83,8 @@ function persistColumnIfNeeded(
           description: opp.description,
           url: opp.url,
           status: opp.status,
-          interestLevel: opp.interestLevel,
-          boardColumnId: columnId,
+          interest_level: opp.interest_level,
+          board_column_id: columnId,
         })
       }
     }

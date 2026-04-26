@@ -90,7 +90,7 @@ export function generateMockOpportunities(
       description: `Position #${i + 1}: build product features, collaborate with cross-functional teams, and ship quality software. Stack varies by team.`,
       url: `https://example.com/jobs/${1000 + i}`,
       status,
-      interestLevel: i % 6,
+      interest_level: i % 6,
     })
   }
   return rows
@@ -100,16 +100,12 @@ export function generateMockCompanies(count: number): Company[] {
   const rows: Company[] = []
   for (let i = 0; i < count; i++) {
     const base = pick(COMPANY_PREFIXES, i * 2)
-    const interestLevel = pick(
-      [0, 1, 2, 3, 4, 5] as const,
-      i
-    ) as InterestLevel
     rows.push({
       id: `seed-co-${i}`,
       name: i === 0 ? `${base} Industries` : `${base} ${i + 1}`,
       url: `https://${base.toLowerCase().replace(/\s+/g, "")}.example.com`,
       description: `Company #${i + 1}: technology and services organisation. Interest level reflects your own rating for tracking.`,
-      interestLevel,
+      interest_level: pick([0, 1, 2, 3, 4, 5] as const, i) as InterestLevel,
     })
   }
   return rows
@@ -123,7 +119,7 @@ export function generateMockRoles(count: number): Role[] {
       id: `seed-ro-${i}`,
       name: `${title}${i >= ROLE_TITLES.length ? ` — band ${Math.floor(i / ROLE_TITLES.length)}` : ""}`,
       description: `Role #${i + 1}: responsibilities include delivery, mentoring, and alignment with product goals.`,
-      interestLevel: pick([0, 1, 2, 3, 4, 5] as const, i + 1) as InterestLevel,
+      interest_level: pick([0, 1, 2, 3, 4, 5] as const, i + 1) as InterestLevel,
     })
   }
   return rows
@@ -143,20 +139,17 @@ export function generateMockSkills(count: number): Skill[] {
 }
 
 export function generateLargeMockDataset() {
-  const opportunityStatuses = DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS.map((s) => ({
+  const opportunity_statuses = DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS.map((s) => ({
     ...s,
   }))
-  const statusIds = opportunityStatuses.map((s) => s.id)
+  const statusIds = opportunity_statuses.map((s) => s.id)
   return {
-    opportunities: generateMockOpportunities(
-      MOCK_SEED_TOTALS.opportunities,
-      statusIds
-    ),
+    opportunities: generateMockOpportunities(MOCK_SEED_TOTALS.opportunities, statusIds),
     companies: generateMockCompanies(MOCK_SEED_TOTALS.companies),
     roles: generateMockRoles(MOCK_SEED_TOTALS.roles),
     skills: generateMockSkills(MOCK_SEED_TOTALS.skills),
-    opportunityStatuses,
-    kanbanCustomColumns: [] as { id: string; title: string }[],
-    kanbanColumnOrder: [] as string[],
+    opportunity_statuses,
+    kanban_custom_columns: [] as { id: string; title: string }[],
+    kanban_column_order: [] as string[],
   }
 }

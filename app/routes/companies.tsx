@@ -39,7 +39,7 @@ function filterCompaniesBySearch(
   if (!needle) return [...rows]
   const q = needle.toLowerCase()
   return rows.filter((c) =>
-    `${c.name} ${c.url} ${c.description} ${c.interestLevel}`
+    `${c.name} ${c.url} ${c.description} ${c.interest_level}`
       .toLowerCase()
       .includes(q)
   )
@@ -153,7 +153,7 @@ export default function CompaniesPage() {
                       </TableCell>
                       <TableCell>
                         <InterestLevelStarPicker
-                          value={company.interestLevel}
+                          value={company.interest_level}
                           size="sm"
                           showValueLabel={false}
                           onChange={(nextLevel) =>
@@ -161,7 +161,7 @@ export default function CompaniesPage() {
                               name: company.name,
                               url: company.url,
                               description: company.description,
-                              interestLevel: nextLevel,
+                              interest_level: nextLevel,
                             })
                           }
                         />

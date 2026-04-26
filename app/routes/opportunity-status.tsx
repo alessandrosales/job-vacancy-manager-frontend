@@ -41,8 +41,11 @@ export default function OpportunityStatusPage() {
   const { id } = useParams()
   const isEdit = Boolean(id)
 
-  const { opportunityStatuses, addOpportunityStatus, updateOpportunityStatus } =
-    useAppData()
+  const {
+    opportunity_statuses: opportunityStatuses,
+    addOpportunityStatus,
+    updateOpportunityStatus,
+  } = useAppData()
   const existing = id
     ? opportunityStatuses.find((s) => s.id === id)
     : undefined

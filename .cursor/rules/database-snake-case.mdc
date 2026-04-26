@@ -1,48 +1,89 @@
 ---
-description: Objeto/JSON alinhado ao banco e API Rails usam propriedades em snake_case
+description: Propriedades de interfaces e objetos de dados usam snake_case — padrão do banco (Rails)
 alwaysApply: true
 ---
 
-# Modelos de dados: snake_case (Rails / banco)
+# Modelos de dados: snake_case (padrão do banco / Rails)
 
-O backend segue **Ruby on Rails** (Active Record, JSON:API ou controllers REST). Tudo o que o frontend tratar como **espelho do banco ou do payload HTTP** (tipos, serialização, `fetch`, colunas) deve usar **`snake_case` nos nomes das propriedades**, alinhado ao que o Rails expõe.
+O backend usa **Ruby on Rails**. **Toda** propriedade de uma interface ou objeto que represente uma entidade do banco de dados — ou que trafegue via API — deve usar **`snake_case`**, sem exceção.
 
-## O que se aplica
+## Interfaces e tipos de entidades do banco
 
-- `interface` / `type` de **entidades persistidas** (tabelas, atributos de modelo).
-- **Corpos e respostas** de API (`body`, DTO, `Response`).
-- Estruturas **gravadas/ lidas** como JSON fiel ao backend (ex.: `localStorage` se for o mesmo contrato do servidor).
-- Nomes de campos em **migrations conceituais** ou comentários de schema compartilhados com a API.
+Qualquer `interface` ou `type` que espelhe uma tabela, um payload de API ou o estado persistido (ex.: `localStorage`) deve ter **todas** as propriedades multi-palavra em `snake_case`.
 
-## O que não precisa (por padrão)
+```ts
+// Correto
+export interface Opportunity {
+  id: string
+  company: string
+  interest_level: number
+  board_column_id?: string
+}
 
-- Estado puramente de UI, handlers do DOM, chaves de `Map` locais, ou utilitários que não trafegam com o backend — podem seguir o estilo do código (p.ex. camelCase) **desde que** a fronteira com o dado de domínio faça o mapeamento explícito quando necessário.
+export interface AppDataState {
+  opportunities: Opportunity[]
+  opportunity_statuses: OpportunityStatusDefinition[]
+  kanban_custom_columns: KanbanCustomColumn[]
+  kanban_column_order: string[]
+}
 
-## Convenções
+// Errado — nunca use camelCase em propriedades de entidade
+export interface Opportunity {
+  interestLevel: number      // ✗
+  boardColumnId?: string     // ✗
+}
+```
 
-- Preferir chaves exatamente como no Rails/JSON: `interest_level`, `board_column_id`, `created_at`, `opportunity_statuses`.
-- IDs e FKs: `user_id`, `company_id`, `opportunity_id`.
-- **Não** expor `camelCase` em tipos cujo contrato de rede é o do Rails, para evitar divergência com o que o backend envia e espera.
-- Se existir função de **parse/normalização** (API → tela), ela pode produzir um shape de UI, mas a **definição do tipo** do dado vindo/indo para a API continua `snake_case`.
+## Objetos literais / payloads
 
-## Exemplos
+Ao construir um objeto para `addX` / `updateX` / `fetch`, use snake_case nas chaves:
 
-- Bom (contrato alinhado ao banco / JSON Rails):
+```ts
+// Correto
+updateOpportunity(id, {
+  interest_level: value,
+  board_column_id: colId,
+})
 
-  ```ts
-  type OpportunityRow = {
-    id: string
-    company: string
-    interest_level: number
-    board_column_id?: string
-    created_at?: string
-  }
-  ```
+// Errado
+updateOpportunity(id, {
+  interestLevel: value,      // ✗
+  boardColumnId: colId,      // ✗
+})
+```
 
-- Evitar nesse contexto: `interestLevel`, `boardColumnId`, `createdAt` **nos tipos** que representam a persistência e a API com Rails.
+## Nomes de variáveis locais e parâmetros de função
 
-- Ao adicionar um novo recurso, nomear o payload como o time de backend (snake case) e documentar no tipo TypeScript o mesmo padrão.
+Variáveis locais e parâmetros de componentes React **podem** usar camelCase — eles não são propriedades de banco.
+Use desestruturação com alias quando necessário:
 
-## Integração com código legado
+```ts
+// Correto: chave do contexto é snake_case; variável local usa alias camelCase
+const {
+  opportunity_statuses: opportunityStatuses,
+  kanban_custom_columns: kanbanCustomColumns,
+  kanban_column_order: kanbanColumnOrder,
+} = useAppData()
+```
 
-- Código existente em camelCase no cliente pode permanecer até ser migrado; **novas** entidades e integrações com o backend Ruby devem seguir `snake_case` desde o início, ou mapear numa camada delimitada (adapter) cujo **contrato** com a rede esteja em snake case.
+## Nomes de funções de contexto / handlers
+
+Funções como `addOpportunity`, `setKanbanColumnOrder`, `deleteOpportunityStatus` são **métodos JavaScript**, não propriedades de banco — permanecem em camelCase.
+
+## Referência: propriedades atuais do projeto
+
+| Interface | Propriedade | Tipo |
+|---|---|---|
+| `Opportunity` | `interest_level` | `number` |
+| `Opportunity` | `board_column_id` | `string \| undefined` |
+| `Company` | `interest_level` | `InterestLevel` |
+| `Role` | `interest_level` | `InterestLevel` |
+| `AppDataState` | `opportunity_statuses` | `OpportunityStatusDefinition[]` |
+| `AppDataState` | `kanban_custom_columns` | `KanbanCustomColumn[]` |
+| `AppDataState` | `kanban_column_order` | `string[]` |
+
+## Ao adicionar um novo campo
+
+1. Nomeie em snake_case na interface TypeScript.
+2. Use o mesmo nome no objeto literal passado para `addX` / `updateX`.
+3. Se o campo vier de uma chave camelCase legada (localStorage antigo), trate a migração no `parseStored` do `app-data-provider.tsx` lendo ambas as formas: `o.novo_campo ?? o.campoAntigo`.

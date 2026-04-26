@@ -36,8 +36,12 @@ export default function OpportunityPage() {
   const { id } = useParams()
   const isEdit = Boolean(id)
 
-  const { opportunities, addOpportunity, updateOpportunity, opportunityStatuses } =
-    useAppData()
+  const {
+    opportunities,
+    addOpportunity,
+    updateOpportunity,
+    opportunity_statuses: opportunityStatuses,
+  } = useAppData()
   const existing = id ? opportunities.find((o) => o.id === id) : undefined
   const defaultStatusId =
     opportunityStatuses[0]?.id ?? DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS[0]!.id
@@ -57,7 +61,7 @@ export default function OpportunityPage() {
       setUrl(existing.url)
       setStatus(existing.status)
       setInterestLevel(
-        Math.min(5, Math.max(0, Math.round(existing.interestLevel))) as InterestLevel
+        Math.min(5, Math.max(0, Math.round(existing.interest_level))) as InterestLevel
       )
     }
   }, [existing])
@@ -76,8 +80,8 @@ export default function OpportunityPage() {
       description: description.trim(),
       url: url.trim(),
       status,
-      interestLevel,
-      boardColumnId: existing?.boardColumnId ?? status,
+      interest_level: interestLevel,
+      board_column_id: existing?.board_column_id ?? status,
     }
     if (isEdit && id) {
       updateOpportunity(id, payload)

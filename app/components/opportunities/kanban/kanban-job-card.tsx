@@ -79,7 +79,7 @@ export function KanbanJobCardContent({
               key={i}
               className={cn(
                 "size-3",
-                i < opp.interestLevel
+                i < opp.interest_level
                   ? "fill-current text-amber-500"
                   : "text-muted-foreground/35"
               )}
