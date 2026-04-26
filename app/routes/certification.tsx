@@ -18,6 +18,7 @@ import {
   FieldLabel,
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
+import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 
 export default function CertificationPage() {
   const navigate = useNavigate()
@@ -30,6 +31,7 @@ export default function CertificationPage() {
   const [name, setName] = React.useState("")
   const [dateFrom, setDateFrom] = React.useState("")
   const [dateTo, setDateTo] = React.useState("")
+  const [postSaveOpen, setPostSaveOpen] = React.useState(false)
 
   React.useEffect(() => {
     if (existing) {
@@ -45,6 +47,12 @@ export default function CertificationPage() {
     }
   }, [isEdit, id, existing, navigate])
 
+  function resetForm() {
+    setName("")
+    setDateFrom("")
+    setDateTo("")
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const payload = {
@@ -54,10 +62,11 @@ export default function CertificationPage() {
     }
     if (isEdit && id) {
       updateCertification(id, payload)
+      navigate("/certifications")
     } else {
       addCertification(payload)
+      setPostSaveOpen(true)
     }
-    navigate("/certifications")
   }
 
   if (isEdit && !existing) {
@@ -127,6 +136,12 @@ export default function CertificationPage() {
           </form>
         </Card>
       </div>
+      <PostSaveDialog
+        open={postSaveOpen}
+        entityLabel="Certification"
+        onGoToList={() => navigate("/certifications")}
+        onAddAnother={() => { setPostSaveOpen(false); resetForm() }}
+      />
     </AppLayout>
   )
 }

@@ -33,6 +33,7 @@ import {
 import { Textarea } from "~/components/ui/textarea"
 import type { ResumeDescriptionAiContext } from "~/lib/resume-ai-description"
 import { SparklesIcon } from "lucide-react"
+import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 
 function todayIsoDate(): string {
   return new Date().toISOString().slice(0, 10)
@@ -63,6 +64,7 @@ export default function ResumeDocumentPage() {
   const [educationIds, setEducationIds] = React.useState<string[]>([])
   const [skillIds, setSkillIds] = React.useState<string[]>([])
   const [aiDialogOpen, setAiDialogOpen] = React.useState(false)
+  const [postSaveOpen, setPostSaveOpen] = React.useState(false)
 
   /** Evita resetar o formulário só porque `existing` ganhou nova referência no provider (mesmos dados). */
   const resumeHydrateKey = React.useMemo(() => {
@@ -119,6 +121,16 @@ export default function ResumeDocumentPage() {
     }
   }, [isEdit, id, existing, navigate])
 
+  function resetForm() {
+    setTitle("")
+    setDescription("")
+    setRoleId("")
+    setWorkExperienceIds([])
+    setCertificationIds([])
+    setEducationIds([])
+    setSkillIds([])
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (roles.length > 0 && !(roleId !== "" && roles.some((r) => r.id === roleId))) {
@@ -141,10 +153,11 @@ export default function ResumeDocumentPage() {
     }
     if (isEdit && id) {
       updateResume(id, payload)
+      navigate("/resumes")
     } else {
       addResume(payload)
+      setPostSaveOpen(true)
     }
-    navigate("/resumes")
   }
 
   if (isEdit && !existing) {
@@ -363,6 +376,12 @@ export default function ResumeDocumentPage() {
           onApply={setDescription}
         />
       </div>
+      <PostSaveDialog
+        open={postSaveOpen}
+        entityLabel="Resume"
+        onGoToList={() => navigate("/resumes")}
+        onAddAnother={() => { setPostSaveOpen(false); resetForm() }}
+      />
     </AppLayout>
   )
 }

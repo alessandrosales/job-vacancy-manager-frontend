@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "~/components/ui/select"
 import type { OpportunityStatusDefinition, StatusBadgeVariant } from "~/lib/labels"
+import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 
 const BADGE_VARIANTS: StatusBadgeVariant[] = [
   "secondary",
@@ -53,6 +54,7 @@ export default function OpportunityStatusPage() {
   const [label, setLabel] = React.useState("")
   const [description, setDescription] = React.useState("")
   const [variant, setVariant] = React.useState<StatusBadgeVariant>("secondary")
+  const [postSaveOpen, setPostSaveOpen] = React.useState(false)
 
   React.useEffect(() => {
     if (existing) {
@@ -68,6 +70,12 @@ export default function OpportunityStatusPage() {
     }
   }, [isEdit, id, existing, navigate])
 
+  function resetForm() {
+    setLabel("")
+    setDescription("")
+    setVariant("secondary")
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const t = label.trim()
@@ -79,10 +87,11 @@ export default function OpportunityStatusPage() {
     }
     if (isEdit && id) {
       updateOpportunityStatus(id, row)
+      navigate("/opportunities/statuses")
     } else {
       addOpportunityStatus(row)
+      setPostSaveOpen(true)
     }
-    navigate("/opportunities/statuses")
   }
 
   if (isEdit && !existing) {
@@ -166,6 +175,12 @@ export default function OpportunityStatusPage() {
           </form>
         </Card>
       </div>
+      <PostSaveDialog
+        open={postSaveOpen}
+        entityLabel="Status"
+        onGoToList={() => navigate("/opportunities/statuses")}
+        onAddAnother={() => { setPostSaveOpen(false); resetForm() }}
+      />
     </AppLayout>
   )
 }

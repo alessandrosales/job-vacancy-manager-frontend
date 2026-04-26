@@ -20,6 +20,7 @@ import {
 import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
 import { InterestLevelStarPicker } from "~/components/shared/interest-level-star-picker"
+import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 import type { InterestLevel } from "~/lib/labels"
 
 export default function RolePage() {
@@ -33,6 +34,7 @@ export default function RolePage() {
   const [name, setName] = React.useState("")
   const [description, setDescription] = React.useState("")
   const [interestLevel, setInterestLevel] = React.useState<InterestLevel>(3)
+  const [postSaveOpen, setPostSaveOpen] = React.useState(false)
 
   React.useEffect(() => {
     if (existing) {
@@ -48,6 +50,12 @@ export default function RolePage() {
     }
   }, [isEdit, id, existing, navigate])
 
+  function resetForm() {
+    setName("")
+    setDescription("")
+    setInterestLevel(3)
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const payload = {
@@ -57,10 +65,11 @@ export default function RolePage() {
     }
     if (isEdit && id) {
       updateRole(id, payload)
+      navigate("/roles")
     } else {
       addRole(payload)
+      setPostSaveOpen(true)
     }
-    navigate("/roles")
   }
 
   if (isEdit && !existing) {
@@ -134,6 +143,12 @@ export default function RolePage() {
         </form>
       </Card>
       </div>
+      <PostSaveDialog
+        open={postSaveOpen}
+        entityLabel="Role"
+        onGoToList={() => navigate("/roles")}
+        onAddAnother={() => { setPostSaveOpen(false); resetForm() }}
+      />
     </AppLayout>
   )
 }

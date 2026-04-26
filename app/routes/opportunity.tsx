@@ -2,6 +2,7 @@ import * as React from "react"
 import { useNavigate, useParams } from "react-router"
 
 import { OpportunityFormFields } from "~/components/opportunities/opportunity-form-fields"
+import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 import { useAppData } from "~/components/providers/app-data-provider"
 import { AppLayout } from "~/components/layout/app-layout"
 import { Button } from "~/components/ui/button"
@@ -29,6 +30,7 @@ export default function OpportunityPage() {
   const [url, setUrl] = React.useState("")
   const [status, setStatus] = React.useState<OpportunityStatus>("")
   const [interestLevel, setInterestLevel] = React.useState<InterestLevel>(0)
+  const [postSaveOpen, setPostSaveOpen] = React.useState(false)
 
   React.useEffect(() => {
     if (existing) {
@@ -58,6 +60,15 @@ export default function OpportunityPage() {
     }
   }, [isEdit, id, existing, navigate])
 
+  function resetForm() {
+    setCompanyId("")
+    setRoleId("")
+    setDescription("")
+    setUrl("")
+    setStatus("")
+    setInterestLevel(0)
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!companyId || !roleId || !status) return
@@ -72,10 +83,11 @@ export default function OpportunityPage() {
     }
     if (isEdit && id) {
       updateOpportunity(id, payload)
+      navigate("/opportunities")
     } else {
       addOpportunity(payload)
+      setPostSaveOpen(true)
     }
-    navigate("/opportunities")
   }
 
   if (isEdit && !existing) {
@@ -136,6 +148,12 @@ export default function OpportunityPage() {
         </form>
       </Card>
       </div>
+      <PostSaveDialog
+        open={postSaveOpen}
+        entityLabel="Opportunity"
+        onGoToList={() => navigate("/opportunities")}
+        onAddAnother={() => { setPostSaveOpen(false); resetForm() }}
+      />
     </AppLayout>
   )
 }

@@ -19,6 +19,7 @@ import {
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
+import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 
 export default function SkillPage() {
   const navigate = useNavigate()
@@ -30,6 +31,7 @@ export default function SkillPage() {
 
   const [name, setName] = React.useState("")
   const [description, setDescription] = React.useState("")
+  const [postSaveOpen, setPostSaveOpen] = React.useState(false)
 
   React.useEffect(() => {
     if (existing) {
@@ -44,6 +46,11 @@ export default function SkillPage() {
     }
   }, [isEdit, id, existing, navigate])
 
+  function resetForm() {
+    setName("")
+    setDescription("")
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const payload = {
@@ -52,10 +59,11 @@ export default function SkillPage() {
     }
     if (isEdit && id) {
       updateSkill(id, payload)
+      navigate("/skills")
     } else {
       addSkill(payload)
+      setPostSaveOpen(true)
     }
-    navigate("/skills")
   }
 
   if (isEdit && !existing) {
@@ -122,6 +130,12 @@ export default function SkillPage() {
         </form>
       </Card>
       </div>
+      <PostSaveDialog
+        open={postSaveOpen}
+        entityLabel="Skill"
+        onGoToList={() => navigate("/skills")}
+        onAddAnother={() => { setPostSaveOpen(false); resetForm() }}
+      />
     </AppLayout>
   )
 }

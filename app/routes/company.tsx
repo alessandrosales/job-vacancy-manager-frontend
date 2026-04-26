@@ -20,6 +20,7 @@ import {
 import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
 import { InterestLevelStarPicker } from "~/components/shared/interest-level-star-picker"
+import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 import type { InterestLevel } from "~/lib/labels"
 
 export default function CompanyPage() {
@@ -34,6 +35,7 @@ export default function CompanyPage() {
   const [url, setUrl] = React.useState("")
   const [description, setDescription] = React.useState("")
   const [interestLevel, setInterestLevel] = React.useState<InterestLevel>(3)
+  const [postSaveOpen, setPostSaveOpen] = React.useState(false)
 
   React.useEffect(() => {
     if (existing) {
@@ -50,6 +52,13 @@ export default function CompanyPage() {
     }
   }, [isEdit, id, existing, navigate])
 
+  function resetForm() {
+    setName("")
+    setUrl("")
+    setDescription("")
+    setInterestLevel(3)
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const payload = {
@@ -60,10 +69,11 @@ export default function CompanyPage() {
     }
     if (isEdit && id) {
       updateCompany(id, payload)
+      navigate("/companies")
     } else {
       addCompany(payload)
+      setPostSaveOpen(true)
     }
-    navigate("/companies")
   }
 
   if (isEdit && !existing) {
@@ -148,6 +158,12 @@ export default function CompanyPage() {
         </form>
       </Card>
       </div>
+      <PostSaveDialog
+        open={postSaveOpen}
+        entityLabel="Company"
+        onGoToList={() => navigate("/companies")}
+        onAddAnother={() => { setPostSaveOpen(false); resetForm() }}
+      />
     </AppLayout>
   )
 }

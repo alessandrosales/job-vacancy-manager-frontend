@@ -20,6 +20,7 @@ import {
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { Switch } from "~/components/ui/switch"
+import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 
 export default function WorkExperiencePage() {
   const navigate = useNavigate()
@@ -40,6 +41,7 @@ export default function WorkExperiencePage() {
   const [dateFrom, setDateFrom] = React.useState("")
   const [dateTo, setDateTo] = React.useState("")
   const [skillIds, setSkillIds] = React.useState<string[]>([])
+  const [postSaveOpen, setPostSaveOpen] = React.useState(false)
 
   React.useEffect(() => {
     if (existing) {
@@ -58,6 +60,15 @@ export default function WorkExperiencePage() {
     }
   }, [isEdit, id, existing, navigate])
 
+  function resetForm() {
+    setTitle("")
+    setCompanyName("")
+    setIsRemote(false)
+    setDateFrom("")
+    setDateTo("")
+    setSkillIds([])
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const payload = {
@@ -70,10 +81,11 @@ export default function WorkExperiencePage() {
     }
     if (isEdit && id) {
       updateWorkExperience(id, payload)
+      navigate("/work-experiences")
     } else {
       addWorkExperience(payload)
+      setPostSaveOpen(true)
     }
-    navigate("/work-experiences")
   }
 
   if (isEdit && !existing) {
@@ -167,6 +179,12 @@ export default function WorkExperiencePage() {
           </form>
         </Card>
       </div>
+      <PostSaveDialog
+        open={postSaveOpen}
+        entityLabel="Work experience"
+        onGoToList={() => navigate("/work-experiences")}
+        onAddAnother={() => { setPostSaveOpen(false); resetForm() }}
+      />
     </AppLayout>
   )
 }

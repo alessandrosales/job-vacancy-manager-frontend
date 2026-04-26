@@ -18,6 +18,7 @@ import {
   FieldLabel,
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
+import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 
 export default function ReferenceLinkPage() {
   const navigate = useNavigate()
@@ -30,6 +31,7 @@ export default function ReferenceLinkPage() {
 
   const [title, setTitle] = React.useState("")
   const [url, setUrl] = React.useState("")
+  const [postSaveOpen, setPostSaveOpen] = React.useState(false)
 
   React.useEffect(() => {
     if (existing) {
@@ -44,6 +46,11 @@ export default function ReferenceLinkPage() {
     }
   }, [isEdit, id, existing, navigate])
 
+  function resetForm() {
+    setTitle("")
+    setUrl("")
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const payload = {
@@ -52,10 +59,11 @@ export default function ReferenceLinkPage() {
     }
     if (isEdit && id) {
       updateReferenceLink(id, payload)
+      navigate("/links")
     } else {
       addReferenceLink(payload)
+      setPostSaveOpen(true)
     }
-    navigate("/links")
   }
 
   if (isEdit && !existing) {
@@ -123,6 +131,12 @@ export default function ReferenceLinkPage() {
           </form>
         </Card>
       </div>
+      <PostSaveDialog
+        open={postSaveOpen}
+        entityLabel="Link"
+        onGoToList={() => navigate("/links")}
+        onAddAnother={() => { setPostSaveOpen(false); resetForm() }}
+      />
     </AppLayout>
   )
 }

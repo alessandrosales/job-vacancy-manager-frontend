@@ -18,6 +18,7 @@ import {
   FieldLabel,
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
+import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 
 export default function EducationPage() {
   const navigate = useNavigate()
@@ -32,6 +33,7 @@ export default function EducationPage() {
   const [fieldOfStudy, setFieldOfStudy] = React.useState("")
   const [dateFrom, setDateFrom] = React.useState("")
   const [dateTo, setDateTo] = React.useState("")
+  const [postSaveOpen, setPostSaveOpen] = React.useState(false)
 
   React.useEffect(() => {
     if (existing) {
@@ -49,6 +51,14 @@ export default function EducationPage() {
     }
   }, [isEdit, id, existing, navigate])
 
+  function resetForm() {
+    setInstitutionName("")
+    setDegree("")
+    setFieldOfStudy("")
+    setDateFrom("")
+    setDateTo("")
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const payload = {
@@ -60,10 +70,11 @@ export default function EducationPage() {
     }
     if (isEdit && id) {
       updateEducation(id, payload)
+      navigate("/educations")
     } else {
       addEducation(payload)
+      setPostSaveOpen(true)
     }
-    navigate("/educations")
   }
 
   if (isEdit && !existing) {
@@ -151,6 +162,12 @@ export default function EducationPage() {
           </form>
         </Card>
       </div>
+      <PostSaveDialog
+        open={postSaveOpen}
+        entityLabel="Education"
+        onGoToList={() => navigate("/educations")}
+        onAddAnother={() => { setPostSaveOpen(false); resetForm() }}
+      />
     </AppLayout>
   )
 }
