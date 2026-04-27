@@ -40,6 +40,10 @@ export type OpportunityFormFieldsProps = {
   onDescriptionChange: (v: string) => void
   url: string
   onUrlChange: (v: string) => void
+  hourlyRate: number | undefined
+  onHourlyRateChange: (v: number | undefined) => void
+  annualSalary: number | undefined
+  onAnnualSalaryChange: (v: number | undefined) => void
   status: OpportunityStatus
   onStatusChange: (v: OpportunityStatus) => void
   interestLevel: InterestLevel
@@ -59,6 +63,10 @@ export function OpportunityFormFields({
   onDescriptionChange,
   url,
   onUrlChange,
+  hourlyRate,
+  onHourlyRateChange,
+  annualSalary,
+  onAnnualSalaryChange,
   status,
   onStatusChange,
   interestLevel,
@@ -226,6 +234,52 @@ export function OpportunityFormFields({
             placeholder="https://"
             required
           />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor={`${idPrefix}-hourly-rate`}>Hourly rate</FieldLabel>
+          <Input
+            id={`${idPrefix}-hourly-rate`}
+            type="number"
+            min={0}
+            step="0.01"
+            value={hourlyRate === undefined ? "" : hourlyRate}
+            onChange={(e) => {
+              const v = e.target.value
+              if (v === "") {
+                onHourlyRateChange(undefined)
+                return
+              }
+              const n = Number(v)
+              if (Number.isFinite(n) && n >= 0) onHourlyRateChange(n)
+            }}
+            placeholder="e.g. 75"
+          />
+          <FieldDescription>
+            Optional. Gross pay per hour in your main currency (e.g. USD).
+          </FieldDescription>
+        </Field>
+        <Field>
+          <FieldLabel htmlFor={`${idPrefix}-annual-salary`}>Annual salary</FieldLabel>
+          <Input
+            id={`${idPrefix}-annual-salary`}
+            type="number"
+            min={0}
+            step="1"
+            value={annualSalary === undefined ? "" : annualSalary}
+            onChange={(e) => {
+              const v = e.target.value
+              if (v === "") {
+                onAnnualSalaryChange(undefined)
+                return
+              }
+              const n = Number(v)
+              if (Number.isFinite(n) && n >= 0) onAnnualSalaryChange(n)
+            }}
+            placeholder="e.g. 120000"
+          />
+          <FieldDescription>
+            Optional. Total annual compensation in the same currency.
+          </FieldDescription>
         </Field>
         <Field>
           <FieldLabel htmlFor={`${idPrefix}-status`}>Opportunity status</FieldLabel>

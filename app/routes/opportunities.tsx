@@ -46,6 +46,8 @@ import {
   getEffectiveColumnId,
 } from "~/lib/kanban-columns"
 import {
+  formatOpportunityAnnualSalary,
+  formatOpportunityHourlyRate,
   opportunityCompanyName,
   opportunityRoleName,
   opportunitySearchBlob,
@@ -201,6 +203,8 @@ export default function OpportunitiesPage() {
                 <TableHead>Role</TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead>URL</TableHead>
+                <TableHead>Hourly rate</TableHead>
+                <TableHead>Annual salary</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Interest</TableHead>
               </TableRow>
@@ -208,13 +212,13 @@ export default function OpportunitiesPage() {
             <TableBody>
               {opportunities.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-muted-foreground">
+                  <TableCell colSpan={9} className="text-muted-foreground">
                     No opportunities yet. Add one to get started.
                   </TableCell>
                 </TableRow>
               ) : filteredOpportunities.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-muted-foreground">
+                  <TableCell colSpan={9} className="text-muted-foreground">
                     No matches for your search.
                   </TableCell>
                 </TableRow>
@@ -268,6 +272,12 @@ export default function OpportunitiesPage() {
                           Link
                         </a>
                       </TableCell>
+                      <TableCell className="whitespace-nowrap text-muted-foreground text-sm">
+                        {formatOpportunityHourlyRate(opp.hourly_rate)}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-muted-foreground text-sm">
+                        {formatOpportunityAnnualSalary(opp.annual_salary)}
+                      </TableCell>
                       <TableCell>
                         <Badge variant={s.variant}>{s.label}</Badge>
                       </TableCell>
@@ -290,6 +300,8 @@ export default function OpportunitiesPage() {
                               status: opp.status,
                               interest_level: nextLevel,
                               board_column_id: opp.board_column_id ?? opp.status,
+                              hourly_rate: opp.hourly_rate,
+                              annual_salary: opp.annual_salary,
                             })
                           }
                         />
@@ -299,7 +311,7 @@ export default function OpportunitiesPage() {
                 })
               )}
               <InfiniteScrollSentinelRow
-                colSpan={7}
+                colSpan={9}
                 sentinelRef={sentinelRef}
                 hasMore={hasMore}
                 totalCount={totalCount}

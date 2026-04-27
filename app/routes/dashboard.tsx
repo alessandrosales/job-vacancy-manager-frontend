@@ -40,6 +40,8 @@ import { OpportunityDialog } from "~/components/opportunities/opportunity-dialog
 import { useAppData } from "~/components/providers/app-data-provider"
 import { getColumnBadgeProps, getEffectiveColumnId } from "~/lib/kanban-columns"
 import {
+  formatOpportunityAnnualSalary,
+  formatOpportunityHourlyRate,
   opportunityCompanyName,
   opportunityRoleName,
 } from "~/lib/opportunity-display"
@@ -235,13 +237,15 @@ export default function DashboardPage() {
                 <TableHead>Company</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead className="w-36">Interesse</TableHead>
+                <TableHead>Hourly rate</TableHead>
+                <TableHead>Annual salary</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {topJobs.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-muted-foreground">
+                  <TableCell colSpan={6} className="text-muted-foreground">
                     No opportunities yet. Add some under Opportunities.
                   </TableCell>
                 </TableRow>
@@ -264,6 +268,12 @@ export default function DashboardPage() {
                       <TableCell>{opportunityRoleName(opp, roles)}</TableCell>
                       <TableCell>
                         <InterestStars level={opp.interest_level} />
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-muted-foreground text-sm">
+                        {formatOpportunityHourlyRate(opp.hourly_rate)}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-muted-foreground text-sm">
+                        {formatOpportunityAnnualSalary(opp.annual_salary)}
                       </TableCell>
                       <TableCell>
                         <Badge variant={s.variant}>{s.label}</Badge>
@@ -292,13 +302,15 @@ export default function DashboardPage() {
                 <TableHead>Company</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead className="w-36">Interesse</TableHead>
+                <TableHead>Hourly rate</TableHead>
+                <TableHead>Annual salary</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {recent.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-muted-foreground">
+                  <TableCell colSpan={6} className="text-muted-foreground">
                     No opportunities yet. Add some under Opportunities.
                   </TableCell>
                 </TableRow>
@@ -321,6 +333,12 @@ export default function DashboardPage() {
                       <TableCell>{opportunityRoleName(opp, roles)}</TableCell>
                       <TableCell>
                         <InterestStars level={opp.interest_level} />
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-muted-foreground text-sm">
+                        {formatOpportunityHourlyRate(opp.hourly_rate)}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-muted-foreground text-sm">
+                        {formatOpportunityAnnualSalary(opp.annual_salary)}
                       </TableCell>
                       <TableCell>
                         <Badge variant={s.variant}>{s.label}</Badge>

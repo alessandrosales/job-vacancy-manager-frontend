@@ -47,6 +47,10 @@ export interface Opportunity {
   interest_level: number
   /** Coluna do Kanban; ausente = coluna padrão derivada de `status`. */
   board_column_id?: string
+  /** Gross pay per hour (major currency units, e.g. USD); optional. */
+  hourly_rate?: number
+  /** Total annual compensation (major currency units); optional. */
+  annual_salary?: number
 }
 
 export interface Company {
@@ -156,6 +160,18 @@ function normalizeInterestLevel(value: unknown): InterestLevel {
   if (value === "Medium") return 3
   if (value === "High") return 5
   return 0
+}
+
+function normalizeOptionalNonNegativeNumber(
+  o: Record<string, unknown>,
+  snakeKey: string,
+  camelKey: string
+): number | undefined {
+  const raw = o[snakeKey] ?? o[camelKey]
+  if (raw === null || raw === undefined || raw === "") return undefined
+  const n = typeof raw === "number" ? raw : Number(raw)
+  if (!Number.isFinite(n) || n < 0) return undefined
+  return n
 }
 
 function normalizeOpportunityStatuses(raw: unknown): OpportunityStatusDefinition[] {
@@ -459,6 +475,16 @@ function parseStored(raw: string | null): AppDataState | null {
           if (!ok) board_column_id = undefined
         }
         const raw_interest = o.interest_level ?? o.interestLevel
+        const hourly_rate = normalizeOptionalNonNegativeNumber(
+          o,
+          "hourly_rate",
+          "hourlyRate"
+        )
+        const annual_salary = normalizeOptionalNonNegativeNumber(
+          o,
+          "annual_salary",
+          "annualSalary"
+        )
         return {
           id: o.id as string,
           company_id: resolveOpportunityCompanyId(o, companies),
@@ -468,6 +494,8 @@ function parseStored(raw: string | null): AppDataState | null {
           status,
           interest_level: normalizeInterestLevel(raw_interest),
           board_column_id,
+          ...(hourly_rate != null ? { hourly_rate } : {}),
+          ...(annual_salary != null ? { annual_salary } : {}),
         } as Opportunity
       }),
       companies,

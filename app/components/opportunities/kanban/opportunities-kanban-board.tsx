@@ -75,6 +75,8 @@ function persistColumnIfNeeded(
           status: columnId,
           interest_level: opp.interest_level,
           board_column_id: columnId,
+          hourly_rate: opp.hourly_rate,
+          annual_salary: opp.annual_salary,
         })
       } else {
         updateOpportunity(id, {
@@ -85,6 +87,8 @@ function persistColumnIfNeeded(
           status: opp.status,
           interest_level: opp.interest_level,
           board_column_id: columnId,
+          hourly_rate: opp.hourly_rate,
+          annual_salary: opp.annual_salary,
         })
       }
     }

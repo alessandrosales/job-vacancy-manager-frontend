@@ -10,6 +10,7 @@ import { useAppData } from "~/components/providers/app-data-provider"
 import type { KanbanCustomColumn, Opportunity } from "~/components/providers/app-data-provider"
 import type { OpportunityStatusDefinition } from "~/lib/labels"
 import {
+  formatOpportunityCompensationSummary,
   opportunityCompanyName,
   opportunityRoleName,
 } from "~/lib/opportunity-display"
@@ -38,6 +39,7 @@ export function KanbanJobCardContent({
   className,
 }: KanbanJobCardContentProps) {
   const { companies, roles } = useAppData()
+  const compensationLine = formatOpportunityCompensationSummary(opp)
   const columnId = getEffectiveColumnId(opp)
   const badge = getColumnBadgeProps(
     columnId,
@@ -80,6 +82,11 @@ export function KanbanJobCardContent({
         {opp.description ? (
           <p className="text-muted-foreground line-clamp-2 text-xs leading-snug">
             {opp.description}
+          </p>
+        ) : null}
+        {compensationLine ? (
+          <p className="text-muted-foreground line-clamp-1 text-xs leading-snug">
+            {compensationLine}
           </p>
         ) : null}
         <div className="inline-flex items-center gap-0.5">

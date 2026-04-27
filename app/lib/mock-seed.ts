@@ -93,6 +93,8 @@ export function generateMockOpportunities(
   }
   for (let i = 0; i < count; i++) {
     const status = pick(statusIds, i)
+    const hourly = 40 + (i % 12) * 3 + (i % 2) * 0.5
+    const annual = Math.round(hourly * 1800 + (i % 7) * 5000)
     rows.push({
       id: `seed-opp-${i}`,
       company_id: companies[i % companies.length]!.id,
@@ -101,6 +103,8 @@ export function generateMockOpportunities(
       url: `https://example.com/jobs/${1000 + i}`,
       status,
       interest_level: i % 6,
+      hourly_rate: Math.round(hourly * 100) / 100,
+      annual_salary: annual,
     })
   }
   return rows

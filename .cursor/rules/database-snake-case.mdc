@@ -76,6 +76,8 @@ Funções como `addOpportunity`, `setKanbanColumnOrder`, `deleteOpportunityStatu
 |---|---|---|
 | `Opportunity` | `interest_level` | `number` |
 | `Opportunity` | `board_column_id` | `string \| undefined` |
+| `Opportunity` | `hourly_rate` | `number \| undefined` |
+| `Opportunity` | `annual_salary` | `number \| undefined` |
 | `Company` | `interest_level` | `InterestLevel` |
 | `Role` | `interest_level` | `InterestLevel` |
 | `AppDataState` | `opportunity_statuses` | `OpportunityStatusDefinition[]` |

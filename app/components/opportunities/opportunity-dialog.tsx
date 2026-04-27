@@ -52,6 +52,8 @@ export function OpportunityDialog({
   const [roleId, setRoleId] = React.useState("")
   const [description, setDescription] = React.useState("")
   const [url, setUrl] = React.useState("")
+  const [hourlyRate, setHourlyRate] = React.useState<number | undefined>(undefined)
+  const [annualSalary, setAnnualSalary] = React.useState<number | undefined>(undefined)
   const [status, setStatus] = React.useState<OpportunityStatus>("")
   const [interestLevel, setInterestLevel] = React.useState<InterestLevel>(0)
 
@@ -62,6 +64,8 @@ export function OpportunityDialog({
       setRoleId("")
       setDescription("")
       setUrl("")
+      setHourlyRate(undefined)
+      setAnnualSalary(undefined)
       setStatus("")
       setInterestLevel(0)
       return
@@ -71,6 +75,16 @@ export function OpportunityDialog({
     setRoleId(existing.role_id)
     setDescription(existing.description)
     setUrl(existing.url)
+    setHourlyRate(
+      existing.hourly_rate != null && Number.isFinite(existing.hourly_rate)
+        ? existing.hourly_rate
+        : undefined
+    )
+    setAnnualSalary(
+      existing.annual_salary != null && Number.isFinite(existing.annual_salary)
+        ? existing.annual_salary
+        : undefined
+    )
     setStatus(existing.status)
     setInterestLevel(
       Math.min(5, Math.max(0, Math.round(existing.interest_level))) as InterestLevel
@@ -89,6 +103,8 @@ export function OpportunityDialog({
         status,
         interest_level: interestLevel,
         board_column_id: status,
+        hourly_rate: hourlyRate,
+        annual_salary: annualSalary,
       })
       onOpenChange(false)
       onCreated?.(id)
@@ -103,6 +119,8 @@ export function OpportunityDialog({
       status,
       interest_level: interestLevel,
       board_column_id: existing.board_column_id ?? status,
+      hourly_rate: hourlyRate,
+      annual_salary: annualSalary,
     })
     onOpenChange(false)
   }
@@ -143,6 +161,10 @@ export function OpportunityDialog({
                 onDescriptionChange={setDescription}
                 url={url}
                 onUrlChange={setUrl}
+                hourlyRate={hourlyRate}
+                onHourlyRateChange={setHourlyRate}
+                annualSalary={annualSalary}
+                onAnnualSalaryChange={setAnnualSalary}
                 status={status}
                 onStatusChange={setStatus}
                 interestLevel={interestLevel}
