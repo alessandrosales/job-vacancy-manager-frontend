@@ -1,14 +1,14 @@
 /**
- * Resposta local para o assistente flutuante (protótipo).
- * Substitua por chamada a API / LLM quando houver backend.
+ * Local reply for the floating assistant (prototype).
+ * Replace with an API / LLM call when a backend is available.
  */
 export async function replyFromFloatingAgent(userMessage: string): Promise<string> {
   await new Promise((r) => setTimeout(r, 500 + Math.random() * 500))
   const trimmed = userMessage.trim()
   if (!trimmed) {
-    return "Envie uma mensagem para continuar."
+    return "Send a message to continue."
   }
   const preview =
     trimmed.length > 280 ? `${trimmed.slice(0, 280)}…` : trimmed
-  return `Recebi o seu pedido:\n\n“${preview}”\n\n(Isto é uma resposta simulada. Conecte um agente real via API quando estiver pronto.)`
+  return `Got your request:\n\n“${preview}”\n\n(This is a simulated reply. Wire up a real agent via API when ready.)`
 }

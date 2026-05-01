@@ -76,7 +76,7 @@ export function FloatingAgentAssistant() {
             size="icon-lg"
             aria-haspopup="dialog"
             aria-expanded={open}
-            aria-label="Abrir assistente com agente"
+            aria-label="Open agent assistant"
             className={cn(
               "fixed bottom-6 end-6 z-40 size-14 rounded-full shadow-lg",
               "ring-2 ring-background/80 hover:shadow-md"
@@ -87,7 +87,7 @@ export function FloatingAgentAssistant() {
           </Button>
         </TooltipTrigger>
         <TooltipContent side="left" className="max-w-[12rem]">
-          Assistente com agente
+          Agent assistant
         </TooltipContent>
       </Tooltip>
 
@@ -98,10 +98,10 @@ export function FloatingAgentAssistant() {
         >
           <div className="flex flex-col gap-3 border-b border-border p-4 pb-3">
             <DialogHeader className="gap-1">
-              <DialogTitle>Assistente</DialogTitle>
+              <DialogTitle>Assistant</DialogTitle>
               <DialogDescription>
-                Envie um prompt para interagir com o agente. Neste protótipo as respostas são
-                simuladas no navegador.
+                Send a prompt to interact with the agent. In this prototype, replies are simulated in
+                the browser.
               </DialogDescription>
             </DialogHeader>
           </div>
@@ -115,7 +115,7 @@ export function FloatingAgentAssistant() {
           >
             {messages.length === 0 ? (
               <p className="text-muted-foreground text-sm leading-relaxed">
-                Nenhuma mensagem ainda. Escreva abaixo e envie para começar.
+                No messages yet. Type below and send to start.
               </p>
             ) : (
               messages.map((msg) => (
@@ -136,7 +136,7 @@ export function FloatingAgentAssistant() {
                   >
                     {msg.role === "assistant" ? (
                       <span className="text-xs font-medium text-muted-foreground block pb-1">
-                        Agente
+                        Agent
                       </span>
                     ) : null}
                     {msg.content}
@@ -147,7 +147,7 @@ export function FloatingAgentAssistant() {
             {pending ? (
               <div className="text-muted-foreground flex items-center gap-2 text-xs">
                 <Loader2Icon className="size-3.5 shrink-0 animate-spin" aria-hidden />
-                Agente a responder…
+                Agent is replying…
               </div>
             ) : null}
           </div>
@@ -156,7 +156,7 @@ export function FloatingAgentAssistant() {
             <Textarea
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder="Escreva o seu prompt…"
+              placeholder="Write your prompt…"
               rows={3}
               disabled={pending}
               className="min-h-0 resize-none"
@@ -173,7 +173,7 @@ export function FloatingAgentAssistant() {
                 size="sm"
                 onClick={() => setOpen(false)}
               >
-                Fechar
+                Close
               </Button>
               <Button
                 type="button"
@@ -186,7 +186,7 @@ export function FloatingAgentAssistant() {
                 ) : (
                   <SendIcon data-icon="inline-start" aria-hidden />
                 )}
-                Enviar
+                Send
               </Button>
             </div>
           </div>
