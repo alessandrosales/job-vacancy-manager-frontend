@@ -46,6 +46,7 @@ import {
 } from "~/lib/api/resources/dashboard"
 import type { ApiOpportunityStatus } from "~/lib/api/resources/opportunity-statuses"
 import type { ApiRole } from "~/lib/api/resources/roles"
+import { sortOpportunityStatusesByPosition } from "~/lib/kanban-columns"
 import {
   apiCompanyToCompany,
   apiOpportunityStatusToDefinition,
@@ -76,7 +77,9 @@ function mapReferenceLists(raw: {
   return {
     companies: raw.companies.map(apiCompanyToCompany),
     roles: raw.roles.map(apiRoleToRole),
-    opportunityStatuses: raw.opportunity_statuses.map(apiOpportunityStatusToDefinition),
+    opportunityStatuses: sortOpportunityStatusesByPosition(
+      raw.opportunity_statuses.map(apiOpportunityStatusToDefinition)
+    ),
   }
 }
 

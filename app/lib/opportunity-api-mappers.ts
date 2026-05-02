@@ -66,6 +66,10 @@ export function apiOpportunityStatusToDefinition(
     label: s.label,
     description: s.description ?? undefined,
     variant: s.variant,
+    position:
+      typeof s.position === "number" && Number.isFinite(s.position)
+        ? s.position
+        : 0,
   }
 }
 

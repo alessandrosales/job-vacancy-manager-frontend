@@ -26,6 +26,7 @@ import {
 } from "~/components/ui/select"
 import { Textarea } from "~/components/ui/textarea"
 import type { Company, Role } from "~/components/providers/app-data-provider"
+import { sortOpportunityStatusesByPosition } from "~/lib/kanban-columns"
 import type {
   InterestLevel,
   OpportunityStatus,
@@ -99,6 +100,10 @@ export function OpportunityFormFields({
   const roles = referenceLists?.roles ?? appData.roles
   const opportunityStatuses =
     referenceLists?.opportunityStatuses ?? appData.opportunity_statuses
+  const opportunityStatusesSorted = React.useMemo(
+    () => sortOpportunityStatusesByPosition(opportunityStatuses),
+    [opportunityStatuses]
+  )
   /** Com listas da API, criar sempre via POST — `onReferenceDataRefresh` atualiza os selects. */
   const persistQuickAddViaApi = Boolean(referenceLists)
 
@@ -335,7 +340,7 @@ export function OpportunityFormFields({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {opportunityStatuses.map((st) => (
+                    {opportunityStatusesSorted.map((st) => (
                       <SelectItem key={st.id} value={st.id}>
                         {st.label}
                       </SelectItem>

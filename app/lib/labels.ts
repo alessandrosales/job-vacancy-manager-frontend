@@ -15,6 +15,8 @@ export type OpportunityStatusDefinition = {
   label: string
   description?: string
   variant: StatusBadgeVariant
+  /** Alinhado a `opportunity_statuses.position` na API (Kanban / formulários). */
+  position?: number
 }
 
 /** Status iniciais (ids legados) — alimentam o Kanban e a migração de dados. */
@@ -24,21 +26,25 @@ export const DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS: readonly OpportunityStatusD
       id: "INTERESTED IN",
       label: "Interested In",
       variant: "secondary",
+      position: 0,
     },
     {
       id: "SENT RESUME",
       label: "Sent Resume",
       variant: "outline",
+      position: 1,
     },
     {
       id: "SCHEDULED INTERVIEW",
       label: "Scheduled Interview",
       variant: "default",
+      position: 2,
     },
     {
       id: "WAITING RESPONSE",
       label: "Waiting Response",
       variant: "destructive",
+      position: 3,
     },
   ]
 

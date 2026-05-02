@@ -36,6 +36,8 @@ export type KanbanColumnProps = {
   dragHandleAttributes?: DraggableAttributes
   dragHandleListeners?: Record<string, unknown>
   isDraggingColumn?: boolean
+  /** Quando falso, oculta o handle de reordenar coluna (ex.: ordem fixa por `position` na API). */
+  showColumnDragHandle?: boolean
 }
 
 /**
@@ -59,6 +61,7 @@ export function KanbanColumn({
   dragHandleAttributes,
   dragHandleListeners,
   isDraggingColumn = false,
+  showColumnDragHandle = true,
 }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: columnDroppableId(columnId),
@@ -96,23 +99,25 @@ export function KanbanColumn({
           {title}
         </span>
         <div className="flex items-center gap-1">
-          <button
-            type="button"
-            aria-label={`Reorder column ${title}`}
-            className={cn(
-              "text-muted-foreground hover:text-foreground inline-flex size-6 cursor-grab items-center justify-center rounded-sm active:cursor-grabbing",
-              isDraggingColumn && "cursor-grabbing"
-            )}
-            {...dragHandleAttributes}
-            {...dragHandleListeners}
-          >
-            <GripVerticalIcon
+          {showColumnDragHandle ? (
+            <button
+              type="button"
+              aria-label={`Reorder column ${title}`}
               className={cn(
-                "size-4 cursor-grab active:cursor-grabbing",
+                "text-muted-foreground hover:text-foreground inline-flex size-6 cursor-grab items-center justify-center rounded-sm active:cursor-grabbing",
                 isDraggingColumn && "cursor-grabbing"
               )}
-            />
-          </button>
+              {...dragHandleAttributes}
+              {...dragHandleListeners}
+            >
+              <GripVerticalIcon
+                className={cn(
+                  "size-4 cursor-grab active:cursor-grabbing",
+                  isDraggingColumn && "cursor-grabbing"
+                )}
+              />
+            </button>
+          ) : null}
           <Badge variant="outline" className="shrink-0 tabular-nums">
             {ids.length}
           </Badge>

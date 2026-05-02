@@ -33,14 +33,24 @@ export function isOpportunityStatusColumnId(
   return opportunityStatuses.some((s) => s.id === columnId)
 }
 
+/** Ordem de exibição alinhada a `opportunity_statuses.position` (API / provider). */
+export function sortOpportunityStatusesByPosition(
+  opportunityStatuses: readonly OpportunityStatusDefinition[]
+): OpportunityStatusDefinition[] {
+  return [...opportunityStatuses].sort((a, b) => {
+    const pa = a.position ?? 0
+    const pb = b.position ?? 0
+    if (pa !== pb) return pa - pb
+    return String(a.id).localeCompare(String(b.id))
+  })
+}
+
 export function getOrderedKanbanColumnIds(
   opportunityStatuses: readonly OpportunityStatusDefinition[],
   customColumns: readonly KanbanCustomColumn[]
 ): string[] {
-  return [
-    ...opportunityStatuses.map((s) => s.id),
-    ...customColumns.map((c) => c.id),
-  ]
+  const sortedStatuses = sortOpportunityStatusesByPosition(opportunityStatuses)
+  return [...sortedStatuses.map((s) => s.id), ...customColumns.map((c) => c.id)]
 }
 
 export function applyPersistedColumnOrder(

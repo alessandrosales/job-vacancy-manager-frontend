@@ -183,7 +183,8 @@ function normalizeOpportunityStatuses(raw: unknown): OpportunityStatusDefinition
     return DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS.map((s) => ({ ...s }))
   }
   const next: OpportunityStatusDefinition[] = []
-  for (const item of raw) {
+  for (let idx = 0; idx < raw.length; idx++) {
+    const item = raw[idx]
     if (
       item &&
       typeof item === "object" &&
@@ -191,14 +192,17 @@ function normalizeOpportunityStatuses(raw: unknown): OpportunityStatusDefinition
       typeof (item as OpportunityStatusDefinition).label === "string" &&
       typeof (item as OpportunityStatusDefinition).variant === "string"
     ) {
+      const st = item as OpportunityStatusDefinition & { position?: unknown }
+      const posRaw = st.position
+      const position =
+        typeof posRaw === "number" && Number.isFinite(posRaw) ? posRaw : idx
       next.push({
-        id: (item as OpportunityStatusDefinition).id,
-        label: (item as OpportunityStatusDefinition).label,
+        id: st.id,
+        label: st.label,
         description:
-          typeof (item as OpportunityStatusDefinition).description === "string"
-            ? (item as OpportunityStatusDefinition).description
-            : undefined,
-        variant: (item as OpportunityStatusDefinition).variant,
+          typeof st.description === "string" ? st.description : undefined,
+        variant: st.variant,
+        position,
       })
     }
   }
@@ -665,7 +669,12 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       addOpportunityStatus: (row) => {
         const id = `opp-st-${createId()}`
         setState((s) => {
-          const def: OpportunityStatusDefinition = { id, ...row }
+          const maxPos = s.opportunity_statuses.reduce(
+            (m, x) => Math.max(m, x.position ?? 0),
+            -1
+          )
+          const position = row.position ?? maxPos + 1
+          const def: OpportunityStatusDefinition = { id, ...row, position }
           const nextStatuses = [...s.opportunity_statuses, def]
           const customPart = s.kanban_column_order.filter((cid) =>
             s.kanban_custom_columns.some((c) => c.id === cid)
