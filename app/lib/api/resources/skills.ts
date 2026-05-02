@@ -1,4 +1,9 @@
 import { apiRequestJson, apiRequestNoContent } from "~/lib/api/client"
+import type {
+  ApiIndexParams,
+  PaginatedEnvelope,
+} from "~/lib/api/pagination"
+import { toIndexQuery } from "~/lib/api/pagination"
 
 export interface ApiSkill {
   id: string
@@ -11,10 +16,27 @@ export interface ApiSkill {
 
 export type ApiSkillWrite = Pick<ApiSkill, "name" | "description">
 
-export async function listSkills(): Promise<ApiSkill[]> {
-  return apiRequestJson<ApiSkill[]>({
+export async function listSkills(params: {
+  paginated: false
+}): Promise<ApiSkill[]>
+export async function listSkills(
+  params?: { paginated?: true; page?: number; per_page?: number }
+): Promise<PaginatedEnvelope<ApiSkill>>
+export async function listSkills(
+  params?: ApiIndexParams
+): Promise<PaginatedEnvelope<ApiSkill> | ApiSkill[]> {
+  const query = toIndexQuery(params)
+  if (params?.paginated === false) {
+    return apiRequestJson<ApiSkill[]>({
+      path: "skills",
+      method: "GET",
+      query,
+    })
+  }
+  return apiRequestJson<PaginatedEnvelope<ApiSkill>>({
     path: "skills",
     method: "GET",
+    query,
   })
 }
 

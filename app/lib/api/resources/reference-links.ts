@@ -1,4 +1,9 @@
 import { apiRequestJson, apiRequestNoContent } from "~/lib/api/client"
+import type {
+  ApiIndexParams,
+  PaginatedEnvelope,
+} from "~/lib/api/pagination"
+import { toIndexQuery } from "~/lib/api/pagination"
 
 const BASE = "reference-links"
 
@@ -13,10 +18,27 @@ export interface ApiReferenceLink {
 
 export type ApiReferenceLinkWrite = Pick<ApiReferenceLink, "title" | "url">
 
-export async function listReferenceLinks(): Promise<ApiReferenceLink[]> {
-  return apiRequestJson<ApiReferenceLink[]>({
+export async function listReferenceLinks(params: {
+  paginated: false
+}): Promise<ApiReferenceLink[]>
+export async function listReferenceLinks(
+  params?: { paginated?: true; page?: number; per_page?: number }
+): Promise<PaginatedEnvelope<ApiReferenceLink>>
+export async function listReferenceLinks(
+  params?: ApiIndexParams
+): Promise<PaginatedEnvelope<ApiReferenceLink> | ApiReferenceLink[]> {
+  const query = toIndexQuery(params)
+  if (params?.paginated === false) {
+    return apiRequestJson<ApiReferenceLink[]>({
+      path: BASE,
+      method: "GET",
+      query,
+    })
+  }
+  return apiRequestJson<PaginatedEnvelope<ApiReferenceLink>>({
     path: BASE,
     method: "GET",
+    query,
   })
 }
 

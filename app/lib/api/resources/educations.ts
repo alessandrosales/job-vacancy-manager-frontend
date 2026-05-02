@@ -1,4 +1,9 @@
 import { apiRequestJson, apiRequestNoContent } from "~/lib/api/client"
+import type {
+  ApiIndexParams,
+  PaginatedEnvelope,
+} from "~/lib/api/pagination"
+import { toIndexQuery } from "~/lib/api/pagination"
 
 export interface ApiEducation {
   id: string
@@ -17,10 +22,27 @@ export type ApiEducationWrite = Pick<
   "institution_name" | "degree" | "field_of_study" | "date_from" | "date_to"
 >
 
-export async function listEducations(): Promise<ApiEducation[]> {
-  return apiRequestJson<ApiEducation[]>({
+export async function listEducations(params: {
+  paginated: false
+}): Promise<ApiEducation[]>
+export async function listEducations(
+  params?: { paginated?: true; page?: number; per_page?: number }
+): Promise<PaginatedEnvelope<ApiEducation>>
+export async function listEducations(
+  params?: ApiIndexParams
+): Promise<PaginatedEnvelope<ApiEducation> | ApiEducation[]> {
+  const query = toIndexQuery(params)
+  if (params?.paginated === false) {
+    return apiRequestJson<ApiEducation[]>({
+      path: "educations",
+      method: "GET",
+      query,
+    })
+  }
+  return apiRequestJson<PaginatedEnvelope<ApiEducation>>({
     path: "educations",
     method: "GET",
+    query,
   })
 }
 

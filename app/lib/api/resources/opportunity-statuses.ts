@@ -1,4 +1,9 @@
 import { apiRequestJson, apiRequestNoContent } from "~/lib/api/client"
+import type {
+  ApiIndexParams,
+  PaginatedEnvelope,
+} from "~/lib/api/pagination"
+import { toIndexQuery } from "~/lib/api/pagination"
 
 const BASE = "opportunity-statuses"
 
@@ -25,10 +30,27 @@ export type ApiOpportunityStatusWrite = Pick<
   "label" | "description" | "variant" | "position"
 >
 
-export async function listOpportunityStatuses(): Promise<ApiOpportunityStatus[]> {
-  return apiRequestJson<ApiOpportunityStatus[]>({
+export async function listOpportunityStatuses(params: {
+  paginated: false
+}): Promise<ApiOpportunityStatus[]>
+export async function listOpportunityStatuses(
+  params?: { paginated?: true; page?: number; per_page?: number }
+): Promise<PaginatedEnvelope<ApiOpportunityStatus>>
+export async function listOpportunityStatuses(
+  params?: ApiIndexParams
+): Promise<PaginatedEnvelope<ApiOpportunityStatus> | ApiOpportunityStatus[]> {
+  const query = toIndexQuery(params)
+  if (params?.paginated === false) {
+    return apiRequestJson<ApiOpportunityStatus[]>({
+      path: BASE,
+      method: "GET",
+      query,
+    })
+  }
+  return apiRequestJson<PaginatedEnvelope<ApiOpportunityStatus>>({
     path: BASE,
     method: "GET",
+    query,
   })
 }
 

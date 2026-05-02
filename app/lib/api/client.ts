@@ -11,6 +11,8 @@ export type HttpMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE"
 export interface ApiRequestOptions {
   /** Caminho após `/api/v1/` (ex.: `auth/login`, `opportunities`). */
   path: string
+  /** Query string (chaves snake_case alinhadas aos `params` Rails). */
+  query?: Record<string, string | number | boolean | undefined>
   method?: HttpMethod
   /** Corpo JSON (objeto será serializado). Omitir em GET. */
   body?: unknown
@@ -24,10 +26,29 @@ export interface ApiRequestOptions {
   signal?: AbortSignal
 }
 
-function buildUrl(path: string): string {
+function appendQueryToPath(
+  path: string,
+  query?: Record<string, string | number | boolean | undefined>
+): string {
+  if (!query) return path
+  const entries = Object.entries(query).filter(([, v]) => v !== undefined)
+  if (entries.length === 0) return path
+  const search = new URLSearchParams()
+  for (const [key, value] of entries) {
+    search.set(key, String(value))
+  }
+  const q = search.toString()
+  const sep = path.includes("?") ? "&" : "?"
+  return `${path}${sep}${q}`
+}
+
+function buildUrl(
+  path: string,
+  query?: Record<string, string | number | boolean | undefined>
+): string {
   const base = getApiBaseUrl().replace(/\/$/, "")
   const suffix = path.replace(/^\//, "")
-  return `${base}/api/v1/${suffix}`
+  return appendQueryToPath(`${base}/api/v1/${suffix}`, query)
 }
 
 function buildHeaders(options: ApiRequestOptions): Headers {
@@ -50,7 +71,7 @@ function buildHeaders(options: ApiRequestOptions): Headers {
  */
 export async function apiRequestJson<T>(options: ApiRequestOptions): Promise<T> {
   const method = options.method ?? "GET"
-  const url = buildUrl(options.path)
+  const url = buildUrl(options.path, options.query)
   const headers = buildHeaders(options)
 
   const res = await fetch(url, {
@@ -73,7 +94,7 @@ export async function apiRequestJson<T>(options: ApiRequestOptions): Promise<T> 
 /** Para respostas sem corpo (`204 No Content` ou corpo vazio). */
 export async function apiRequestNoContent(options: ApiRequestOptions): Promise<void> {
   const method = options.method ?? "GET"
-  const url = buildUrl(options.path)
+  const url = buildUrl(options.path, options.query)
   const headers = buildHeaders(options)
 
   const res = await fetch(url, {

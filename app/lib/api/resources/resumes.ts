@@ -1,4 +1,9 @@
 import { apiRequestJson, apiRequestNoContent } from "~/lib/api/client"
+import type {
+  ApiIndexParams,
+  PaginatedEnvelope,
+} from "~/lib/api/pagination"
+import { toIndexQuery } from "~/lib/api/pagination"
 import type { ApiCertification } from "~/lib/api/resources/certifications"
 import type { ApiEducation } from "~/lib/api/resources/educations"
 import type { ApiSkill } from "~/lib/api/resources/skills"
@@ -19,10 +24,27 @@ export type ApiResumeWrite = Pick<
   "title" | "description" | "role_id"
 >
 
-export async function listResumes(): Promise<ApiResume[]> {
-  return apiRequestJson<ApiResume[]>({
+export async function listResumes(params: {
+  paginated: false
+}): Promise<ApiResume[]>
+export async function listResumes(
+  params?: { paginated?: true; page?: number; per_page?: number }
+): Promise<PaginatedEnvelope<ApiResume>>
+export async function listResumes(
+  params?: ApiIndexParams
+): Promise<PaginatedEnvelope<ApiResume> | ApiResume[]> {
+  const query = toIndexQuery(params)
+  if (params?.paginated === false) {
+    return apiRequestJson<ApiResume[]>({
+      path: "resumes",
+      method: "GET",
+      query,
+    })
+  }
+  return apiRequestJson<PaginatedEnvelope<ApiResume>>({
     path: "resumes",
     method: "GET",
+    query,
   })
 }
 

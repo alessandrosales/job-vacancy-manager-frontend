@@ -23,6 +23,7 @@ Fluxo típico após login:
 ### 1.1 Cliente (`app/lib/api/client.ts`)
 
 - **`apiRequestJson<T>(options)`** — `GET` / `POST` / `PATCH` / `DELETE` com corpo JSON quando aplicável.
+- **`query`** opcional — objeto com chaves **snake_case** (`paginated`, `page`, `per_page`) anexadas à URL.
 - **`apiRequestNoContent(options)`** — respostas `204 No Content` ou sem corpo útil.
 - **`path`** é sempre **relativo a** `/api/v1/` (ex.: `"roles"`, `"auth/me"`).
 - **`auth: false`** — não envia `Authorization` (login, registro, recuperação de senha, etc.). Omitindo ou `true`, envia `Bearer` se existir token em memória (via `getAuthToken()` → store).
@@ -55,10 +56,14 @@ Regra do projeto: propriedades que espelham o banco ou payloads Rails devem esta
 3. Definir interfaces TypeScript em **snake_case** alinhadas ao JSON.
 4. Exportar funções finas que chamam apenas `apiRequestJson` / `apiRequestNoContent` — **sem** `fetch` solto no restante do app.
 
-Exemplo mínimo (lista autenticada):
+**Index REST (`GET` coleção):** no Rails, `Api::V1::Paginatable` responde por padrão com **`{ data, meta }`** (`meta`: `current_page`, `per_page`, `total_pages`, `total_count`). Com **`?paginated=false`** o corpo volta a ser um **array** cru. No frontend, tipos compartilhados e `toIndexQuery` ficam em `app/lib/api/pagination.ts`; cada `listX` usa overloads: chamada sem `paginated: false` → `PaginatedEnvelope<T>`; `listX({ paginated: false })` → `T[]`. Para lista completa em memória (ex.: selects), prefira `{ paginated: false }`.
+
+Exemplo mínimo (lista autenticada alinhada ao backend atual):
 
 ```ts
 import { apiRequestJson } from "~/lib/api/client"
+import type { ApiIndexParams, PaginatedEnvelope } from "~/lib/api/pagination"
+import { toIndexQuery } from "~/lib/api/pagination"
 
 export interface ApiThing {
   id: string
@@ -67,10 +72,25 @@ export interface ApiThing {
   updated_at: string
 }
 
-export async function listThings(): Promise<ApiThing[]> {
-  return apiRequestJson<ApiThing[]>({
+export async function listThings(params: { paginated: false }): Promise<ApiThing[]>
+export async function listThings(
+  params?: { paginated?: true; page?: number; per_page?: number }
+): Promise<PaginatedEnvelope<ApiThing>>
+export async function listThings(
+  params?: ApiIndexParams
+): Promise<PaginatedEnvelope<ApiThing> | ApiThing[]> {
+  const query = toIndexQuery(params)
+  if (params?.paginated === false) {
+    return apiRequestJson<ApiThing[]>({
+      path: "things",
+      method: "GET",
+      query,
+    })
+  }
+  return apiRequestJson<PaginatedEnvelope<ApiThing>>({
     path: "things",
     method: "GET",
+    query,
   })
 }
 ```
@@ -148,6 +168,7 @@ Referências no código: `login-form.tsx`, `register-form.tsx`, `recover-passwor
 | Tópico | Arquivo |
 |--------|---------|
 | Cliente HTTP | `app/lib/api/client.ts` |
+| Paginação / envelope index | `app/lib/api/pagination.ts` |
 | Erros | `app/lib/api/errors.ts` |
 | Auth + `/me` | `app/lib/api/resources/auth.ts` |
 | Exemplo REST CRUD | `app/lib/api/resources/opportunities.ts` |
