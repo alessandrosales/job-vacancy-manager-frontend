@@ -31,9 +31,9 @@ export default function MyDataPage() {
   const [avatar, setAvatar] = React.useState(user.avatar)
   const [bio, setBio] = React.useState(user.bio)
   const [age, setAge] = React.useState(user.age)
-  const [fullAddress, setFullAddress] = React.useState(user.fullAddress)
+  const [fullAddress, setFullAddress] = React.useState(user.full_address)
   const [relationshipStatus, setRelationshipStatus] = React.useState(
-    user.relationshipStatus
+    user.relationship_status
   )
   const [gender, setGender] = React.useState(user.gender)
 
@@ -44,8 +44,8 @@ export default function MyDataPage() {
     setAvatar(user.avatar)
     setBio(user.bio)
     setAge(user.age)
-    setFullAddress(user.fullAddress)
-    setRelationshipStatus(user.relationshipStatus)
+    setFullAddress(user.full_address)
+    setRelationshipStatus(user.relationship_status)
     setGender(user.gender)
   }, [user])
 
@@ -58,8 +58,8 @@ export default function MyDataPage() {
       avatar: avatar.trim(),
       bio: bio.trim(),
       age: age.trim(),
-      fullAddress: fullAddress.trim(),
-      relationshipStatus: relationshipStatus.trim(),
+      full_address: fullAddress.trim(),
+      relationship_status: relationshipStatus.trim(),
       gender: gender.trim(),
     })
   }

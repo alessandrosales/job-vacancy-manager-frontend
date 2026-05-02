@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Link } from "react-router"
 
+import { AuthenticatedSessionBootstrap } from "~/components/layout/authenticated-session-bootstrap"
 import { AppSidebar } from "~/components/layout/app-sidebar"
 import { FloatingAgentAssistant } from "~/components/layout/floating-agent-assistant"
 import {
@@ -41,6 +42,7 @@ export function AppLayout({ title, breadcrumbs, children }: AppLayoutProps) {
 
   return (
     <SidebarProvider>
+      <AuthenticatedSessionBootstrap />
       <AppSidebar />
       <SidebarInset className="relative min-h-0 overflow-hidden">
         <div

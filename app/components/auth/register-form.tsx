@@ -23,7 +23,6 @@ import { Input } from "~/components/ui/input"
 import { ApiError } from "~/lib/api/errors"
 import { registerWithEmail } from "~/lib/api/resources/auth"
 import { setAuthToken } from "~/lib/auth-token"
-import { useSessionUser } from "~/components/providers/session-user-provider"
 
 function messagesFor(
   errors: Record<string, string[]>,
@@ -38,7 +37,6 @@ export function RegisterForm({
   ...props
 }: React.ComponentProps<"div">) {
   const navigate = useNavigate()
-  const { updateUser } = useSessionUser()
 
   const [name, setName] = React.useState("")
   const [email, setEmail] = React.useState("")
@@ -76,10 +74,6 @@ export function RegisterForm({
         password_confirmation: passwordConfirmation,
       })
       setAuthToken(data.token)
-      updateUser({
-        name: data.user.name,
-        email: data.user.email,
-      })
       navigate("/dashboard", { replace: true })
     } catch (err) {
       if (err instanceof ApiError) {

@@ -9,6 +9,7 @@ export default [
   route("home", "routes/home.tsx"),
   route("register", "routes/register.tsx"),
   route("recover-password", "routes/recover-password.tsx"),
+  route("reset-password", "routes/reset-password.tsx"),
   route("dashboard", "routes/dashboard.tsx"),
   route("opportunities/opportunity/:id?", "routes/opportunity.tsx"),
   route("opportunities/statuses", "routes/opportunity-statuses.tsx"),

@@ -23,14 +23,12 @@ import { Input } from "~/components/ui/input"
 import { ApiError } from "~/lib/api/errors"
 import { loginWithEmail } from "~/lib/api/resources/auth"
 import { setAuthToken } from "~/lib/auth-token"
-import { useSessionUser } from "~/components/providers/session-user-provider"
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const navigate = useNavigate()
-  const { updateUser } = useSessionUser()
 
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
@@ -53,10 +51,6 @@ export function LoginForm({
         password,
       })
       setAuthToken(data.token)
-      updateUser({
-        name: data.user.name,
-        email: data.user.email,
-      })
       navigate("/dashboard", { replace: true })
     } catch (err) {
       if (err instanceof ApiError) {

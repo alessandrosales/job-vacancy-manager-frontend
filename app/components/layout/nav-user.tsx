@@ -24,6 +24,7 @@ import {
   useSidebar,
 } from "~/components/ui/sidebar"
 import { applyTheme, getStoredTheme, type ThemeMode } from "~/lib/theme"
+import { clearAuthSession } from "~/stores/clear-auth-session"
 import { ChevronsUpDownIcon, LogOutIcon, MoonIcon, UserRoundIcon } from "lucide-react"
 
 function initialsFromName(name: string): string {
@@ -125,7 +126,7 @@ export function NavUser({
             </DropdownMenuCheckboxItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link to="/">
+              <Link to="/" onClick={() => clearAuthSession()}>
                 <LogOutIcon />
                 Sair
               </Link>

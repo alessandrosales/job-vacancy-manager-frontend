@@ -79,10 +79,13 @@ export async function loginWithEmail(params: {
 }
 
 /** Usuário atual a partir do JWT (`GET /api/v1/auth/me`). */
-export async function fetchAuthMe(): Promise<ApiSessionUser> {
+export async function fetchAuthMe(options?: {
+  signal?: AbortSignal
+}): Promise<ApiSessionUser> {
   const data = await apiRequestJson<unknown>({
     path: "auth/me",
     method: "GET",
+    signal: options?.signal,
   })
   const u = data as Partial<ApiSessionUser> | null
   if (
