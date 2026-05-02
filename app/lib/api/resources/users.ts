@@ -21,6 +21,14 @@ export type ApiUserUpdate = Partial<{
   email: string
   password: string
   password_confirmation: string
+  phone: string
+  avatar_url: string
+  bio: string
+  /** Enviar `null` para limpar no Rails. */
+  age: number | null
+  full_address: string
+  relationship_status: string
+  gender: string
 }>
 
 /** Lista contém apenas o usuário autenticado. */

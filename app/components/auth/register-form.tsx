@@ -23,6 +23,7 @@ import { Input } from "~/components/ui/input"
 import { ApiError } from "~/lib/api/errors"
 import { registerWithEmail } from "~/lib/api/resources/auth"
 import { setAuthToken } from "~/lib/auth-token"
+import { useSessionUserStore } from "~/stores/session-user-store"
 
 function messagesFor(
   errors: Record<string, string[]>,
@@ -74,6 +75,9 @@ export function RegisterForm({
         password_confirmation: passwordConfirmation,
       })
       setAuthToken(data.token)
+      useSessionUserStore
+        .getState()
+        .hydrateFromAuthMeResponse(data.token, data.user)
       navigate("/dashboard", { replace: true })
     } catch (err) {
       if (err instanceof ApiError) {

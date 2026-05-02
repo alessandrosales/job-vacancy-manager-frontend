@@ -5,19 +5,34 @@ import type { ApiSessionUser } from "~/lib/api/resources/auth"
 
 const LEGACY_SESSION_KEY = "job-vacancy-session-user-v1"
 const PERSIST_KEY = "job-vacancy-store-session-v1"
-const PERSIST_VERSION = 3
+const PERSIST_VERSION = 4
+
+function sessionFieldsFromApiUser(api: ApiSessionUser): SessionUser {
+  return {
+    id: api.id,
+    name: api.name,
+    email: api.email,
+    phone: api.phone ?? "",
+    avatar_url: api.avatar_url ?? "",
+    bio: api.bio ?? "",
+    age: api.age != null ? String(api.age) : "",
+    full_address: api.full_address ?? "",
+    relationship_status: api.relationship_status ?? "",
+    gender: api.gender ?? "",
+    created_at: api.created_at,
+    updated_at: api.updated_at,
+  }
+}
 
 /**
- * Perfil em sessão (snake_case). Campos `id`, `created_at`, `updated_at`
- * vêm de `GET /auth/me`; o restante é UI local até integrar com a API.
+ * Perfil em sessão (snake_case). Alinhado a `User#as_api_json` / `GET /auth/me`.
  */
 export interface SessionUser {
   id: string
   name: string
   email: string
   phone: string
-  /** Profile image URL (optional). */
-  avatar: string
+  avatar_url: string
   bio: string
   age: string
   full_address: string
@@ -30,10 +45,10 @@ export interface SessionUser {
 export function defaultSessionUser(): SessionUser {
   return {
     id: "",
-    name: "shadcn",
-    email: "m@example.com",
+    name: "",
+    email: "",
     phone: "",
-    avatar: "",
+    avatar_url: "",
     bio: "",
     age: "",
     full_address: "",
@@ -93,15 +108,8 @@ export const useSessionUserStore = create<SessionUserStoreState>()(
           set({ me_synced_for_token: null }, false, "session/invalidateMeSync"),
         hydrateFromAuthMeResponse: (token, apiUser) =>
           set(
-            (s) => ({
-              user: {
-                ...s.user,
-                id: apiUser.id,
-                name: apiUser.name,
-                email: apiUser.email,
-                created_at: apiUser.created_at,
-                updated_at: apiUser.updated_at,
-              },
+            () => ({
+              user: sessionFieldsFromApiUser(apiUser),
               me_synced_for_token: token,
             }),
             false,
@@ -113,6 +121,21 @@ export const useSessionUserStore = create<SessionUserStoreState>()(
         storage: createJSONStorage(() => localStorage),
         partialize: (state) => ({ user: state.user }),
         version: PERSIST_VERSION,
+        migrate: (persistedState, oldVersion) => {
+          const state = persistedState as { user?: Record<string, unknown> }
+          if (oldVersion < 4 && state.user && typeof state.user === "object") {
+            const u = state.user
+            const avatar_url =
+              typeof u.avatar_url === "string"
+                ? u.avatar_url
+                : typeof u.avatar === "string"
+                  ? u.avatar
+                  : ""
+            const { avatar: _removed, ...rest } = u
+            return { ...state, user: { ...rest, avatar_url } }
+          }
+          return persistedState as { user: SessionUser }
+        },
         skipHydration: true,
       }
     ),

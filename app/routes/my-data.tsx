@@ -20,15 +20,47 @@ import {
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
+import { ApiError } from "~/lib/api/errors"
+import { updateUser as patchUserApi } from "~/lib/api/resources/users"
+import { getAuthToken } from "~/lib/auth-token"
+import { useSessionUserStore } from "~/stores/session-user-store"
+
+function formErrorMessage(err: unknown): string {
+  if (err instanceof ApiError) {
+    const fe = err.fieldErrors
+    const parts = [
+      ...(fe.name ?? []),
+      ...(fe.email ?? []),
+      ...(fe.phone ?? []),
+      ...(fe.avatar_url ?? []),
+      ...(fe.bio ?? []),
+      ...(fe.age ?? []),
+      ...(fe.full_address ?? []),
+      ...(fe.relationship_status ?? []),
+      ...(fe.gender ?? []),
+      ...(fe.base ?? []),
+    ]
+    if (parts.length > 0) return parts.join(" ")
+  }
+  return "Could not save your profile. Try again."
+}
+
+function parseAgeInput(raw: string): { ok: true; value: number | null } | { ok: false } {
+  const t = raw.trim()
+  if (!t) return { ok: true, value: null }
+  const n = Number(t)
+  if (!Number.isInteger(n) || n < 0 || n > 150) return { ok: false }
+  return { ok: true, value: n }
+}
 
 export default function MyDataPage() {
   const navigate = useNavigate()
-  const { user, updateUser } = useSessionUser()
+  const { user } = useSessionUser()
 
   const [name, setName] = React.useState(user.name)
   const [email, setEmail] = React.useState(user.email)
   const [phone, setPhone] = React.useState(user.phone)
-  const [avatar, setAvatar] = React.useState(user.avatar)
+  const [avatarUrl, setAvatarUrl] = React.useState(user.avatar_url)
   const [bio, setBio] = React.useState(user.bio)
   const [age, setAge] = React.useState(user.age)
   const [fullAddress, setFullAddress] = React.useState(user.full_address)
@@ -37,11 +69,14 @@ export default function MyDataPage() {
   )
   const [gender, setGender] = React.useState(user.gender)
 
+  const [formError, setFormError] = React.useState<string | null>(null)
+  const [submitting, setSubmitting] = React.useState(false)
+
   React.useEffect(() => {
     setName(user.name)
     setEmail(user.email)
     setPhone(user.phone)
-    setAvatar(user.avatar)
+    setAvatarUrl(user.avatar_url)
     setBio(user.bio)
     setAge(user.age)
     setFullAddress(user.full_address)
@@ -49,19 +84,46 @@ export default function MyDataPage() {
     setGender(user.gender)
   }, [user])
 
-  function handleSubmit(e: React.FormEvent) {
+  const token = getAuthToken()
+  const loadingProfile = Boolean(token) && user.id === ""
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    updateUser({
-      name: name.trim(),
-      email: email.trim(),
-      phone: phone.trim(),
-      avatar: avatar.trim(),
-      bio: bio.trim(),
-      age: age.trim(),
-      full_address: fullAddress.trim(),
-      relationship_status: relationshipStatus.trim(),
-      gender: gender.trim(),
-    })
+    setFormError(null)
+
+    const ageResult = parseAgeInput(age)
+    if (!ageResult.ok) {
+      setFormError("Age must be a whole number between 0 and 150, or leave blank.")
+      return
+    }
+
+    if (!user.id) {
+      setFormError("Profile not loaded yet.")
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      const updated = await patchUserApi(user.id, {
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        avatar_url: avatarUrl.trim(),
+        bio: bio.trim(),
+        age: ageResult.value,
+        full_address: fullAddress.trim(),
+        relationship_status: relationshipStatus.trim(),
+        gender: gender.trim(),
+      })
+      const t = getAuthToken()
+      if (t) {
+        useSessionUserStore.getState().hydrateFromAuthMeResponse(t, updated)
+      }
+    } catch (err) {
+      setFormError(formErrorMessage(err))
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -78,124 +140,152 @@ export default function MyDataPage() {
             <CardTitle>My data</CardTitle>
             <CardDescription>
               View and update the information shown in the account menu in the
-              sidebar.
+              sidebar. Data is loaded from your account and saved to the server.
             </CardDescription>
           </CardHeader>
-          <form
-            onSubmit={handleSubmit}
-            className="flex flex-col gap-4"
-          >
+          {loadingProfile ? (
             <CardContent>
-              <FieldGroup>
-                <Field>
-                  <FieldLabel htmlFor="profile-name">Full name</FieldLabel>
-                  <Input
-                    id="profile-name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    autoComplete="name"
-                    required
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="profile-email">Email</FieldLabel>
-                  <Input
-                    id="profile-email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    autoComplete="email"
-                    required
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="profile-phone">Phone</FieldLabel>
-                  <Input
-                    id="profile-phone"
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    autoComplete="tel"
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="profile-avatar">Avatar URL</FieldLabel>
-                  <Input
-                    id="profile-avatar"
-                    type="url"
-                    value={avatar}
-                    onChange={(e) => setAvatar(e.target.value)}
-                    placeholder="https://"
-                  />
-                  <FieldDescription>
-                    Optional. If empty, initials from your name are used.
-                  </FieldDescription>
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="profile-bio">Bio</FieldLabel>
-                  <Textarea
-                    id="profile-bio"
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    rows={4}
-                    placeholder="Short description about you"
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="profile-age">Age</FieldLabel>
-                  <Input
-                    id="profile-age"
-                    inputMode="numeric"
-                    value={age}
-                    onChange={(e) => setAge(e.target.value)}
-                    autoComplete="off"
-                    placeholder="e.g. 32"
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="profile-address">Full address</FieldLabel>
-                  <Textarea
-                    id="profile-address"
-                    value={fullAddress}
-                    onChange={(e) => setFullAddress(e.target.value)}
-                    rows={3}
-                    autoComplete="street-address"
-                    placeholder="Street, number, city, postal code"
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="profile-relationship">
-                    Relationship status
-                  </FieldLabel>
-                  <Input
-                    id="profile-relationship"
-                    value={relationshipStatus}
-                    onChange={(e) => setRelationshipStatus(e.target.value)}
-                    autoComplete="off"
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="profile-gender">Gender</FieldLabel>
-                  <Input
-                    id="profile-gender"
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value)}
-                    autoComplete="sex"
-                  />
-                </Field>
-              </FieldGroup>
+              <p className="text-muted-foreground text-sm">Loading profile…</p>
             </CardContent>
-            <CardFooter className="flex flex-wrap justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate(-1)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit">Save changes</Button>
-            </CardFooter>
-          </form>
+          ) : (
+            <form
+              onSubmit={(e) => void handleSubmit(e)}
+              className="flex flex-col gap-4"
+            >
+              <CardContent>
+                <FieldGroup>
+                  {formError ? (
+                    <Field>
+                      <p
+                        role="alert"
+                        className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+                      >
+                        {formError}
+                      </p>
+                    </Field>
+                  ) : null}
+                  <Field>
+                    <FieldLabel htmlFor="profile-name">Full name</FieldLabel>
+                    <Input
+                      id="profile-name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      autoComplete="name"
+                      required
+                      disabled={submitting}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="profile-email">Email</FieldLabel>
+                    <Input
+                      id="profile-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      autoComplete="email"
+                      required
+                      disabled={submitting}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="profile-phone">Phone</FieldLabel>
+                    <Input
+                      id="profile-phone"
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      autoComplete="tel"
+                      disabled={submitting}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="profile-avatar">Avatar URL</FieldLabel>
+                    <Input
+                      id="profile-avatar"
+                      type="url"
+                      value={avatarUrl}
+                      onChange={(e) => setAvatarUrl(e.target.value)}
+                      placeholder="https://"
+                      disabled={submitting}
+                    />
+                    <FieldDescription>
+                      Optional. If empty, initials from your name are used.
+                    </FieldDescription>
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="profile-bio">Bio</FieldLabel>
+                    <Textarea
+                      id="profile-bio"
+                      value={bio}
+                      onChange={(e) => setBio(e.target.value)}
+                      rows={4}
+                      placeholder="Short description about you"
+                      disabled={submitting}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="profile-age">Age</FieldLabel>
+                    <Input
+                      id="profile-age"
+                      inputMode="numeric"
+                      value={age}
+                      onChange={(e) => setAge(e.target.value)}
+                      autoComplete="off"
+                      placeholder="e.g. 32"
+                      disabled={submitting}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="profile-address">Full address</FieldLabel>
+                    <Textarea
+                      id="profile-address"
+                      value={fullAddress}
+                      onChange={(e) => setFullAddress(e.target.value)}
+                      rows={3}
+                      autoComplete="street-address"
+                      placeholder="Street, number, city, postal code"
+                      disabled={submitting}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="profile-relationship">
+                      Relationship status
+                    </FieldLabel>
+                    <Input
+                      id="profile-relationship"
+                      value={relationshipStatus}
+                      onChange={(e) => setRelationshipStatus(e.target.value)}
+                      autoComplete="off"
+                      disabled={submitting}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="profile-gender">Gender</FieldLabel>
+                    <Input
+                      id="profile-gender"
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value)}
+                      autoComplete="sex"
+                      disabled={submitting}
+                    />
+                  </Field>
+                </FieldGroup>
+              </CardContent>
+              <CardFooter className="flex flex-wrap justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate(-1)}
+                  disabled={submitting}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={submitting || loadingProfile}>
+                  {submitting ? "Saving…" : "Save changes"}
+                </Button>
+              </CardFooter>
+            </form>
+          )}
         </Card>
       </div>
     </AppLayout>

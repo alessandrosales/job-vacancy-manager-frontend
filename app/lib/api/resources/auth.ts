@@ -6,8 +6,60 @@ export interface ApiSessionUser {
   id: string
   name: string
   email: string
+  phone: string | null
+  avatar_url: string | null
+  bio: string | null
+  age: number | null
+  full_address: string | null
+  relationship_status: string | null
+  gender: string | null
   created_at: string
   updated_at: string
+}
+
+function optionalApiString(o: Record<string, unknown>, key: string): string | null {
+  const v = o[key]
+  if (v === undefined || v === null) return null
+  if (typeof v !== "string") throw invalidResponseError()
+  return v
+}
+
+/** Valida o JSON de usuário retornado por login, registro, `/auth/me` ou `PATCH /users/:id`. */
+export function parseApiSessionUser(data: unknown): ApiSessionUser {
+  const o = data as Record<string, unknown> | null
+  if (
+    !o ||
+    typeof o.id !== "string" ||
+    typeof o.email !== "string" ||
+    typeof o.name !== "string" ||
+    typeof o.created_at !== "string" ||
+    typeof o.updated_at !== "string"
+  ) {
+    throw invalidResponseError()
+  }
+
+  let age: number | null = null
+  if (o.age !== undefined && o.age !== null) {
+    if (typeof o.age !== "number" || !Number.isInteger(o.age)) {
+      throw invalidResponseError()
+    }
+    age = o.age
+  }
+
+  return {
+    id: o.id,
+    name: o.name,
+    email: o.email,
+    phone: optionalApiString(o, "phone"),
+    avatar_url: optionalApiString(o, "avatar_url"),
+    bio: optionalApiString(o, "bio"),
+    age,
+    full_address: optionalApiString(o, "full_address"),
+    relationship_status: optionalApiString(o, "relationship_status"),
+    gender: optionalApiString(o, "gender"),
+    created_at: o.created_at,
+    updated_at: o.updated_at,
+  }
 }
 
 /** Resposta de login, registro ou troca de senha com JWT. */
@@ -17,16 +69,11 @@ export interface AuthSessionPayload {
 }
 
 export function parseAuthSessionPayload(data: unknown): AuthSessionPayload {
-  const o = data as Partial<AuthSessionPayload> | null
-  if (
-    !o ||
-    typeof o.token !== "string" ||
-    !o.user ||
-    typeof o.user.email !== "string"
-  ) {
+  const o = data as Partial<{ token: unknown; user: unknown }> | null
+  if (!o || typeof o.token !== "string" || o.user === undefined) {
     throw invalidResponseError()
   }
-  return o as AuthSessionPayload
+  return { token: o.token, user: parseApiSessionUser(o.user) }
 }
 
 export async function registerWithEmail(params: {
@@ -87,14 +134,5 @@ export async function fetchAuthMe(options?: {
     method: "GET",
     signal: options?.signal,
   })
-  const u = data as Partial<ApiSessionUser> | null
-  if (
-    !u ||
-    typeof u.id !== "string" ||
-    typeof u.email !== "string" ||
-    typeof u.name !== "string"
-  ) {
-    throw invalidResponseError()
-  }
-  return u as ApiSessionUser
+  return parseApiSessionUser(data)
 }
