@@ -2,7 +2,6 @@ import * as React from "react"
 import { useNavigate, useParams } from "react-router"
 
 import { WorkExperienceSkillFieldset } from "~/components/work-experience/work-experience-skill-fieldset"
-import { useAppData } from "~/components/providers/app-data-provider"
 import { AppLayout } from "~/components/layout/app-layout"
 import { Button } from "~/components/ui/button"
 import {
@@ -21,19 +20,43 @@ import {
 import { Input } from "~/components/ui/input"
 import { Switch } from "~/components/ui/switch"
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
+import { ApiError } from "~/lib/api/errors"
+import { listSkills, type ApiSkill } from "~/lib/api/resources/skills"
+import {
+  createWorkExperience,
+  getWorkExperience,
+  syncWorkExperienceSkills,
+  updateWorkExperience,
+} from "~/lib/api/resources/work-experiences"
+
+function emptyToNull(s: string): string | null {
+  const t = s.trim()
+  return t === "" ? null : t
+}
+
+function formErrorMessage(err: unknown): string {
+  if (err instanceof ApiError) {
+    const parts = [
+      ...(err.fieldErrors.title ?? []),
+      ...(err.fieldErrors.company_name ?? []),
+      ...(err.fieldErrors.is_remote ?? []),
+      ...(err.fieldErrors.date_from ?? []),
+      ...(err.fieldErrors.date_to ?? []),
+      ...(err.fieldErrors.skill_ids ?? []),
+      ...(err.fieldErrors.base ?? []),
+    ]
+    if (parts.length > 0) return parts[0] ?? "Could not save work experience."
+  }
+  return "Could not save work experience."
+}
 
 export default function WorkExperiencePage() {
   const navigate = useNavigate()
   const { id } = useParams()
   const isEdit = Boolean(id)
 
-  const {
-    work_experiences,
-    skills,
-    addWorkExperience,
-    updateWorkExperience,
-  } = useAppData()
-  const existing = id ? work_experiences.find((w) => w.id === id) : undefined
+  const [skills, setSkills] = React.useState<ApiSkill[]>([])
+  const [skillsLoading, setSkillsLoading] = React.useState(true)
 
   const [title, setTitle] = React.useState("")
   const [companyName, setCompanyName] = React.useState("")
@@ -42,23 +65,57 @@ export default function WorkExperiencePage() {
   const [dateTo, setDateTo] = React.useState("")
   const [skillIds, setSkillIds] = React.useState<string[]>([])
   const [postSaveOpen, setPostSaveOpen] = React.useState(false)
+  const [loadState, setLoadState] = React.useState<"idle" | "loading">(
+    isEdit ? "loading" : "idle"
+  )
+  const [submitting, setSubmitting] = React.useState(false)
+  const [formError, setFormError] = React.useState<string | null>(null)
 
   React.useEffect(() => {
-    if (existing) {
-      setTitle(existing.title)
-      setCompanyName(existing.company_name)
-      setIsRemote(existing.is_remote)
-      setDateFrom(existing.date_from)
-      setDateTo(existing.date_to)
-      setSkillIds([...existing.skill_ids])
+    let cancelled = false
+    setSkillsLoading(true)
+    void listSkills({ paginated: false })
+      .then((rows) => {
+        if (!cancelled) setSkills(rows)
+      })
+      .catch(() => {
+        if (!cancelled) setSkills([])
+      })
+      .finally(() => {
+        if (!cancelled) setSkillsLoading(false)
+      })
+    return () => {
+      cancelled = true
     }
-  }, [existing])
+  }, [])
 
   React.useEffect(() => {
-    if (isEdit && id && !existing) {
-      navigate("/work-experiences", { replace: true })
+    if (!isEdit || !id) {
+      setLoadState("idle")
+      return
     }
-  }, [isEdit, id, existing, navigate])
+
+    let cancelled = false
+    setLoadState("loading")
+    void getWorkExperience(id)
+      .then((row) => {
+        if (cancelled) return
+        setTitle(row.title)
+        setCompanyName(row.company_name)
+        setIsRemote(row.is_remote)
+        setDateFrom(row.date_from ?? "")
+        setDateTo(row.date_to ?? "")
+        setSkillIds([...(row.skill_ids ?? [])])
+        setLoadState("idle")
+      })
+      .catch(() => {
+        if (!cancelled) navigate("/work-experiences", { replace: true })
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [isEdit, id, navigate])
 
   function resetForm() {
     setTitle("")
@@ -67,29 +124,60 @@ export default function WorkExperiencePage() {
     setDateFrom("")
     setDateTo("")
     setSkillIds([])
+    setFormError(null)
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  function validSkillIds(): string[] {
+    const allowed = new Set(skills.map((s) => s.id))
+    return skillIds.filter((sid) => allowed.has(sid))
+  }
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    e.stopPropagation()
+    setFormError(null)
+
     const payload = {
       title: title.trim(),
       company_name: companyName.trim(),
       is_remote: isRemote,
-      date_from: dateFrom.trim(),
-      date_to: dateTo.trim(),
-      skill_ids: skillIds.filter((sid) => skills.some((s) => s.id === sid)),
+      date_from: emptyToNull(dateFrom),
+      date_to: emptyToNull(dateTo),
     }
-    if (isEdit && id) {
-      updateWorkExperience(id, payload)
-      navigate("/work-experiences")
-    } else {
-      addWorkExperience(payload)
-      setPostSaveOpen(true)
+
+    const ids = validSkillIds()
+
+    setSubmitting(true)
+    try {
+      if (isEdit && id) {
+        await updateWorkExperience(id, payload)
+        await syncWorkExperienceSkills(id, ids)
+        navigate("/work-experiences")
+      } else {
+        const row = await createWorkExperience(payload)
+        await syncWorkExperienceSkills(row.id, ids)
+        setPostSaveOpen(true)
+      }
+    } catch (err) {
+      setFormError(formErrorMessage(err))
+    } finally {
+      setSubmitting(false)
     }
   }
 
-  if (isEdit && !existing) {
-    return null
+  if (isEdit && loadState === "loading") {
+    return (
+      <AppLayout
+        title="Edit work experience"
+        breadcrumbs={[
+          { label: "Dashboard", to: "/dashboard" },
+          { label: "Work experience", to: "/work-experiences" },
+          { label: "Edit" },
+        ]}
+      >
+        <p className="text-muted-foreground">Loading work experience…</p>
+      </AppLayout>
+    )
   }
 
   const pageTitle = isEdit ? "Edit work experience" : "New work experience"
@@ -114,9 +202,17 @@ export default function WorkExperiencePage() {
                 : "Add a role or employer you want on your CV."}
             </CardDescription>
           </CardHeader>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form
+            onSubmit={(e) => void handleSubmit(e)}
+            className="flex flex-col gap-4"
+          >
             <CardContent>
               <FieldGroup>
+                {formError ? (
+                  <p className="text-sm text-destructive" role="alert">
+                    {formError}
+                  </p>
+                ) : null}
                 <Field>
                   <FieldLabel htmlFor="we-title">Title</FieldLabel>
                   <Input
@@ -124,6 +220,7 @@ export default function WorkExperiencePage() {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     required
+                    disabled={submitting}
                   />
                 </Field>
                 <Field>
@@ -133,6 +230,7 @@ export default function WorkExperiencePage() {
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
                     required
+                    disabled={submitting}
                   />
                 </Field>
                 <Field orientation="horizontal">
@@ -141,6 +239,7 @@ export default function WorkExperiencePage() {
                     id="we-remote"
                     checked={isRemote}
                     onCheckedChange={(v) => setIsRemote(Boolean(v))}
+                    disabled={submitting}
                   />
                 </Field>
                 <Field>
@@ -150,7 +249,7 @@ export default function WorkExperiencePage() {
                     type="date"
                     value={dateFrom}
                     onChange={(e) => setDateFrom(e.target.value)}
-                    required
+                    disabled={submitting}
                   />
                 </Field>
                 <Field>
@@ -160,21 +259,37 @@ export default function WorkExperiencePage() {
                     type="date"
                     value={dateTo}
                     onChange={(e) => setDateTo(e.target.value)}
+                    disabled={submitting}
                   />
                 </Field>
-                <WorkExperienceSkillFieldset
-                  idPrefix="we-page"
-                  skills={skills}
-                  skillIds={skillIds}
-                  onSkillIdsChange={setSkillIds}
-                />
+                {skillsLoading ? (
+                  <p className="text-sm text-muted-foreground">Loading skills…</p>
+                ) : (
+                  <WorkExperienceSkillFieldset
+                    idPrefix="we-page"
+                    skills={skills}
+                    skillIds={skillIds}
+                    onSkillIdsChange={setSkillIds}
+                  />
+                )}
               </FieldGroup>
             </CardContent>
             <CardFooter className="flex flex-wrap justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={submitting}
+                onClick={() => navigate(-1)}
+              >
                 Cancel
               </Button>
-              <Button type="submit">{isEdit ? "Save changes" : "Save"}</Button>
+              <Button type="submit" disabled={submitting || skillsLoading}>
+                {submitting
+                  ? "Saving…"
+                  : isEdit
+                    ? "Save changes"
+                    : "Save"}
+              </Button>
             </CardFooter>
           </form>
         </Card>
@@ -183,7 +298,10 @@ export default function WorkExperiencePage() {
         open={postSaveOpen}
         entityLabel="Work experience"
         onGoToList={() => navigate("/work-experiences")}
-        onAddAnother={() => { setPostSaveOpen(false); resetForm() }}
+        onAddAnother={() => {
+          setPostSaveOpen(false)
+          resetForm()
+        }}
       />
     </AppLayout>
   )

@@ -16,6 +16,8 @@ export interface ApiWorkExperience {
   is_remote: boolean
   date_from: string | null
   date_to: string | null
+  /** Ordem alinhada a `work_experience_skills.created_at` (Rails). */
+  skill_ids: string[]
   created_at: string
   updated_at: string
 }

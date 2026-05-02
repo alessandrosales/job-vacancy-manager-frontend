@@ -4,10 +4,6 @@ import { Link } from "react-router"
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
 import { ListingPageHeader } from "~/components/listing/listing-page-header"
 import { ListingTableCard } from "~/components/listing/listing-table-card"
-import {
-  useAppData,
-  type WorkExperience,
-} from "~/components/providers/app-data-provider"
 import { AppLayout } from "~/components/layout/app-layout"
 import { Button } from "~/components/ui/button"
 import {
@@ -29,30 +25,75 @@ import {
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog"
 import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
+import { ApiError } from "~/lib/api/errors"
+import {
+  deleteWorkExperience as deleteWorkExperienceRequest,
+  listWorkExperiences,
+  type ApiWorkExperience,
+} from "~/lib/api/resources/work-experiences"
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
 function filterWorkExperiences(
-  rows: readonly WorkExperience[],
+  rows: readonly ApiWorkExperience[],
   needle: string
-): WorkExperience[] {
+): ApiWorkExperience[] {
   if (!needle) return [...rows]
   const q = needle.toLowerCase()
   return rows.filter((r) =>
-    `${r.title} ${r.company_name} ${r.date_from} ${r.date_to} ${r.is_remote ? "remote" : ""}`
+    `${r.title} ${r.company_name} ${r.date_from ?? ""} ${r.date_to ?? ""} ${r.is_remote ? "remote" : ""}`
       .toLowerCase()
       .includes(q)
   )
 }
 
+function skillCount(row: ApiWorkExperience): number {
+  return row.skill_ids?.length ?? 0
+}
+
+function apiErrorText(err: unknown, fallback: string): string {
+  if (err instanceof ApiError) {
+    const base = err.fieldErrors.base?.[0]
+    if (base) return base
+    const firstField = Object.values(err.fieldErrors).flat()[0]
+    if (firstField) return firstField
+  }
+  return fallback
+}
+
 export default function WorkExperiencesPage() {
-  const { work_experiences, deleteWorkExperience } = useAppData()
+  const [workExperiences, setWorkExperiences] = React.useState<ApiWorkExperience[]>(
+    []
+  )
+  const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
+    "loading"
+  )
+  const [listError, setListError] = React.useState<string | null>(null)
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
+  const [deleteSubmitting, setDeleteSubmitting] = React.useState(false)
+  const [deleteError, setDeleteError] = React.useState<string | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
   const searchNeedle = searchQuery.trim()
 
+  const fetchWorkExperiences = React.useCallback(async () => {
+    setLoadState("loading")
+    setListError(null)
+    try {
+      const data = await listWorkExperiences({ paginated: false })
+      setWorkExperiences(data)
+      setLoadState("idle")
+    } catch (e) {
+      setLoadState("error")
+      setListError(apiErrorText(e, "Could not load work experience."))
+    }
+  }, [])
+
+  React.useEffect(() => {
+    void fetchWorkExperiences()
+  }, [fetchWorkExperiences])
+
   const filtered = React.useMemo(
-    () => filterWorkExperiences(work_experiences, searchNeedle),
-    [work_experiences, searchNeedle]
+    () => filterWorkExperiences(workExperiences, searchNeedle),
+    [workExperiences, searchNeedle]
   )
 
   const {
@@ -63,6 +104,21 @@ export default function WorkExperiencesPage() {
     sentinelRef,
     loadNextWindow,
   } = useInfiniteScrollList(filtered, { filterKey: searchNeedle })
+
+  async function confirmDelete() {
+    if (!deleteId) return
+    setDeleteSubmitting(true)
+    setDeleteError(null)
+    try {
+      await deleteWorkExperienceRequest(deleteId)
+      setWorkExperiences((prev) => prev.filter((row) => row.id !== deleteId))
+      setDeleteId(null)
+    } catch (e) {
+      setDeleteError(apiErrorText(e, "Could not delete work experience."))
+    } finally {
+      setDeleteSubmitting(false)
+    }
+  }
 
   return (
     <AppLayout title="Work experience">
@@ -81,7 +137,9 @@ export default function WorkExperiencesPage() {
         />
         <ListingTableCard
           stats={
-            totalCount > 0 ? `Showing ${loadedCount} of ${totalCount}` : undefined
+            loadState === "idle" && totalCount > 0
+              ? `Showing ${loadedCount} of ${totalCount}`
+              : undefined
           }
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
@@ -100,7 +158,29 @@ export default function WorkExperiencesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {work_experiences.length === 0 ? (
+              {loadState === "loading" ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-muted-foreground">
+                    Loading work experience…
+                  </TableCell>
+                </TableRow>
+              ) : loadState === "error" ? (
+                <TableRow>
+                  <TableCell colSpan={7}>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="text-destructive">{listError}</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void fetchWorkExperiences()}
+                      >
+                        Try again
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : workExperiences.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-muted-foreground">
                     No work experience yet. Add one to get started.
@@ -129,7 +209,10 @@ export default function WorkExperiencesPage() {
                           variant="ghost"
                           size="icon"
                           aria-label="Delete work experience"
-                          onClick={() => setDeleteId(row.id)}
+                          onClick={() => {
+                            setDeleteError(null)
+                            setDeleteId(row.id)
+                          }}
                         >
                           <Trash2Icon />
                         </Button>
@@ -139,25 +222,27 @@ export default function WorkExperiencesPage() {
                     <TableCell>{row.company_name}</TableCell>
                     <TableCell>{row.is_remote ? "Yes" : "No"}</TableCell>
                     <TableCell className="text-muted-foreground">
-                      {row.date_from || "—"}
+                      {row.date_from ?? "—"}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {row.date_to || "—"}
+                      {row.date_to ?? "—"}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {row.skill_ids.length}
+                      {skillCount(row)}
                     </TableCell>
                   </TableRow>
                 ))
               )}
-              <InfiniteScrollSentinelRow
-                colSpan={7}
-                sentinelRef={sentinelRef}
-                hasMore={hasMore}
-                totalCount={totalCount}
-                loadedCount={loadedCount}
-                loadNextWindow={loadNextWindow}
-              />
+              {loadState === "idle" && workExperiences.length > 0 ? (
+                <InfiniteScrollSentinelRow
+                  colSpan={7}
+                  sentinelRef={sentinelRef}
+                  hasMore={hasMore}
+                  totalCount={totalCount}
+                  loadedCount={loadedCount}
+                  loadNextWindow={loadNextWindow}
+                />
+              ) : null}
             </TableBody>
           </Table>
         </ListingTableCard>
@@ -165,7 +250,10 @@ export default function WorkExperiencesPage() {
         <AlertDialog
           open={deleteId !== null}
           onOpenChange={(open) => {
-            if (!open) setDeleteId(null)
+            if (!open) {
+              setDeleteId(null)
+              setDeleteError(null)
+            }
           }}
         >
           <AlertDialogContent>
@@ -175,16 +263,22 @@ export default function WorkExperiencesPage() {
                 This removes the entry from your list.
               </AlertDialogDescription>
             </AlertDialogHeader>
+            {deleteError ? (
+              <p className="text-sm text-destructive" role="alert">
+                {deleteError}
+              </p>
+            ) : null}
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={deleteSubmitting}>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
-                onClick={() => {
-                  if (deleteId) deleteWorkExperience(deleteId)
-                  setDeleteId(null)
+                disabled={deleteSubmitting}
+                onClick={(e) => {
+                  e.preventDefault()
+                  void confirmDelete()
                 }}
               >
-                Delete
+                {deleteSubmitting ? "Deleting…" : "Delete"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

@@ -4,10 +4,6 @@ import { Link } from "react-router"
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
 import { ListingPageHeader } from "~/components/listing/listing-page-header"
 import { ListingTableCard } from "~/components/listing/listing-table-card"
-import {
-  useAppData,
-  type Certification,
-} from "~/components/providers/app-data-provider"
 import { AppLayout } from "~/components/layout/app-layout"
 import { Button } from "~/components/ui/button"
 import {
@@ -29,24 +25,67 @@ import {
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog"
 import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
+import { ApiError } from "~/lib/api/errors"
+import {
+  deleteCertification as deleteCertificationRequest,
+  listCertifications,
+  type ApiCertification,
+} from "~/lib/api/resources/certifications"
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
 function filterCertifications(
-  rows: readonly Certification[],
+  rows: readonly ApiCertification[],
   needle: string
-): Certification[] {
+): ApiCertification[] {
   if (!needle) return [...rows]
   const q = needle.toLowerCase()
   return rows.filter((r) =>
-    `${r.name} ${r.date_from} ${r.date_to}`.toLowerCase().includes(q)
+    `${r.name} ${r.date_from ?? ""} ${r.date_to ?? ""}`
+      .toLowerCase()
+      .includes(q)
   )
 }
 
+function apiErrorText(err: unknown, fallback: string): string {
+  if (err instanceof ApiError) {
+    const base = err.fieldErrors.base?.[0]
+    if (base) return base
+    const firstField = Object.values(err.fieldErrors).flat()[0]
+    if (firstField) return firstField
+  }
+  return fallback
+}
+
 export default function CertificationsPage() {
-  const { certifications, deleteCertification } = useAppData()
+  const [certifications, setCertifications] = React.useState<ApiCertification[]>(
+    []
+  )
+  const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
+    "loading"
+  )
+  const [listError, setListError] = React.useState<string | null>(null)
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
+  const [deleteSubmitting, setDeleteSubmitting] = React.useState(false)
+  const [deleteError, setDeleteError] = React.useState<string | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
   const searchNeedle = searchQuery.trim()
+
+  const fetchCertifications = React.useCallback(async () => {
+    setLoadState("loading")
+    setListError(null)
+    try {
+      const data = await listCertifications({ paginated: false })
+      setCertifications(data)
+      setLoadState("idle")
+    } catch (e) {
+      setLoadState("error")
+      setListError(apiErrorText(e, "Could not load certifications."))
+    }
+  }, [])
+
+  React.useEffect(() => {
+    void fetchCertifications()
+  }, [fetchCertifications])
 
   const filtered = React.useMemo(
     () => filterCertifications(certifications, searchNeedle),
@@ -61,6 +100,21 @@ export default function CertificationsPage() {
     sentinelRef,
     loadNextWindow,
   } = useInfiniteScrollList(filtered, { filterKey: searchNeedle })
+
+  async function confirmDelete() {
+    if (!deleteId) return
+    setDeleteSubmitting(true)
+    setDeleteError(null)
+    try {
+      await deleteCertificationRequest(deleteId)
+      setCertifications((prev) => prev.filter((row) => row.id !== deleteId))
+      setDeleteId(null)
+    } catch (e) {
+      setDeleteError(apiErrorText(e, "Could not delete certification."))
+    } finally {
+      setDeleteSubmitting(false)
+    }
+  }
 
   return (
     <AppLayout title="Certifications">
@@ -79,7 +133,9 @@ export default function CertificationsPage() {
         />
         <ListingTableCard
           stats={
-            totalCount > 0 ? `Showing ${loadedCount} of ${totalCount}` : undefined
+            loadState === "idle" && totalCount > 0
+              ? `Showing ${loadedCount} of ${totalCount}`
+              : undefined
           }
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
@@ -95,7 +151,29 @@ export default function CertificationsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {certifications.length === 0 ? (
+              {loadState === "loading" ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-muted-foreground">
+                    Loading certifications…
+                  </TableCell>
+                </TableRow>
+              ) : loadState === "error" ? (
+                <TableRow>
+                  <TableCell colSpan={4}>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="text-destructive">{listError}</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void fetchCertifications()}
+                      >
+                        Try again
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : certifications.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-muted-foreground">
                     No certifications yet. Add one to get started.
@@ -124,7 +202,10 @@ export default function CertificationsPage() {
                           variant="ghost"
                           size="icon"
                           aria-label="Delete certification"
-                          onClick={() => setDeleteId(row.id)}
+                          onClick={() => {
+                            setDeleteError(null)
+                            setDeleteId(row.id)
+                          }}
                         >
                           <Trash2Icon />
                         </Button>
@@ -132,22 +213,24 @@ export default function CertificationsPage() {
                     </TableCell>
                     <TableCell className="font-medium">{row.name}</TableCell>
                     <TableCell className="text-muted-foreground">
-                      {row.date_from || "—"}
+                      {row.date_from ?? "—"}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {row.date_to || "—"}
+                      {row.date_to ?? "—"}
                     </TableCell>
                   </TableRow>
                 ))
               )}
-              <InfiniteScrollSentinelRow
-                colSpan={4}
-                sentinelRef={sentinelRef}
-                hasMore={hasMore}
-                totalCount={totalCount}
-                loadedCount={loadedCount}
-                loadNextWindow={loadNextWindow}
-              />
+              {loadState === "idle" && certifications.length > 0 ? (
+                <InfiniteScrollSentinelRow
+                  colSpan={4}
+                  sentinelRef={sentinelRef}
+                  hasMore={hasMore}
+                  totalCount={totalCount}
+                  loadedCount={loadedCount}
+                  loadNextWindow={loadNextWindow}
+                />
+              ) : null}
             </TableBody>
           </Table>
         </ListingTableCard>
@@ -155,7 +238,10 @@ export default function CertificationsPage() {
         <AlertDialog
           open={deleteId !== null}
           onOpenChange={(open) => {
-            if (!open) setDeleteId(null)
+            if (!open) {
+              setDeleteId(null)
+              setDeleteError(null)
+            }
           }}
         >
           <AlertDialogContent>
@@ -165,16 +251,22 @@ export default function CertificationsPage() {
                 This removes the certification from your list.
               </AlertDialogDescription>
             </AlertDialogHeader>
+            {deleteError ? (
+              <p className="text-sm text-destructive" role="alert">
+                {deleteError}
+              </p>
+            ) : null}
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={deleteSubmitting}>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
-                onClick={() => {
-                  if (deleteId) deleteCertification(deleteId)
-                  setDeleteId(null)
+                disabled={deleteSubmitting}
+                onClick={(e) => {
+                  e.preventDefault()
+                  void confirmDelete()
                 }}
               >
-                Delete
+                {deleteSubmitting ? "Deleting…" : "Delete"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

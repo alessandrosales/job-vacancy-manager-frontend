@@ -2,7 +2,12 @@
 
 import * as React from "react"
 
-import type { Skill } from "~/components/providers/app-data-provider"
+/** Linha mínima para o checklist (compatível com `ApiSkill` da API). */
+export type WorkExperienceSkillPickerRow = {
+  id: string
+  name: string
+  description: string | null
+}
 import {
   Field,
   FieldDescription,
@@ -20,7 +25,7 @@ export function WorkExperienceSkillFieldset({
   onSkillIdsChange,
 }: {
   idPrefix: string
-  skills: readonly Skill[]
+  skills: readonly WorkExperienceSkillPickerRow[]
   skillIds: readonly string[]
   onSkillIdsChange: (next: string[]) => void
 }) {
@@ -29,7 +34,7 @@ export function WorkExperienceSkillFieldset({
   const filtered = React.useMemo(() => {
     if (!q) return [...skills]
     return skills.filter((s) =>
-      `${s.name} ${s.description}`.toLowerCase().includes(q)
+      `${s.name} ${s.description ?? ""}`.toLowerCase().includes(q)
     )
   }, [skills, q])
 
