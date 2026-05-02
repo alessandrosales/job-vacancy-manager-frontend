@@ -1,0 +1,62 @@
+import { apiRequestJson, apiRequestNoContent } from "~/lib/api/client"
+import type { ApiSessionUser } from "~/lib/api/resources/auth"
+
+/** Igual a `User#as_api_json`. */
+export type ApiUser = ApiSessionUser
+
+export type ApiUserCreate = {
+  name: string
+  email: string
+  password: string
+  password_confirmation: string
+}
+
+export type ApiUserUpdate = Partial<{
+  name: string
+  email: string
+  password: string
+  password_confirmation: string
+}>
+
+/** Lista contém apenas o usuário autenticado. */
+export async function listUsers(): Promise<ApiUser[]> {
+  return apiRequestJson<ApiUser[]>({
+    path: "users",
+    method: "GET",
+  })
+}
+
+export async function getUser(id: string): Promise<ApiUser> {
+  return apiRequestJson<ApiUser>({
+    path: `users/${encodeURIComponent(id)}`,
+    method: "GET",
+  })
+}
+
+/** Público (`skip_before_action :authenticate_request!` no Rails). */
+export async function createUser(payload: ApiUserCreate): Promise<ApiUser> {
+  return apiRequestJson<ApiUser>({
+    path: "users",
+    method: "POST",
+    auth: false,
+    body: { user: payload },
+  })
+}
+
+export async function updateUser(
+  id: string,
+  payload: ApiUserUpdate
+): Promise<ApiUser> {
+  return apiRequestJson<ApiUser>({
+    path: `users/${encodeURIComponent(id)}`,
+    method: "PATCH",
+    body: { user: payload },
+  })
+}
+
+export async function deleteUser(id: string): Promise<void> {
+  await apiRequestNoContent({
+    path: `users/${encodeURIComponent(id)}`,
+    method: "DELETE",
+  })
+}
