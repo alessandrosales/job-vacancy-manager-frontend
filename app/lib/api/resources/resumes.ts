@@ -7,6 +7,7 @@ import { toIndexQuery } from "~/lib/api/pagination"
 import type { ApiCertification } from "~/lib/api/resources/certifications"
 import type { ApiEducation } from "~/lib/api/resources/educations"
 import type { ApiSkill } from "~/lib/api/resources/skills"
+import type { ResumeDocument } from "~/components/providers/app-data-provider"
 import type { ApiWorkExperience } from "~/lib/api/resources/work-experiences"
 
 export interface ApiResume {
@@ -17,6 +18,29 @@ export interface ApiResume {
   description: string | null
   created_at: string
   updated_at: string
+  work_experience_ids: string[]
+  certification_ids: string[]
+  education_ids: string[]
+  skill_ids: string[]
+}
+
+/** Converte resposta `GET/PATCH/POST resumes` para o documento usado na UI. */
+export function apiResumeToResumeDocument(api: ApiResume): ResumeDocument {
+  const rawRoleId = api.role_id
+  return {
+    id: api.id,
+    title: api.title,
+    description: api.description ?? "",
+    updated_at: api.updated_at,
+    role_id:
+      rawRoleId == null || rawRoleId === ""
+        ? ""
+        : String(rawRoleId).trim(),
+    work_experience_ids: api.work_experience_ids ?? [],
+    certification_ids: api.certification_ids ?? [],
+    education_ids: api.education_ids ?? [],
+    skill_ids: api.skill_ids ?? [],
+  }
 }
 
 export type ApiResumeWrite = Pick<

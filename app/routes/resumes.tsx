@@ -3,9 +3,9 @@ import { Link } from "react-router"
 
 import { ListingPageHeader } from "~/components/listing/listing-page-header"
 import { ListingTableCard } from "~/components/listing/listing-table-card"
-import {
-  useAppData,
-  type ResumeDocument,
+import type {
+  ResumeDocument,
+  Role,
 } from "~/components/providers/app-data-provider"
 import { AppLayout } from "~/components/layout/app-layout"
 import { Button } from "~/components/ui/button"
@@ -27,7 +27,25 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog"
+import { ApiError } from "~/lib/api/errors"
+import {
+  apiResumeToResumeDocument,
+  deleteResume as deleteResumeApi,
+  listResumes,
+} from "~/lib/api/resources/resumes"
+import { listRoles } from "~/lib/api/resources/roles"
+import { apiRoleToRole } from "~/lib/opportunity-api-mappers"
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
+
+function apiErrorText(err: unknown, fallback: string): string {
+  if (err instanceof ApiError) {
+    const base = err.fieldErrors.base?.[0]
+    if (base) return base
+    const firstField = Object.values(err.fieldErrors).flat()[0]
+    if (firstField) return firstField
+  }
+  return fallback
+}
 
 function filterResumes(
   rows: readonly ResumeDocument[],
@@ -45,18 +63,51 @@ function filterResumes(
 }
 
 function formatUpdated(isoDate: string): string {
-  const t = Date.parse(`${isoDate}T12:00:00`)
-  if (Number.isNaN(t)) return isoDate
+  const parsed =
+    isoDate.includes("T") || isoDate.endsWith("Z")
+      ? Date.parse(isoDate)
+      : Date.parse(`${isoDate}T12:00:00`)
+  if (Number.isNaN(parsed)) return isoDate
   return new Intl.DateTimeFormat(undefined, {
     dateStyle: "medium",
-  }).format(t)
+  }).format(parsed)
 }
 
 export default function ResumesPage() {
-  const { resumes, deleteResume, roles } = useAppData()
+  const [resumes, setResumes] = React.useState<ResumeDocument[]>([])
+  const [roles, setRoles] = React.useState<Role[]>([])
+  const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
+    "loading"
+  )
+  const [listError, setListError] = React.useState<string | null>(null)
+
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
+  const [deleteSubmitting, setDeleteSubmitting] = React.useState(false)
+  const [deleteError, setDeleteError] = React.useState<string | null>(null)
+
   const [searchQuery, setSearchQuery] = React.useState("")
   const searchNeedle = searchQuery.trim()
+
+  const fetchAll = React.useCallback(async () => {
+    setLoadState("loading")
+    setListError(null)
+    try {
+      const [apiResumes, apiRoles] = await Promise.all([
+        listResumes({ paginated: false }),
+        listRoles({ paginated: false }),
+      ])
+      setResumes(apiResumes.map(apiResumeToResumeDocument))
+      setRoles(apiRoles.map(apiRoleToRole))
+      setLoadState("idle")
+    } catch (e) {
+      setLoadState("error")
+      setListError(apiErrorText(e, "Could not load resumes."))
+    }
+  }, [])
+
+  React.useEffect(() => {
+    void fetchAll()
+  }, [fetchAll])
 
   const roleNameById = React.useMemo(
     () => new Map(roles.map((role) => [role.id, role.name] as const)),
@@ -70,6 +121,21 @@ export default function ResumesPage() {
 
   const totalCount = resumes.length
   const shownCount = filtered.length
+
+  async function confirmDelete() {
+    if (!deleteId) return
+    setDeleteSubmitting(true)
+    setDeleteError(null)
+    try {
+      await deleteResumeApi(deleteId)
+      setResumes((prev) => prev.filter((r) => r.id !== deleteId))
+      setDeleteId(null)
+    } catch (e) {
+      setDeleteError(apiErrorText(e, "Could not delete resume."))
+    } finally {
+      setDeleteSubmitting(false)
+    }
+  }
 
   return (
     <AppLayout title="Resumes">
@@ -86,9 +152,24 @@ export default function ResumesPage() {
             </Button>
           }
         />
+
+        {loadState === "error" ? (
+          <p className="text-destructive px-1 text-sm" role="alert">
+            {listError ?? "Could not load data."}{" "}
+            <Button
+              type="button"
+              variant="link"
+              className="text-destructive h-auto p-0 align-baseline underline"
+              onClick={() => void fetchAll()}
+            >
+              Retry
+            </Button>
+          </p>
+        ) : null}
+
         <ListingTableCard
           stats={
-            totalCount > 0
+            loadState === "idle" && totalCount > 0
               ? searchNeedle
                 ? `Showing ${shownCount} of ${totalCount}`
                 : `${totalCount} saved`
@@ -98,7 +179,11 @@ export default function ResumesPage() {
           onSearchChange={setSearchQuery}
           searchPlaceholder="Search resumes…"
         >
-          {resumes.length === 0 ? (
+          {loadState === "loading" ? (
+            <p className="text-muted-foreground py-8 text-center text-sm">
+              Loading resumes…
+            </p>
+          ) : resumes.length === 0 ? (
             <div className="text-muted-foreground flex flex-1 flex-col items-center justify-center gap-2 py-16 text-center text-sm">
               <p>No resumes yet.</p>
               <Button asChild variant="outline" size="sm">
@@ -114,48 +199,48 @@ export default function ResumesPage() {
               {filtered.map((r) => {
                 const roleLabel = r.role_id ? roleNameById.get(r.role_id) : undefined
                 return (
-                <Card key={r.id} className="flex flex-col">
-                  <CardHeader className="flex flex-col gap-2">
-                    <CardTitle className="line-clamp-2 text-lg leading-snug">
-                      {r.title}
-                    </CardTitle>
-                    <CardDescription>
-                      Updated {formatUpdated(r.updated_at)}
-                      {roleLabel ? ` · ${roleLabel}` : null}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex flex-1 flex-col gap-2">
-                    <p className="text-muted-foreground text-xs leading-relaxed">
-                      {r.work_experience_ids.length} work experiences ·{" "}
-                      {r.certification_ids.length} certifications · {r.education_ids.length}{" "}
-                      education · {r.skill_ids.length} skills
-                    </p>
-                    <p className="text-muted-foreground line-clamp-4 text-sm leading-relaxed">
-                      {r.description}
-                    </p>
-                  </CardContent>
-                  <CardFooter className="mt-auto flex flex-wrap justify-end gap-2 border-t border-border pt-4">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:text-destructive"
-                      aria-label={`Delete ${r.title}`}
-                      onClick={() => setDeleteId(r.id)}
-                    >
-                      <Trash2Icon data-icon="inline-start" />
-                      Delete
-                    </Button>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link
-                        to={`/resumes/resume/${encodeURIComponent(r.id)}`}
-                        aria-label={`Edit ${r.title}`}
+                  <Card key={r.id} className="flex flex-col">
+                    <CardHeader className="flex flex-col gap-2">
+                      <CardTitle className="line-clamp-2 text-lg leading-snug">
+                        {r.title}
+                      </CardTitle>
+                      <CardDescription>
+                        Updated {formatUpdated(r.updated_at)}
+                        {roleLabel ? ` · ${roleLabel}` : null}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-1 flex-col gap-2">
+                      <p className="text-muted-foreground text-xs leading-relaxed">
+                        {r.work_experience_ids.length} work experiences ·{" "}
+                        {r.certification_ids.length} certifications · {r.education_ids.length}{" "}
+                        education · {r.skill_ids.length} skills
+                      </p>
+                      <p className="text-muted-foreground line-clamp-4 text-sm leading-relaxed">
+                        {r.description}
+                      </p>
+                    </CardContent>
+                    <CardFooter className="mt-auto flex flex-wrap justify-end gap-2 border-t border-border pt-4">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                        aria-label={`Delete ${r.title}`}
+                        onClick={() => setDeleteId(r.id)}
                       >
-                        <PencilIcon data-icon="inline-start" />
-                        Edit
-                      </Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
+                        <Trash2Icon data-icon="inline-start" />
+                        Delete
+                      </Button>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link
+                          to={`/resumes/resume/${encodeURIComponent(r.id)}`}
+                          aria-label={`Edit ${r.title}`}
+                        >
+                          <PencilIcon data-icon="inline-start" />
+                          Edit
+                        </Link>
+                      </Button>
+                    </CardFooter>
+                  </Card>
                 )
               })}
             </div>
@@ -165,7 +250,10 @@ export default function ResumesPage() {
         <AlertDialog
           open={deleteId !== null}
           onOpenChange={(open) => {
-            if (!open) setDeleteId(null)
+            if (!open) {
+              setDeleteId(null)
+              setDeleteError(null)
+            }
           }}
         >
           <AlertDialogContent>
@@ -175,16 +263,19 @@ export default function ResumesPage() {
                 This removes the saved resume from your list.
               </AlertDialogDescription>
             </AlertDialogHeader>
+            {deleteError ? (
+              <p className="text-destructive text-sm" role="alert">
+                {deleteError}
+              </p>
+            ) : null}
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={deleteSubmitting}>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
-                onClick={() => {
-                  if (deleteId) deleteResume(deleteId)
-                  setDeleteId(null)
-                }}
+                disabled={deleteSubmitting}
+                onClick={() => void confirmDelete()}
               >
-                Delete
+                {deleteSubmitting ? "Deleting…" : "Delete"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
