@@ -4,10 +4,6 @@ import { Link } from "react-router"
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
 import { ListingPageHeader } from "~/components/listing/listing-page-header"
 import { ListingTableCard } from "~/components/listing/listing-table-card"
-import {
-  useAppData,
-  type ReferenceLink,
-} from "~/components/providers/app-data-provider"
 import { AppLayout } from "~/components/layout/app-layout"
 import { Button } from "~/components/ui/button"
 import {
@@ -29,6 +25,12 @@ import {
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog"
 import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
+import { ApiError } from "~/lib/api/errors"
+import {
+  deleteReferenceLink as deleteReferenceLinkRequest,
+  listReferenceLinks,
+  type ApiReferenceLink,
+} from "~/lib/api/resources/reference-links"
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
 function hrefFromUrl(url: string): string {
@@ -39,9 +41,9 @@ function hrefFromUrl(url: string): string {
 }
 
 function filterLinksBySearch(
-  rows: readonly ReferenceLink[],
+  rows: readonly ApiReferenceLink[],
   needle: string
-): ReferenceLink[] {
+): ApiReferenceLink[] {
   if (!needle) return [...rows]
   const q = needle.toLowerCase()
   return rows.filter((row) =>
@@ -49,15 +51,48 @@ function filterLinksBySearch(
   )
 }
 
+function apiErrorText(err: unknown, fallback: string): string {
+  if (err instanceof ApiError) {
+    const base = err.fieldErrors.base?.[0]
+    if (base) return base
+    const firstField = Object.values(err.fieldErrors).flat()[0]
+    if (firstField) return firstField
+  }
+  return fallback
+}
+
 export default function LinksPage() {
-  const { reference_links: referenceLinks, deleteReferenceLink } = useAppData()
+  const [links, setLinks] = React.useState<ApiReferenceLink[]>([])
+  const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
+    "loading"
+  )
+  const [listError, setListError] = React.useState<string | null>(null)
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
+  const [deleteSubmitting, setDeleteSubmitting] = React.useState(false)
+  const [deleteError, setDeleteError] = React.useState<string | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
   const searchNeedle = searchQuery.trim()
 
+  const fetchLinks = React.useCallback(async () => {
+    setLoadState("loading")
+    setListError(null)
+    try {
+      const data = await listReferenceLinks({ paginated: false })
+      setLinks(data)
+      setLoadState("idle")
+    } catch (e) {
+      setLoadState("error")
+      setListError(apiErrorText(e, "Could not load links."))
+    }
+  }, [])
+
+  React.useEffect(() => {
+    void fetchLinks()
+  }, [fetchLinks])
+
   const filteredLinks = React.useMemo(
-    () => filterLinksBySearch(referenceLinks, searchNeedle),
-    [referenceLinks, searchNeedle]
+    () => filterLinksBySearch(links, searchNeedle),
+    [links, searchNeedle]
   )
 
   const {
@@ -68,6 +103,21 @@ export default function LinksPage() {
     sentinelRef,
     loadNextWindow,
   } = useInfiniteScrollList(filteredLinks, { filterKey: searchNeedle })
+
+  async function confirmDelete() {
+    if (!deleteId) return
+    setDeleteSubmitting(true)
+    setDeleteError(null)
+    try {
+      await deleteReferenceLinkRequest(deleteId)
+      setLinks((prev) => prev.filter((row) => row.id !== deleteId))
+      setDeleteId(null)
+    } catch (e) {
+      setDeleteError(apiErrorText(e, "Could not delete link."))
+    } finally {
+      setDeleteSubmitting(false)
+    }
+  }
 
   return (
     <AppLayout title="Links">
@@ -86,7 +136,7 @@ export default function LinksPage() {
         />
         <ListingTableCard
           stats={
-            totalCount > 0
+            loadState === "idle" && totalCount > 0
               ? `Showing ${loadedCount} of ${totalCount}`
               : undefined
           }
@@ -103,7 +153,29 @@ export default function LinksPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {referenceLinks.length === 0 ? (
+              {loadState === "loading" ? (
+                <TableRow>
+                  <TableCell colSpan={3} className="text-muted-foreground">
+                    Loading links…
+                  </TableCell>
+                </TableRow>
+              ) : loadState === "error" ? (
+                <TableRow>
+                  <TableCell colSpan={3}>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="text-destructive">{listError}</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void fetchLinks()}
+                      >
+                        Try again
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : links.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={3} className="text-muted-foreground">
                     No links yet. Add one to get started.
@@ -132,7 +204,10 @@ export default function LinksPage() {
                           variant="ghost"
                           size="icon"
                           aria-label="Delete link"
-                          onClick={() => setDeleteId(row.id)}
+                          onClick={() => {
+                            setDeleteError(null)
+                            setDeleteId(row.id)
+                          }}
                         >
                           <Trash2Icon />
                         </Button>
@@ -152,14 +227,16 @@ export default function LinksPage() {
                   </TableRow>
                 ))
               )}
-              <InfiniteScrollSentinelRow
-                colSpan={3}
-                sentinelRef={sentinelRef}
-                hasMore={hasMore}
-                totalCount={totalCount}
-                loadedCount={loadedCount}
-                loadNextWindow={loadNextWindow}
-              />
+              {loadState === "idle" && links.length > 0 ? (
+                <InfiniteScrollSentinelRow
+                  colSpan={3}
+                  sentinelRef={sentinelRef}
+                  hasMore={hasMore}
+                  totalCount={totalCount}
+                  loadedCount={loadedCount}
+                  loadNextWindow={loadNextWindow}
+                />
+              ) : null}
             </TableBody>
           </Table>
         </ListingTableCard>
@@ -167,7 +244,10 @@ export default function LinksPage() {
         <AlertDialog
           open={deleteId !== null}
           onOpenChange={(open) => {
-            if (!open) setDeleteId(null)
+            if (!open) {
+              setDeleteId(null)
+              setDeleteError(null)
+            }
           }}
         >
           <AlertDialogContent>
@@ -177,16 +257,22 @@ export default function LinksPage() {
                 This removes the link from your list.
               </AlertDialogDescription>
             </AlertDialogHeader>
+            {deleteError ? (
+              <p className="text-sm text-destructive" role="alert">
+                {deleteError}
+              </p>
+            ) : null}
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={deleteSubmitting}>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
-                onClick={() => {
-                  if (deleteId) deleteReferenceLink(deleteId)
-                  setDeleteId(null)
+                disabled={deleteSubmitting}
+                onClick={(e) => {
+                  e.preventDefault()
+                  void confirmDelete()
                 }}
               >
-                Delete
+                {deleteSubmitting ? "Deleting…" : "Delete"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

@@ -1,7 +1,6 @@
 import * as React from "react"
 import { useNavigate, useParams } from "react-router"
 
-import { useAppData } from "~/components/providers/app-data-provider"
 import { AppLayout } from "~/components/layout/app-layout"
 import { Button } from "~/components/ui/button"
 import {
@@ -19,55 +18,118 @@ import {
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
+import { ApiError } from "~/lib/api/errors"
+import {
+  createReferenceLink,
+  getReferenceLink,
+  updateReferenceLink,
+} from "~/lib/api/resources/reference-links"
+
+function normalizeUrlForApi(raw: string): string {
+  const t = raw.trim()
+  if (!t) return t
+  if (/^https?:\/\//i.test(t)) return t
+  return `https://${t}`
+}
+
+function formErrorMessage(err: unknown): string {
+  if (err instanceof ApiError) {
+    const parts = [
+      ...(err.fieldErrors.title ?? []),
+      ...(err.fieldErrors.url ?? []),
+      ...(err.fieldErrors.base ?? []),
+    ]
+    if (parts.length > 0) return parts[0] ?? "Could not save link."
+  }
+  return "Could not save link."
+}
 
 export default function ReferenceLinkPage() {
   const navigate = useNavigate()
   const { id } = useParams()
   const isEdit = Boolean(id)
 
-  const { reference_links: referenceLinks, addReferenceLink, updateReferenceLink } =
-    useAppData()
-  const existing = id ? referenceLinks.find((row) => row.id === id) : undefined
-
   const [title, setTitle] = React.useState("")
   const [url, setUrl] = React.useState("")
   const [postSaveOpen, setPostSaveOpen] = React.useState(false)
+  const [loadState, setLoadState] = React.useState<"idle" | "loading">(
+    isEdit ? "loading" : "idle"
+  )
+  const [submitting, setSubmitting] = React.useState(false)
+  const [formError, setFormError] = React.useState<string | null>(null)
 
   React.useEffect(() => {
-    if (existing) {
-      setTitle(existing.title)
-      setUrl(existing.url)
+    if (!isEdit || !id) {
+      setLoadState("idle")
+      return
     }
-  }, [existing])
 
-  React.useEffect(() => {
-    if (isEdit && id && !existing) {
-      navigate("/links", { replace: true })
+    let cancelled = false
+    setLoadState("loading")
+    void getReferenceLink(id)
+      .then((row) => {
+        if (cancelled) return
+        setTitle(row.title)
+        setUrl(row.url)
+        setLoadState("idle")
+      })
+      .catch(() => {
+        if (!cancelled) navigate("/links", { replace: true })
+      })
+
+    return () => {
+      cancelled = true
     }
-  }, [isEdit, id, existing, navigate])
+  }, [isEdit, id, navigate])
 
   function resetForm() {
     setTitle("")
     setUrl("")
+    setFormError(null)
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    const payload = {
-      title: title.trim(),
-      url: url.trim(),
-    }
-    if (isEdit && id) {
-      updateReferenceLink(id, payload)
-      navigate("/links")
-    } else {
-      addReferenceLink(payload)
-      setPostSaveOpen(true)
+    e.stopPropagation()
+    setFormError(null)
+    const titleTrim = title.trim()
+    const urlNormalized = normalizeUrlForApi(url)
+
+    setSubmitting(true)
+    try {
+      if (isEdit && id) {
+        await updateReferenceLink(id, {
+          title: titleTrim,
+          url: urlNormalized,
+        })
+        navigate("/links")
+      } else {
+        await createReferenceLink({
+          title: titleTrim,
+          url: urlNormalized,
+        })
+        setPostSaveOpen(true)
+      }
+    } catch (err) {
+      setFormError(formErrorMessage(err))
+    } finally {
+      setSubmitting(false)
     }
   }
 
-  if (isEdit && !existing) {
-    return null
+  if (isEdit && loadState === "loading") {
+    return (
+      <AppLayout
+        title="Edit link"
+        breadcrumbs={[
+          { label: "Dashboard", to: "/dashboard" },
+          { label: "Links", to: "/links" },
+          { label: "Edit" },
+        ]}
+      >
+        <p className="text-muted-foreground">Loading link…</p>
+      </AppLayout>
+    )
   }
 
   const pageTitle = isEdit ? "Edit link" : "New link"
@@ -93,11 +155,16 @@ export default function ReferenceLinkPage() {
             </CardDescription>
           </CardHeader>
           <form
-            onSubmit={handleSubmit}
+            onSubmit={(e) => void handleSubmit(e)}
             className="flex flex-col gap-4"
           >
             <CardContent>
               <FieldGroup>
+                {formError ? (
+                  <p className="text-sm text-destructive" role="alert">
+                    {formError}
+                  </p>
+                ) : null}
                 <Field>
                   <FieldLabel htmlFor="ref-link-title">Title</FieldLabel>
                   <Input
@@ -105,27 +172,40 @@ export default function ReferenceLinkPage() {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     required
+                    disabled={submitting}
                   />
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="ref-link-url">URL</FieldLabel>
                   <Input
                     id="ref-link-url"
-                    type="url"
+                    type="text"
+                    inputMode="url"
+                    autoComplete="url"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
-                    placeholder="https://"
+                    placeholder="https:// or domain.com"
                     required
+                    disabled={submitting}
                   />
                 </Field>
               </FieldGroup>
             </CardContent>
             <CardFooter className="flex flex-wrap justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={submitting}
+                onClick={() => navigate(-1)}
+              >
                 Cancel
               </Button>
-              <Button type="submit">
-                {isEdit ? "Save changes" : "Save"}
+              <Button type="submit" disabled={submitting}>
+                {submitting
+                  ? "Saving…"
+                  : isEdit
+                    ? "Save changes"
+                    : "Save"}
               </Button>
             </CardFooter>
           </form>
@@ -135,7 +215,10 @@ export default function ReferenceLinkPage() {
         open={postSaveOpen}
         entityLabel="Link"
         onGoToList={() => navigate("/links")}
-        onAddAnother={() => { setPostSaveOpen(false); resetForm() }}
+        onAddAnother={() => {
+          setPostSaveOpen(false)
+          resetForm()
+        }}
       />
     </AppLayout>
   )

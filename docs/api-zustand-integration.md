@@ -20,6 +20,8 @@ Fluxo típico após login:
 
 ## 1. Camada HTTP
 
+Guia focado na pasta **`app/lib/api`** (estrutura, recursos, checklist): [`api-layer.md`](./api-layer.md).
+
 ### 1.1 Cliente (`app/lib/api/client.ts`)
 
 - **`apiRequestJson<T>(options)`** — `GET` / `POST` / `PATCH` / `DELETE` com corpo JSON quando aplicável.

@@ -1,7 +1,6 @@
 import * as React from "react"
 import { useNavigate, useParams } from "react-router"
 
-import { useAppData } from "~/components/providers/app-data-provider"
 import { AppLayout } from "~/components/layout/app-layout"
 import { Button } from "~/components/ui/button"
 import {
@@ -21,63 +20,125 @@ import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
 import { InterestLevelStarPicker } from "~/components/shared/interest-level-star-picker"
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
+import { ApiError } from "~/lib/api/errors"
+import {
+  createCompany,
+  getCompany,
+  updateCompany,
+} from "~/lib/api/resources/companies"
 import type { InterestLevel } from "~/lib/labels"
+
+function formErrorMessage(err: unknown): string {
+  if (err instanceof ApiError) {
+    const parts = [
+      ...(err.fieldErrors.name ?? []),
+      ...(err.fieldErrors.url ?? []),
+      ...(err.fieldErrors.description ?? []),
+      ...(err.fieldErrors.interest_level ?? []),
+      ...(err.fieldErrors.base ?? []),
+    ]
+    if (parts.length > 0) return parts[0] ?? "Could not save company."
+  }
+  return "Could not save company."
+}
 
 export default function CompanyPage() {
   const navigate = useNavigate()
   const { id } = useParams()
   const isEdit = Boolean(id)
 
-  const { companies, addCompany, updateCompany } = useAppData()
-  const existing = id ? companies.find((c) => c.id === id) : undefined
-
   const [name, setName] = React.useState("")
   const [url, setUrl] = React.useState("")
   const [description, setDescription] = React.useState("")
   const [interestLevel, setInterestLevel] = React.useState<InterestLevel>(3)
   const [postSaveOpen, setPostSaveOpen] = React.useState(false)
+  const [loadState, setLoadState] = React.useState<"idle" | "loading">(
+    isEdit ? "loading" : "idle"
+  )
+  const [submitting, setSubmitting] = React.useState(false)
+  const [formError, setFormError] = React.useState<string | null>(null)
 
   React.useEffect(() => {
-    if (existing) {
-      setName(existing.name)
-      setUrl(existing.url)
-      setDescription(existing.description)
-      setInterestLevel(existing.interest_level)
+    if (!isEdit || !id) {
+      setLoadState("idle")
+      return
     }
-  }, [existing])
 
-  React.useEffect(() => {
-    if (isEdit && id && !existing) {
-      navigate("/companies", { replace: true })
+    let cancelled = false
+    setLoadState("loading")
+    void getCompany(id)
+      .then((company) => {
+        if (cancelled) return
+        setName(company.name)
+        setUrl(company.url ?? "")
+        setDescription(company.description ?? "")
+        setInterestLevel(company.interest_level as InterestLevel)
+        setLoadState("idle")
+      })
+      .catch(() => {
+        if (!cancelled) navigate("/companies", { replace: true })
+      })
+
+    return () => {
+      cancelled = true
     }
-  }, [isEdit, id, existing, navigate])
+  }, [isEdit, id, navigate])
 
   function resetForm() {
     setName("")
     setUrl("")
     setDescription("")
     setInterestLevel(3)
+    setFormError(null)
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    const payload = {
-      name: name.trim(),
-      url: url.trim(),
-      description: description.trim(),
-      interest_level: interestLevel,
-    }
-    if (isEdit && id) {
-      updateCompany(id, payload)
-      navigate("/companies")
-    } else {
-      addCompany(payload)
-      setPostSaveOpen(true)
+    e.stopPropagation()
+    setFormError(null)
+    const nameTrim = name.trim()
+    const urlTrim = url.trim()
+    const descriptionValue = description.trim() === "" ? null : description.trim()
+
+    setSubmitting(true)
+    try {
+      if (isEdit && id) {
+        await updateCompany(id, {
+          name: nameTrim,
+          url: urlTrim === "" ? null : urlTrim,
+          description: descriptionValue,
+          interest_level: interestLevel,
+        })
+        navigate("/companies")
+      } else {
+        await createCompany({
+          name: nameTrim,
+          url: urlTrim === "" ? null : urlTrim,
+          description: descriptionValue,
+          interest_level: interestLevel,
+        })
+        setPostSaveOpen(true)
+      }
+    } catch (err) {
+      setFormError(formErrorMessage(err))
+    } finally {
+      setSubmitting(false)
     }
   }
 
-  if (isEdit && !existing) {
-    return null
+  if (isEdit && loadState === "loading") {
+    return (
+      <AppLayout
+        title="Edit company"
+        breadcrumbs={[
+          { label: "Dashboard", to: "/dashboard" },
+          { label: "Companies", to: "/companies" },
+          { label: "Edit" },
+        ]}
+      >
+        <p className="text-muted-foreground">Loading company…</p>
+      </AppLayout>
+    )
   }
 
   const title = isEdit ? "Edit company" : "New company"
@@ -93,76 +154,101 @@ export default function CompanyPage() {
       ]}
     >
       <div className="min-h-0 flex-1 overflow-y-auto">
-      <Card className="max-w-xl">
-        <CardHeader>
-          <CardTitle>{title}</CardTitle>
-          <CardDescription>
-            {isEdit
-              ? "Update this company."
-              : "Add a company you want to track."}
-          </CardDescription>
-        </CardHeader>
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col gap-4"
-        >
-          <CardContent>
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="co-name">Name</FieldLabel>
-                <Input
-                  id="co-name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="co-url">URL</FieldLabel>
-                <Input
-                  id="co-url"
-                  type="url"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  placeholder="https://"
-                  required
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="co-desc">Description</FieldLabel>
-                <Textarea
-                  id="co-desc"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  required
-                  rows={4}
-                />
-              </Field>
-              <Field>
-                <FieldLabel>Interest level</FieldLabel>
-                <InterestLevelStarPicker
-                  value={interestLevel}
-                  onChange={setInterestLevel}
-                />
-              </Field>
-            </FieldGroup>
-          </CardContent>
-          <CardFooter className="flex flex-wrap justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-              Cancel
-            </Button>
-            <Button type="submit">
-              {isEdit ? "Save changes" : "Save"}
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
+        <Card className="max-w-xl">
+          <CardHeader>
+            <CardTitle>{title}</CardTitle>
+            <CardDescription>
+              {isEdit
+                ? "Update this company."
+                : "Add a company you want to track."}
+            </CardDescription>
+          </CardHeader>
+          <form
+            onSubmit={(e) => void handleSubmit(e)}
+            className="flex flex-col gap-4"
+          >
+            <CardContent>
+              <FieldGroup>
+                {formError ? (
+                  <p className="text-sm text-destructive" role="alert">
+                    {formError}
+                  </p>
+                ) : null}
+                <Field>
+                  <FieldLabel htmlFor="co-name">Name</FieldLabel>
+                  <Input
+                    id="co-name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    disabled={submitting}
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="co-url">URL</FieldLabel>
+                  <Input
+                    id="co-url"
+                    type="url"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    placeholder="https://"
+                    disabled={submitting}
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="co-desc">Description</FieldLabel>
+                  <Textarea
+                    id="co-desc"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    rows={4}
+                    disabled={submitting}
+                    placeholder="Optional"
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel>Interest level</FieldLabel>
+                  <div
+                    className={
+                      submitting ? "pointer-events-none opacity-60" : undefined
+                    }
+                  >
+                    <InterestLevelStarPicker
+                      value={interestLevel}
+                      onChange={setInterestLevel}
+                    />
+                  </div>
+                </Field>
+              </FieldGroup>
+            </CardContent>
+            <CardFooter className="flex flex-wrap justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={submitting}
+                onClick={() => navigate(-1)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={submitting}>
+                {submitting
+                  ? "Saving…"
+                  : isEdit
+                    ? "Save changes"
+                    : "Save"}
+              </Button>
+            </CardFooter>
+          </form>
+        </Card>
       </div>
       <PostSaveDialog
         open={postSaveOpen}
         entityLabel="Company"
         onGoToList={() => navigate("/companies")}
-        onAddAnother={() => { setPostSaveOpen(false); resetForm() }}
+        onAddAnother={() => {
+          setPostSaveOpen(false)
+          resetForm()
+        }}
       />
     </AppLayout>
   )

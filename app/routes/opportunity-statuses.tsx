@@ -4,7 +4,6 @@ import { Link } from "react-router"
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
 import { ListingPageHeader } from "~/components/listing/listing-page-header"
 import { ListingTableCard } from "~/components/listing/listing-table-card"
-import { useAppData } from "~/components/providers/app-data-provider"
 import { AppLayout } from "~/components/layout/app-layout"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
@@ -27,35 +26,80 @@ import {
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog"
 import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
+import { ApiError } from "~/lib/api/errors"
+import {
+  deleteOpportunityStatus as deleteOpportunityStatusRequest,
+  listOpportunityStatuses,
+  updateOpportunityStatus,
+  type ApiOpportunityStatus,
+} from "~/lib/api/resources/opportunity-statuses"
+import type { StatusBadgeVariant } from "~/lib/labels"
 import { ChevronDownIcon, ChevronUpIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
-function filterBySearch(
-  rows: readonly { id: string; label: string; variant: string }[],
-  needle: string
-) {
+function filterBySearch(rows: readonly ApiOpportunityStatus[], needle: string): ApiOpportunityStatus[] {
   if (!needle) return [...rows]
   const q = needle.toLowerCase()
   return rows.filter(
     (r) =>
       r.label.toLowerCase().includes(q) ||
       r.variant.toLowerCase().includes(q) ||
+      (r.description ?? "").toLowerCase().includes(q) ||
       r.id.toLowerCase().includes(q)
   )
 }
 
+function apiErrorText(err: unknown, fallback: string): string {
+  if (err instanceof ApiError) {
+    const base = err.fieldErrors.base?.[0]
+    if (base) return base
+    const firstField = Object.values(err.fieldErrors).flat()[0]
+    if (firstField) return firstField
+  }
+  return fallback
+}
+
 export default function OpportunityStatusesPage() {
-  const {
-    opportunity_statuses: opportunityStatuses,
-    deleteOpportunityStatus,
-    reorderOpportunityStatuses,
-  } = useAppData()
+  const [statuses, setStatuses] = React.useState<ApiOpportunityStatus[]>([])
+  const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
+    "loading"
+  )
+  const [listError, setListError] = React.useState<string | null>(null)
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
+  const [deleteSubmitting, setDeleteSubmitting] = React.useState(false)
+  const [deleteError, setDeleteError] = React.useState<string | null>(null)
+  const [reorderBusy, setReorderBusy] = React.useState(false)
+  const [reorderError, setReorderError] = React.useState<string | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
   const searchNeedle = searchQuery.trim()
 
+  const sortedAll = React.useMemo(
+    () =>
+      [...statuses].sort(
+        (a, b) => (a.position ?? 0) - (b.position ?? 0)
+      ),
+    [statuses]
+  )
+
+  const fetchStatuses = React.useCallback(async () => {
+    setLoadState("loading")
+    setListError(null)
+    try {
+      const data = await listOpportunityStatuses({ paginated: false })
+      setStatuses(data)
+      setLoadState("idle")
+    } catch (e) {
+      setLoadState("error")
+      setListError(apiErrorText(e, "Could not load statuses."))
+    }
+  }, [])
+
+  React.useEffect(() => {
+    void fetchStatuses()
+  }, [fetchStatuses])
+
   const filtered = React.useMemo(
-    () => filterBySearch(opportunityStatuses, searchNeedle),
-    [opportunityStatuses, searchNeedle]
+    () => filterBySearch(statuses, searchNeedle),
+    [statuses, searchNeedle]
   )
 
   const {
@@ -67,17 +111,45 @@ export default function OpportunityStatusesPage() {
     loadNextWindow,
   } = useInfiniteScrollList(filtered, { filterKey: searchNeedle })
 
-  function moveId(id: string, direction: "up" | "down") {
-    const list = opportunityStatuses.map((s) => s.id)
-    const i = list.indexOf(id)
+  async function moveId(id: string, direction: "up" | "down") {
+    const list = sortedAll
+    const i = list.findIndex((s) => s.id === id)
     if (i < 0) return
     const j = direction === "up" ? i - 1 : i + 1
     if (j < 0 || j >= list.length) return
-    const next = list.slice()
-    const t = next[i]!
-    next[i] = next[j]!
-    next[j] = t
-    reorderOpportunityStatuses(next)
+    const a = list[i]!
+    const b = list[j]!
+    const posA = a.position ?? 0
+    const posB = b.position ?? 0
+
+    setReorderError(null)
+    setReorderBusy(true)
+    try {
+      await Promise.all([
+        updateOpportunityStatus(a.id, { position: posB }),
+        updateOpportunityStatus(b.id, { position: posA }),
+      ])
+      await fetchStatuses()
+    } catch (e) {
+      setReorderError(apiErrorText(e, "Could not reorder statuses."))
+    } finally {
+      setReorderBusy(false)
+    }
+  }
+
+  async function confirmDelete() {
+    if (!deleteId) return
+    setDeleteSubmitting(true)
+    setDeleteError(null)
+    try {
+      await deleteOpportunityStatusRequest(deleteId)
+      setStatuses((prev) => prev.filter((s) => s.id !== deleteId))
+      setDeleteId(null)
+    } catch (e) {
+      setDeleteError(apiErrorText(e, "Could not delete status."))
+    } finally {
+      setDeleteSubmitting(false)
+    }
   }
 
   return (
@@ -95,9 +167,14 @@ export default function OpportunityStatusesPage() {
             </Button>
           }
         />
+        {reorderError ? (
+          <p className="text-sm text-destructive" role="alert">
+            {reorderError}
+          </p>
+        ) : null}
         <ListingTableCard
           stats={
-            totalCount > 0
+            loadState === "idle" && totalCount > 0
               ? `Showing ${loadedCount} of ${totalCount}`
               : undefined
           }
@@ -116,7 +193,29 @@ export default function OpportunityStatusesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {opportunityStatuses.length === 0 ? (
+              {loadState === "loading" ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-muted-foreground">
+                    Loading statuses…
+                  </TableCell>
+                </TableRow>
+              ) : loadState === "error" ? (
+                <TableRow>
+                  <TableCell colSpan={5}>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="text-destructive">{listError}</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void fetchStatuses()}
+                      >
+                        Try again
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : statuses.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-muted-foreground">
                     No statuses. Add your first stage.
@@ -130,10 +229,9 @@ export default function OpportunityStatusesPage() {
                 </TableRow>
               ) : (
                 visibleItems.map((st) => {
-                  const allIds = opportunityStatuses.map((s) => s.id)
-                  const pos = allIds.indexOf(st.id)
+                  const pos = sortedAll.findIndex((s) => s.id === st.id)
                   const isFirst = pos <= 0
-                  const isLast = pos < 0 || pos >= allIds.length - 1
+                  const isLast = pos < 0 || pos >= sortedAll.length - 1
                   return (
                     <TableRow key={st.id}>
                       <TableCell>
@@ -150,8 +248,11 @@ export default function OpportunityStatusesPage() {
                             variant="ghost"
                             size="icon"
                             aria-label="Delete status"
-                            onClick={() => setDeleteId(st.id)}
-                            disabled={opportunityStatuses.length <= 1}
+                            onClick={() => {
+                              setDeleteError(null)
+                              setDeleteId(st.id)
+                            }}
+                            disabled={statuses.length <= 1}
                           >
                             <Trash2Icon />
                           </Button>
@@ -165,8 +266,8 @@ export default function OpportunityStatusesPage() {
                             size="icon"
                             className="size-8"
                             aria-label="Move up"
-                            disabled={isFirst}
-                            onClick={() => moveId(st.id, "up")}
+                            disabled={isFirst || reorderBusy}
+                            onClick={() => void moveId(st.id, "up")}
                           >
                             <ChevronUpIcon />
                           </Button>
@@ -176,32 +277,36 @@ export default function OpportunityStatusesPage() {
                             size="icon"
                             className="size-8"
                             aria-label="Move down"
-                            disabled={isLast}
-                            onClick={() => moveId(st.id, "down")}
+                            disabled={isLast || reorderBusy}
+                            onClick={() => void moveId(st.id, "down")}
                           >
                             <ChevronDownIcon />
                           </Button>
                         </div>
                       </TableCell>
                       <TableCell className="font-medium">{st.label}</TableCell>
-                      <TableCell className="text-muted-foreground max-w-xs truncate">
+                      <TableCell className="max-w-xs truncate text-muted-foreground">
                         {st.description ?? "—"}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={st.variant}>{st.label}</Badge>
+                        <Badge variant={st.variant as StatusBadgeVariant}>
+                          {st.label}
+                        </Badge>
                       </TableCell>
                     </TableRow>
                   )
                 })
               )}
-              <InfiniteScrollSentinelRow
-                colSpan={5}
-                sentinelRef={sentinelRef}
-                hasMore={hasMore}
-                totalCount={totalCount}
-                loadedCount={loadedCount}
-                loadNextWindow={loadNextWindow}
-              />
+              {loadState === "idle" && statuses.length > 0 ? (
+                <InfiniteScrollSentinelRow
+                  colSpan={5}
+                  sentinelRef={sentinelRef}
+                  hasMore={hasMore}
+                  totalCount={totalCount}
+                  loadedCount={loadedCount}
+                  loadNextWindow={loadNextWindow}
+                />
+              ) : null}
             </TableBody>
           </Table>
         </ListingTableCard>
@@ -209,7 +314,10 @@ export default function OpportunityStatusesPage() {
         <AlertDialog
           open={deleteId !== null}
           onOpenChange={(open) => {
-            if (!open) setDeleteId(null)
+            if (!open) {
+              setDeleteId(null)
+              setDeleteError(null)
+            }
           }}
         >
           <AlertDialogContent>
@@ -220,16 +328,22 @@ export default function OpportunityStatusesPage() {
                 columns are not removed.
               </AlertDialogDescription>
             </AlertDialogHeader>
+            {deleteError ? (
+              <p className="text-sm text-destructive" role="alert">
+                {deleteError}
+              </p>
+            ) : null}
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={deleteSubmitting}>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
-                onClick={() => {
-                  if (deleteId) deleteOpportunityStatus(deleteId)
-                  setDeleteId(null)
+                disabled={deleteSubmitting}
+                onClick={(e) => {
+                  e.preventDefault()
+                  void confirmDelete()
                 }}
               >
-                Delete
+                {deleteSubmitting ? "Deleting…" : "Delete"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

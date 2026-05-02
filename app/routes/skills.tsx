@@ -4,7 +4,6 @@ import { Link } from "react-router"
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
 import { ListingPageHeader } from "~/components/listing/listing-page-header"
 import { ListingTableCard } from "~/components/listing/listing-table-card"
-import { useAppData, type Skill } from "~/components/providers/app-data-provider"
 import { AppLayout } from "~/components/layout/app-layout"
 import { Button } from "~/components/ui/button"
 import {
@@ -26,21 +25,60 @@ import {
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog"
 import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
+import { ApiError } from "~/lib/api/errors"
+import {
+  deleteSkill as deleteSkillRequest,
+  listSkills,
+  type ApiSkill,
+} from "~/lib/api/resources/skills"
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
-function filterSkillsBySearch(rows: readonly Skill[], needle: string): Skill[] {
+function filterSkillsBySearch(rows: readonly ApiSkill[], needle: string): ApiSkill[] {
   if (!needle) return [...rows]
   const q = needle.toLowerCase()
   return rows.filter((s) =>
-    `${s.name} ${s.description}`.toLowerCase().includes(q)
+    `${s.name} ${s.description ?? ""}`.toLowerCase().includes(q)
   )
 }
 
+function listErrorMessage(err: unknown): string {
+  if (err instanceof ApiError) {
+    const base = err.fieldErrors.base?.[0]
+    if (base) return base
+    const firstField = Object.values(err.fieldErrors).flat()[0]
+    if (firstField) return firstField
+  }
+  return "Could not load skills."
+}
+
 export default function SkillsPage() {
-  const { skills, deleteSkill } = useAppData()
+  const [skills, setSkills] = React.useState<ApiSkill[]>([])
+  const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
+    "loading"
+  )
+  const [listError, setListError] = React.useState<string | null>(null)
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
+  const [deleteSubmitting, setDeleteSubmitting] = React.useState(false)
+  const [deleteError, setDeleteError] = React.useState<string | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
   const searchNeedle = searchQuery.trim()
+
+  const fetchSkills = React.useCallback(async () => {
+    setLoadState("loading")
+    setListError(null)
+    try {
+      const data = await listSkills({ paginated: false })
+      setSkills(data)
+      setLoadState("idle")
+    } catch (e) {
+      setLoadState("error")
+      setListError(listErrorMessage(e))
+    }
+  }, [])
+
+  React.useEffect(() => {
+    void fetchSkills()
+  }, [fetchSkills])
 
   const filteredSkills = React.useMemo(
     () => filterSkillsBySearch(skills, searchNeedle),
@@ -55,6 +93,21 @@ export default function SkillsPage() {
     sentinelRef,
     loadNextWindow,
   } = useInfiniteScrollList(filteredSkills, { filterKey: searchNeedle })
+
+  async function confirmDelete() {
+    if (!deleteId) return
+    setDeleteSubmitting(true)
+    setDeleteError(null)
+    try {
+      await deleteSkillRequest(deleteId)
+      setSkills((prev) => prev.filter((s) => s.id !== deleteId))
+      setDeleteId(null)
+    } catch (e) {
+      setDeleteError(listErrorMessage(e))
+    } finally {
+      setDeleteSubmitting(false)
+    }
+  }
 
   return (
     <AppLayout title="Skills">
@@ -73,7 +126,7 @@ export default function SkillsPage() {
         />
         <ListingTableCard
           stats={
-            totalCount > 0
+            loadState === "idle" && totalCount > 0
               ? `Showing ${loadedCount} of ${totalCount}`
               : undefined
           }
@@ -81,7 +134,7 @@ export default function SkillsPage() {
           onSearchChange={setSearchQuery}
           searchPlaceholder="Search skills…"
         >
-            <Table>
+          <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-28">Actions</TableHead>
@@ -90,7 +143,24 @@ export default function SkillsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {skills.length === 0 ? (
+              {loadState === "loading" ? (
+                <TableRow>
+                  <TableCell colSpan={3} className="text-muted-foreground">
+                    Loading skills…
+                  </TableCell>
+                </TableRow>
+              ) : loadState === "error" ? (
+                <TableRow>
+                  <TableCell colSpan={3}>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="text-destructive">{listError}</span>
+                      <Button type="button" variant="outline" size="sm" onClick={() => void fetchSkills()}>
+                        Try again
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : skills.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={3} className="text-muted-foreground">
                     No skills yet. Add one to get started.
@@ -119,7 +189,10 @@ export default function SkillsPage() {
                           variant="ghost"
                           size="icon"
                           aria-label="Delete skill"
-                          onClick={() => setDeleteId(skill.id)}
+                          onClick={() => {
+                            setDeleteError(null)
+                            setDeleteId(skill.id)
+                          }}
                         >
                           <Trash2Icon />
                         </Button>
@@ -127,19 +200,21 @@ export default function SkillsPage() {
                     </TableCell>
                     <TableCell className="font-medium">{skill.name}</TableCell>
                     <TableCell className="text-muted-foreground">
-                      {skill.description}
+                      {skill.description ?? "—"}
                     </TableCell>
                   </TableRow>
                 ))
               )}
-              <InfiniteScrollSentinelRow
-                colSpan={3}
-                sentinelRef={sentinelRef}
-                hasMore={hasMore}
-                totalCount={totalCount}
-                loadedCount={loadedCount}
-                loadNextWindow={loadNextWindow}
-              />
+              {loadState === "idle" && skills.length > 0 ? (
+                <InfiniteScrollSentinelRow
+                  colSpan={3}
+                  sentinelRef={sentinelRef}
+                  hasMore={hasMore}
+                  totalCount={totalCount}
+                  loadedCount={loadedCount}
+                  loadNextWindow={loadNextWindow}
+                />
+              ) : null}
             </TableBody>
           </Table>
         </ListingTableCard>
@@ -147,7 +222,10 @@ export default function SkillsPage() {
         <AlertDialog
           open={deleteId !== null}
           onOpenChange={(open) => {
-            if (!open) setDeleteId(null)
+            if (!open) {
+              setDeleteId(null)
+              setDeleteError(null)
+            }
           }}
         >
           <AlertDialogContent>
@@ -157,16 +235,22 @@ export default function SkillsPage() {
                 This removes the skill from your list.
               </AlertDialogDescription>
             </AlertDialogHeader>
+            {deleteError ? (
+              <p className="text-sm text-destructive" role="alert">
+                {deleteError}
+              </p>
+            ) : null}
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={deleteSubmitting}>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
-                onClick={() => {
-                  if (deleteId) deleteSkill(deleteId)
-                  setDeleteId(null)
+                disabled={deleteSubmitting}
+                onClick={(e) => {
+                  e.preventDefault()
+                  void confirmDelete()
                 }}
               >
-                Delete
+                {deleteSubmitting ? "Deleting…" : "Delete"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
