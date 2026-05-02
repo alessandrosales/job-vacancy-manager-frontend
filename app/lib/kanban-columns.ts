@@ -82,19 +82,49 @@ export function getColumnBadgeProps(
   }
 }
 
+/** Ordenação no cliente: prioriza `updated_at`, depois `created_at` (ISO da API). */
+function opportunityRecencyMs(o: Opportunity): number {
+  const candidates = [o.updated_at, o.created_at]
+  for (const raw of candidates) {
+    if (raw == null || raw === "") continue
+    const t = Date.parse(raw)
+    if (Number.isFinite(t)) return t
+  }
+  return 0
+}
+
+/** Mais recente primeiro (`updated_at`, senão `created_at`). */
+export function sortOpportunitiesByUpdatedAtDesc(
+  rows: readonly Opportunity[]
+): Opportunity[] {
+  return [...rows].sort((a, b) => {
+    const tb = opportunityRecencyMs(b)
+    const ta = opportunityRecencyMs(a)
+    if (tb !== ta) return tb - ta
+    return String(b.id).localeCompare(String(a.id))
+  })
+}
+
 export function itemsByColumnFromOpportunities(
   rows: readonly Opportunity[],
   columnIds: readonly string[],
-  opportunityStatuses: readonly OpportunityStatusDefinition[]
+  opportunityStatuses: readonly OpportunityStatusDefinition[],
+  options?: {
+    /** Só colunas de status: cada card vai para `opp.status` (ignora `board_column_id`). */
+    assignColumnByStatusOnly?: boolean
+  }
 ): Record<string, string[]> {
+  const sortedRows = sortOpportunitiesByUpdatedAtDesc(rows)
   const next: Record<string, string[]> = {}
   for (const id of columnIds) {
     next[id] = []
   }
   const fallback =
     columnIds[0] ?? opportunityStatuses[0]?.id ?? ""
-  for (const o of rows) {
-    const col = getEffectiveColumnId(o)
+  for (const o of sortedRows) {
+    const col = options?.assignColumnByStatusOnly
+      ? o.status
+      : getEffectiveColumnId(o)
     if (Object.prototype.hasOwnProperty.call(next, col)) {
       next[col].push(o.id)
     } else {

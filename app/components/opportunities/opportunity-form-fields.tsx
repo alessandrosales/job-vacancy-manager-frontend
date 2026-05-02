@@ -4,11 +4,9 @@ import * as React from "react"
 import { PlusIcon } from "lucide-react"
 
 import { InterestLevelStarPicker } from "~/components/shared/interest-level-star-picker"
-import {
-  QuickAddCompanyDialog,
-  QuickAddOpportunityStatusDialog,
-  QuickAddRoleDialog,
-} from "~/components/opportunities/opportunity-quick-add-dialogs"
+import { QuickAddCompanyDialog } from "~/components/opportunities/quick-add/quick-add-company-dialog"
+import { QuickAddOpportunityStatusDialog } from "~/components/opportunities/quick-add/quick-add-opportunity-status-dialog"
+import { QuickAddRoleDialog } from "~/components/opportunities/quick-add/quick-add-role-dialog"
 import { useAppData } from "~/components/providers/app-data-provider"
 import {
   Field,
@@ -27,7 +25,26 @@ import {
   SelectValue,
 } from "~/components/ui/select"
 import { Textarea } from "~/components/ui/textarea"
-import type { InterestLevel, OpportunityStatus } from "~/lib/labels"
+import type { Company, Role } from "~/components/providers/app-data-provider"
+import type {
+  InterestLevel,
+  OpportunityStatus,
+  OpportunityStatusDefinition,
+} from "~/lib/labels"
+
+/** Comparação tolerante a tipo/coerção JSON — evita limpar FK válido por mismatch estrito. */
+function fkExistsInList(list: readonly { id: string }[], fk: string): boolean {
+  if (fk === "") return true
+  const n = String(fk).trim()
+  return list.some((row) => String(row.id).trim() === n)
+}
+
+/** Listas vindas da API (ou pai); quick-add usa POST na API quando `onReferenceDataRefresh` existe. */
+export type OpportunityFormReferenceLists = {
+  companies: Company[]
+  roles: Role[]
+  opportunityStatuses: OpportunityStatusDefinition[]
+}
 
 export type OpportunityFormFieldsProps = {
   /** Prefixo para `id` / `htmlFor` únicos (página, dialog, etc.) */
@@ -48,6 +65,9 @@ export type OpportunityFormFieldsProps = {
   onStatusChange: (v: OpportunityStatus) => void
   interestLevel: InterestLevel
   onInterestLevelChange: (v: InterestLevel) => void
+  referenceLists?: OpportunityFormReferenceLists
+  /** Após criar empresa/cargo/status via API (quick-add); atualiza as listas no pai. */
+  onReferenceDataRefresh?: () => void | Promise<void>
 }
 
 /**
@@ -71,8 +91,16 @@ export function OpportunityFormFields({
   onStatusChange,
   interestLevel,
   onInterestLevelChange,
+  referenceLists,
+  onReferenceDataRefresh,
 }: OpportunityFormFieldsProps) {
-  const { companies, roles, opportunity_statuses: opportunityStatuses } = useAppData()
+  const appData = useAppData()
+  const companies = referenceLists?.companies ?? appData.companies
+  const roles = referenceLists?.roles ?? appData.roles
+  const opportunityStatuses =
+    referenceLists?.opportunityStatuses ?? appData.opportunity_statuses
+  /** Com listas da API, criar sempre via POST — `onReferenceDataRefresh` atualiza os selects. */
+  const persistQuickAddViaApi = Boolean(referenceLists)
 
   const [companyDialogOpen, setCompanyDialogOpen] = React.useState(false)
   const [roleDialogOpen, setRoleDialogOpen] = React.useState(false)
@@ -83,14 +111,14 @@ export function OpportunityFormFields({
     if (
       companyId !== "" &&
       companies.length > 0 &&
-      !companies.some((c) => c.id === companyId)
+      !fkExistsInList(companies, companyId)
     ) {
       onCompanyIdChange("")
     }
   }, [companies, companyId, onCompanyIdChange])
 
   React.useEffect(() => {
-    if (roleId !== "" && roles.length > 0 && !roles.some((r) => r.id === roleId)) {
+    if (roleId !== "" && roles.length > 0 && !fkExistsInList(roles, roleId)) {
       onRoleIdChange("")
     }
   }, [roles, roleId, onRoleIdChange])
@@ -99,7 +127,7 @@ export function OpportunityFormFields({
     if (
       status !== "" &&
       opportunityStatuses.length > 0 &&
-      !opportunityStatuses.some((s) => s.id === status)
+      !fkExistsInList(opportunityStatuses, status)
     ) {
       onStatusChange("" as OpportunityStatus)
     }
@@ -111,16 +139,22 @@ export function OpportunityFormFields({
         open={companyDialogOpen}
         onOpenChange={setCompanyDialogOpen}
         onAdded={onCompanyIdChange}
+        persistViaApi={persistQuickAddViaApi}
+        onPersistedViaApi={onReferenceDataRefresh}
       />
       <QuickAddRoleDialog
         open={roleDialogOpen}
         onOpenChange={setRoleDialogOpen}
         onAdded={onRoleIdChange}
+        persistViaApi={persistQuickAddViaApi}
+        onPersistedViaApi={onReferenceDataRefresh}
       />
       <QuickAddOpportunityStatusDialog
         open={statusDialogOpen}
         onOpenChange={setStatusDialogOpen}
         onAdded={onStatusChange}
+        persistViaApi={persistQuickAddViaApi}
+        onPersistedViaApi={onReferenceDataRefresh}
       />
       <FieldGroup>
         <Field>
@@ -128,6 +162,7 @@ export function OpportunityFormFields({
           <div className="flex min-w-0 flex-row items-stretch gap-2">
             {companies.length > 0 ? (
               <Select
+                key={companyId === "" ? "company-empty" : `company-${companyId}`}
                 value={companyId === "" ? undefined : companyId}
                 onValueChange={onCompanyIdChange}
               >
@@ -167,7 +202,9 @@ export function OpportunityFormFields({
             </Button>
           </div>
           {companies.length === 0 ? (
-            <FieldDescription>Use + para criar a primeira empresa.</FieldDescription>
+            <FieldDescription>
+              Use + to create a company and select it here.
+            </FieldDescription>
           ) : null}
         </Field>
         <Field>
@@ -175,6 +212,7 @@ export function OpportunityFormFields({
           <div className="flex min-w-0 flex-row items-stretch gap-2">
             {roles.length > 0 ? (
               <Select
+                key={roleId === "" ? "role-empty" : `role-${roleId}`}
                 value={roleId === "" ? undefined : roleId}
                 onValueChange={onRoleIdChange}
               >
@@ -211,7 +249,9 @@ export function OpportunityFormFields({
             </Button>
           </div>
           {roles.length === 0 ? (
-            <FieldDescription>Use + para criar o primeiro cargo.</FieldDescription>
+            <FieldDescription>
+              Use + to create a role and select it here.
+            </FieldDescription>
           ) : null}
         </Field>
         <Field>
@@ -286,6 +326,7 @@ export function OpportunityFormFields({
           <div className="flex min-w-0 flex-row items-stretch gap-2">
             {opportunityStatuses.length > 0 ? (
               <Select
+                key={status === "" ? "status-empty" : `status-${status}`}
                 value={status === "" ? undefined : status}
                 onValueChange={(v) => onStatusChange(v as OpportunityStatus)}
               >
@@ -322,7 +363,9 @@ export function OpportunityFormFields({
             </Button>
           </div>
           {opportunityStatuses.length === 0 ? (
-            <FieldDescription>Use + para criar o primeiro status.</FieldDescription>
+            <FieldDescription>
+              Use + to create a pipeline status and select it here.
+            </FieldDescription>
           ) : null}
         </Field>
         <Field>

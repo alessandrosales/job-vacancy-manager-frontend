@@ -30,19 +30,24 @@ import {
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 
+import { apiFormErrorFromUnknown } from "~/components/opportunities/quick-add/api-form-error"
 import { KanbanColumn } from "~/components/opportunities/kanban/kanban-column"
 import { KanbanJobCardContent } from "~/components/opportunities/kanban/kanban-job-card"
 import type {
+  Company,
   KanbanCustomColumn,
   Opportunity,
+  Role,
 } from "~/components/providers/app-data-provider"
 import type { OpportunityStatusDefinition } from "~/lib/labels"
+import { createOpportunityStatus } from "~/lib/api/resources/opportunity-statuses"
 import { Input } from "~/components/ui/input"
 import {
   applyPersistedColumnOrder,
   columnSortableId,
   findColumnForItemId,
   getColumnTitle,
+  getEffectiveColumnId,
   getOrderedKanbanColumnIds,
   isOpportunityStatusColumnId,
   itemsByColumnFromOpportunities,
@@ -57,13 +62,14 @@ function persistColumnIfNeeded(
   next: Record<string, string[]>,
   opportunityById: Map<string, Opportunity>,
   opportunityStatuses: readonly OpportunityStatusDefinition[],
-  updateOpportunity: (id: string, row: Omit<Opportunity, "id">) => void
+  updateOpportunity: (id: string, row: Omit<Opportunity, "id">) => void,
+  statusColumnsOnly?: boolean
 ) {
   for (const [columnId, ids] of Object.entries(next)) {
     for (const id of ids) {
       const opp = opportunityById.get(id)
       if (!opp) continue
-      const current = opp.board_column_id ?? opp.status
+      const current = statusColumnsOnly ? opp.status : getEffectiveColumnId(opp)
       if (current === columnId) continue
 
       if (isOpportunityStatusColumnId(columnId, opportunityStatuses)) {
@@ -74,7 +80,9 @@ function persistColumnIfNeeded(
           url: opp.url,
           status: columnId,
           interest_level: opp.interest_level,
-          board_column_id: columnId,
+          ...(statusColumnsOnly
+            ? {}
+            : { board_column_id: columnId }),
           hourly_rate: opp.hourly_rate,
           annual_salary: opp.annual_salary,
         })
@@ -107,6 +115,9 @@ type SortableBoardColumnProps = {
   opportunityStatuses: readonly OpportunityStatusDefinition[]
   onDelete: (id: string) => void
   onOpportunityDoubleClick?: (id: string) => void
+  companies?: readonly Company[]
+  roles?: readonly Role[]
+  badgeColumnUsesStatusOnly?: boolean
 }
 
 function SortableBoardColumn(props: SortableBoardColumnProps) {
@@ -116,6 +127,7 @@ function SortableBoardColumn(props: SortableBoardColumnProps) {
   return (
     <div
       ref={setNodeRef}
+      className="flex h-full min-h-0 flex-col"
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
@@ -142,6 +154,18 @@ export type OpportunitiesKanbanBoardProps = {
   updateOpportunity: (id: string, row: Omit<Opportunity, "id">) => void
   onRequestDelete: (id: string) => void
   onOpportunityDoubleClick?: (id: string) => void
+  /**
+   * Somente colunas de `opportunity_statuses` (API): ignora colunas custom do app-data.
+   * Cards são agrupados por `status`, não por `board_column_id`.
+   */
+  statusColumnsOnly?: boolean
+  /** Listas da API (ou pai) para títulos nos cards; sem isso, usa `useAppData()` no card. */
+  companies?: readonly Company[]
+  roles?: readonly Role[]
+  /**
+   * Com `statusColumnsOnly`: após criar status pelo input inline, refetch das listas no pai.
+   */
+  onOpportunityStatusesRefresh?: () => void | Promise<void>
 }
 
 /**
@@ -157,10 +181,25 @@ export function OpportunitiesKanbanBoard({
   updateOpportunity,
   onRequestDelete,
   onOpportunityDoubleClick,
+  statusColumnsOnly = false,
+  companies,
+  roles,
+  onOpportunityStatusesRefresh,
 }: OpportunitiesKanbanBoardProps) {
+  const columnsForTitles = statusColumnsOnly ? [] : customColumns
+
   const canonicalColumnIds = React.useMemo(
-    () => getOrderedKanbanColumnIds(opportunityStatuses, customColumns),
-    [opportunityStatuses, customColumns]
+    () =>
+      statusColumnsOnly
+        ? opportunityStatuses.map((s) => s.id)
+        : getOrderedKanbanColumnIds(opportunityStatuses, customColumns),
+    [statusColumnsOnly, opportunityStatuses, customColumns]
+  )
+
+  const itemsByColumnOpts = React.useMemo(
+    () =>
+      statusColumnsOnly ? { assignColumnByStatusOnly: true as const } : undefined,
+    [statusColumnsOnly]
   )
 
   const [orderedColumnIds, setOrderedColumnIds] = React.useState<string[]>(() =>
@@ -180,7 +219,8 @@ export function OpportunitiesKanbanBoard({
     itemsByColumnFromOpportunities(
       opportunities,
       orderedColumnIds,
-      opportunityStatuses
+      opportunityStatuses,
+      itemsByColumnOpts
     )
   )
   const [visibleCountByColumn, setVisibleCountByColumn] = React.useState<
@@ -189,7 +229,8 @@ export function OpportunitiesKanbanBoard({
     const initial = itemsByColumnFromOpportunities(
       opportunities,
       orderedColumnIds,
-      opportunityStatuses
+      opportunityStatuses,
+      itemsByColumnOpts
     )
     const next: Record<string, number> = {}
     for (const columnId of orderedColumnIds) {
@@ -199,6 +240,12 @@ export function OpportunitiesKanbanBoard({
   })
 
   const [newColumnName, setNewColumnName] = React.useState("")
+  const [newOpportunityStatusLabel, setNewOpportunityStatusLabel] =
+    React.useState("")
+  const [statusCreateSubmitting, setStatusCreateSubmitting] = React.useState(false)
+  const [statusCreateError, setStatusCreateError] = React.useState<string | null>(
+    null
+  )
   const [activeId, setActiveId] = React.useState<string | null>(null)
   const lastOverId = React.useRef<string | null>(null)
   const recentlyMovedToNewContainer = React.useRef(false)
@@ -211,7 +258,8 @@ export function OpportunitiesKanbanBoard({
     const nextItems = itemsByColumnFromOpportunities(
       opportunities,
       nextOrder,
-      opportunityStatuses
+      opportunityStatuses,
+      itemsByColumnOpts
     )
     setColumnItems(nextItems)
     setVisibleCountByColumn((prev) => {
@@ -223,7 +271,14 @@ export function OpportunitiesKanbanBoard({
       }
       return next
     })
-  }, [opportunities, activeId, canonicalColumnIds, columnOrder, opportunityStatuses])
+  }, [
+    opportunities,
+    activeId,
+    canonicalColumnIds,
+    columnOrder,
+    opportunityStatuses,
+    itemsByColumnOpts,
+  ])
 
   React.useEffect(() => {
     requestAnimationFrame(() => {
@@ -381,7 +436,8 @@ export function OpportunitiesKanbanBoard({
             items,
             opportunityByIdRef.current,
             opportunityStatuses,
-            updateOpportunity
+            updateOpportunity,
+            statusColumnsOnly
           )
           return items
         }
@@ -393,7 +449,8 @@ export function OpportunitiesKanbanBoard({
           next,
           opportunityByIdRef.current,
           opportunityStatuses,
-          updateOpportunity
+          updateOpportunity,
+          statusColumnsOnly
         )
         return next
       }
@@ -402,7 +459,8 @@ export function OpportunitiesKanbanBoard({
         items,
         opportunityByIdRef.current,
         opportunityStatuses,
-        updateOpportunity
+        updateOpportunity,
+        statusColumnsOnly
       )
       return items
     })
@@ -421,6 +479,26 @@ export function OpportunitiesKanbanBoard({
     setNewColumnName("")
   }
 
+  async function handleAddOpportunityStatusFromInput() {
+    const trimmed = newOpportunityStatusLabel.trim()
+    if (!trimmed || !onOpportunityStatusesRefresh) return
+    setStatusCreateError(null)
+    setStatusCreateSubmitting(true)
+    try {
+      await createOpportunityStatus({
+        label: trimmed,
+        description: null,
+        variant: "secondary",
+      })
+      setNewOpportunityStatusLabel("")
+      await onOpportunityStatusesRefresh()
+    } catch (e) {
+      setStatusCreateError(apiFormErrorFromUnknown(e, "Could not create status."))
+    } finally {
+      setStatusCreateSubmitting(false)
+    }
+  }
+
   function handleLoadMoreColumn(columnId: string) {
     setVisibleCountByColumn((prev) => {
       const current = prev[columnId] ?? 0
@@ -436,7 +514,7 @@ export function OpportunitiesKanbanBoard({
     !isActiveColumnDrag && activeId ? opportunityById.get(activeId) : null
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex h-full min-h-0 flex-1 flex-col">
       <DndContext
         sensors={sensors}
         collisionDetection={collisionDetectionStrategy}
@@ -452,7 +530,7 @@ export function OpportunitiesKanbanBoard({
           items={orderedColumnIds.map((id) => columnSortableId(id))}
           strategy={horizontalListSortingStrategy}
         >
-          <div className="flex min-h-0 flex-1 items-stretch gap-3 overflow-x-auto overflow-y-hidden pb-1">
+          <div className="flex h-full min-h-0 flex-1 items-stretch gap-3 overflow-x-auto overflow-y-hidden pb-1">
             {orderedColumnIds.map((columnId) => {
               const idsForColumn = columnItems[columnId] ?? []
               const visibleCount = visibleCountByColumn[columnId] ?? 0
@@ -465,35 +543,75 @@ export function OpportunitiesKanbanBoard({
                   title={getColumnTitle(
                     columnId,
                     opportunityStatuses,
-                    customColumns
+                    columnsForTitles
                   )}
                   ids={visibleIds}
                   totalCount={idsForColumn.length}
                   hasMore={hasMore}
                   onLoadMore={() => handleLoadMoreColumn(columnId)}
                   opportunityById={opportunityById}
-                  customColumns={customColumns}
+                  customColumns={columnsForTitles}
                   opportunityStatuses={opportunityStatuses}
                   onDelete={onRequestDelete}
                   onOpportunityDoubleClick={onOpportunityDoubleClick}
+                  companies={companies}
+                  roles={roles}
+                  badgeColumnUsesStatusOnly={statusColumnsOnly}
                 />
               )
             })}
-            <div className="flex min-h-0 w-[min(100%,280px)] shrink-0 flex-col self-stretch sm:w-72">
-              <div className="mb-2 flex shrink-0 items-center gap-2 px-0.5">
-                <Input
-                  value={newColumnName}
-                  onChange={(event) => setNewColumnName(event.target.value)}
-                  placeholder="New column name..."
-                  className="h-8 focus-visible:ring-1 focus-visible:ring-inset"
-                  onKeyDown={(event) => {
-                    if (event.key !== "Enter") return
-                    event.preventDefault()
-                    handleAddColumn()
-                  }}
+            {statusColumnsOnly ? (
+              onOpportunityStatusesRefresh ? (
+                <div className="flex h-full min-h-0 w-[min(100%,280px)] shrink-0 flex-col sm:w-72">
+                  <div className="mb-2 flex shrink-0 flex-col gap-1 px-0.5">
+                    <Input
+                      value={newOpportunityStatusLabel}
+                      onChange={(event) => {
+                        setNewOpportunityStatusLabel(event.target.value)
+                        if (statusCreateError) setStatusCreateError(null)
+                      }}
+                      placeholder="New column name..."
+                      disabled={statusCreateSubmitting}
+                      className="h-8 focus-visible:ring-1 focus-visible:ring-inset"
+                      onKeyDown={(event) => {
+                        if (event.key !== "Enter") return
+                        event.preventDefault()
+                        void handleAddOpportunityStatusFromInput()
+                      }}
+                    />
+                    {statusCreateError ? (
+                      <p className="text-destructive px-0.5 text-xs" role="alert">
+                        {statusCreateError}
+                      </p>
+                    ) : null}
+                  </div>
+                  <div
+                    className="border-border/80 bg-muted/30 flex min-h-0 flex-1 flex-col rounded-lg border border-dashed p-2"
+                    aria-hidden
+                  />
+                </div>
+              ) : null
+            ) : (
+              <div className="flex h-full min-h-0 w-[min(100%,280px)] shrink-0 flex-col sm:w-72">
+                <div className="mb-2 flex shrink-0 items-center gap-2 px-0.5">
+                  <Input
+                    value={newColumnName}
+                    onChange={(event) => setNewColumnName(event.target.value)}
+                    placeholder="New column name..."
+                    className="h-8 focus-visible:ring-1 focus-visible:ring-inset"
+                    onKeyDown={(event) => {
+                      if (event.key !== "Enter") return
+                      event.preventDefault()
+                      handleAddColumn()
+                    }}
+                  />
+                </div>
+                <div
+                  className="border-border/80 bg-muted/30 flex min-h-0 flex-1 flex-col rounded-lg border border-dashed p-2"
+                  aria-hidden
                 />
               </div>
-            </div>
+            )}
           </div>
         </SortableContext>
 
@@ -508,8 +626,11 @@ export function OpportunitiesKanbanBoard({
               <KanbanJobCardContent
                 opp={activeOpp}
                 onDelete={onRequestDelete}
-                customColumns={customColumns}
+                customColumns={columnsForTitles}
                 opportunityStatuses={opportunityStatuses}
+                companies={companies}
+                roles={roles}
+                badgeColumnUsesStatusOnly={statusColumnsOnly}
               />
             </div>
           ) : null}

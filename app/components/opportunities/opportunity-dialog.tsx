@@ -2,8 +2,11 @@
 
 import * as React from "react"
 
-import { OpportunityFormFields } from "~/components/opportunities/opportunity-form-fields"
-import { useAppData } from "~/components/providers/app-data-provider"
+import {
+  OpportunityFormFields,
+  type OpportunityFormReferenceLists,
+} from "~/components/opportunities/opportunity-form-fields"
+import { useAppData, type Opportunity } from "~/components/providers/app-data-provider"
 import { Button } from "~/components/ui/button"
 import {
   Dialog,
@@ -13,6 +16,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog"
+import { ApiError } from "~/lib/api/errors"
+import {
+  apiOpportunityToOpportunity,
+  opportunityFormToApiWrite,
+} from "~/lib/opportunity-api-mappers"
+import {
+  createOpportunity as createOpportunityApi,
+  getOpportunity as getOpportunityApi,
+  updateOpportunity as updateOpportunityApi,
+} from "~/lib/api/resources/opportunities"
 import type { InterestLevel, OpportunityStatus } from "~/lib/labels"
 
 const DIALOG_ID_EDIT = "opp-dialog"
@@ -29,6 +42,60 @@ type OpportunityDialogProps = {
   mode?: OpportunityDialogMode
   /** Em `mode="create"`, chamado após salvar com o id retornado por `addOpportunity`. */
   onCreated?: (id: string) => void
+  /**
+   * Quando definido, carrega e grava via API; `referenceLists` alimenta os selects.
+   * `onReferenceListsRefresh` atualiza listas após quick-create (+). `onSaved` após salvar.
+   */
+  referenceLists?: OpportunityFormReferenceLists
+  onSaved?: () => void
+  onReferenceListsRefresh?: () => void | Promise<void>
+}
+
+function formErrorText(err: unknown, fallback: string): string {
+  if (err instanceof ApiError) {
+    const base = err.fieldErrors.base?.[0]
+    if (base) return base
+    const first = Object.values(err.fieldErrors).flat()[0]
+    if (first) return first
+  }
+  return fallback
+}
+
+function applyOpportunityToFormState(
+  o: Opportunity,
+  setters: {
+    setCompanyId: (v: string) => void
+    setRoleId: (v: string) => void
+    setDescription: (v: string) => void
+    setUrl: (v: string) => void
+    setHourlyRate: (v: number | undefined) => void
+    setAnnualSalary: (v: number | undefined) => void
+    setStatus: (v: OpportunityStatus) => void
+    setInterestLevel: (v: InterestLevel) => void
+  }
+) {
+  setters.setCompanyId(
+    o.company_id != null && o.company_id !== ""
+      ? String(o.company_id)
+      : ""
+  )
+  setters.setRoleId(
+    o.role_id != null && o.role_id !== "" ? String(o.role_id) : ""
+  )
+  setters.setDescription(o.description)
+  setters.setUrl(o.url)
+  setters.setHourlyRate(
+    o.hourly_rate != null && Number.isFinite(o.hourly_rate) ? o.hourly_rate : undefined
+  )
+  setters.setAnnualSalary(
+    o.annual_salary != null && Number.isFinite(o.annual_salary)
+      ? o.annual_salary
+      : undefined
+  )
+  setters.setStatus(o.status)
+  setters.setInterestLevel(
+    Math.min(5, Math.max(0, Math.round(o.interest_level))) as InterestLevel
+  )
 }
 
 /**
@@ -40,13 +107,22 @@ export function OpportunityDialog({
   opportunityId,
   mode = "edit",
   onCreated,
+  referenceLists,
+  onSaved,
+  onReferenceListsRefresh,
 }: OpportunityDialogProps) {
   const isCreate = mode === "create"
+  const useApi = Boolean(referenceLists)
   const { opportunities, addOpportunity, updateOpportunity } = useAppData()
 
-  const existing = opportunityId
+  const existingLocal = opportunityId
     ? opportunities.find((o) => o.id === opportunityId)
     : undefined
+
+  const [remoteOpp, setRemoteOpp] = React.useState<Opportunity | null>(null)
+  const [remoteLoadState, setRemoteLoadState] = React.useState<
+    "idle" | "loading" | "error"
+  >("idle")
 
   const [companyId, setCompanyId] = React.useState("")
   const [roleId, setRoleId] = React.useState("")
@@ -57,8 +133,53 @@ export function OpportunityDialog({
   const [status, setStatus] = React.useState<OpportunityStatus>("")
   const [interestLevel, setInterestLevel] = React.useState<InterestLevel>(0)
 
+  const [submitting, setSubmitting] = React.useState(false)
+  const [formError, setFormError] = React.useState<string | null>(null)
+
+  const existing = useApi ? remoteOpp : existingLocal
+
   React.useEffect(() => {
+    if (!open || !useApi || isCreate || !opportunityId) {
+      setRemoteOpp(null)
+      setRemoteLoadState("idle")
+      return
+    }
+    const ac = new AbortController()
+    setRemoteLoadState("loading")
+    setRemoteOpp(null)
+    void (async () => {
+      try {
+        const api = await getOpportunityApi(opportunityId, { signal: ac.signal })
+        if (ac.signal.aborted) return
+        setRemoteOpp(apiOpportunityToOpportunity(api))
+        setRemoteLoadState("idle")
+      } catch {
+        if (ac.signal.aborted) return
+        setRemoteOpp(null)
+        setRemoteLoadState("error")
+      }
+    })()
+    return () => ac.abort()
+  }, [open, useApi, isCreate, opportunityId])
+
+  const setters = React.useMemo(
+    () => ({
+      setCompanyId,
+      setRoleId,
+      setDescription,
+      setUrl,
+      setHourlyRate,
+      setAnnualSalary,
+      setStatus,
+      setInterestLevel,
+    }),
+    []
+  )
+
+  /** Antes do paint: evita montar o formulário com FKs vazias e efeitos dos selects limparem os ids. */
+  React.useLayoutEffect(() => {
     if (!open) return
+    setFormError(null)
     if (isCreate) {
       setCompanyId("")
       setRoleId("")
@@ -71,29 +192,44 @@ export function OpportunityDialog({
       return
     }
     if (!existing) return
-    setCompanyId(existing.company_id)
-    setRoleId(existing.role_id)
-    setDescription(existing.description)
-    setUrl(existing.url)
-    setHourlyRate(
-      existing.hourly_rate != null && Number.isFinite(existing.hourly_rate)
-        ? existing.hourly_rate
-        : undefined
-    )
-    setAnnualSalary(
-      existing.annual_salary != null && Number.isFinite(existing.annual_salary)
-        ? existing.annual_salary
-        : undefined
-    )
-    setStatus(existing.status)
-    setInterestLevel(
-      Math.min(5, Math.max(0, Math.round(existing.interest_level))) as InterestLevel
-    )
-  }, [open, isCreate, existing])
+    applyOpportunityToFormState(existing, setters)
+  }, [open, isCreate, existing, setters])
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!companyId || !roleId || !status) return
+
+    const payload = opportunityFormToApiWrite({
+      company_id: companyId,
+      role_id: roleId,
+      status_id: status,
+      description: description.trim(),
+      url: url.trim(),
+      interest_level: interestLevel,
+      hourly_rate: hourlyRate,
+      annual_salary: annualSalary,
+    })
+
+    if (useApi) {
+      setFormError(null)
+      setSubmitting(true)
+      try {
+        if (isCreate) {
+          const created = await createOpportunityApi(payload)
+          onCreated?.(created.id)
+        } else if (opportunityId) {
+          await updateOpportunityApi(opportunityId, payload)
+        }
+        onSaved?.()
+        onOpenChange(false)
+      } catch (err) {
+        setFormError(formErrorText(err, "Não foi possível salvar."))
+      } finally {
+        setSubmitting(false)
+      }
+      return
+    }
+
     if (isCreate) {
       const id = addOpportunity({
         company_id: companyId,
@@ -110,7 +246,7 @@ export function OpportunityDialog({
       onCreated?.(id)
       return
     }
-    if (!opportunityId || !existing) return
+    if (!opportunityId || !existingLocal) return
     updateOpportunity(opportunityId, {
       company_id: companyId,
       role_id: roleId,
@@ -118,15 +254,28 @@ export function OpportunityDialog({
       url: url.trim(),
       status,
       interest_level: interestLevel,
-      board_column_id: existing.board_column_id ?? status,
+      board_column_id: existingLocal.board_column_id ?? status,
       hourly_rate: hourlyRate,
       annual_salary: annualSalary,
     })
     onOpenChange(false)
   }
 
-  const showEditForm = open && !isCreate && opportunityId && existing
   const showCreateForm = open && isCreate
+  const showEditForm =
+    open &&
+    !isCreate &&
+    Boolean(opportunityId) &&
+    (useApi ? remoteLoadState === "idle" && remoteOpp != null : Boolean(existingLocal))
+
+  const showEditLoading =
+    open && useApi && !isCreate && Boolean(opportunityId) && remoteLoadState === "loading"
+
+  const showNotFound =
+    open &&
+    !isCreate &&
+    Boolean(opportunityId) &&
+    (useApi ? remoteLoadState === "error" : !existingLocal)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -135,9 +284,13 @@ export function OpportunityDialog({
         showCloseButton
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
+        {showEditLoading ? (
+          <div className="text-muted-foreground p-6 text-sm">Carregando…</div>
+        ) : null}
+
         {showEditForm || showCreateForm ? (
           <form
-            onSubmit={handleSubmit}
+            onSubmit={(ev) => void handleSubmit(ev)}
             className="flex max-h-[min(90vh,720px)] flex-col"
           >
             <DialogHeader className="shrink-0 px-4 pt-4 pb-2">
@@ -151,6 +304,14 @@ export function OpportunityDialog({
               </DialogDescription>
             </DialogHeader>
             <div className="min-h-0 flex-1 overflow-y-auto px-4 py-2">
+              {formError ? (
+                <p
+                  role="alert"
+                  className="border-destructive/50 bg-destructive/10 text-destructive mb-3 rounded-md border px-3 py-2 text-sm"
+                >
+                  {formError}
+                </p>
+              ) : null}
               <OpportunityFormFields
                 idPrefix={showCreateForm ? DIALOG_ID_CREATE : DIALOG_ID_EDIT}
                 companyId={companyId}
@@ -169,18 +330,30 @@ export function OpportunityDialog({
                 onStatusChange={setStatus}
                 interestLevel={interestLevel}
                 onInterestLevelChange={setInterestLevel}
+                referenceLists={referenceLists}
+                onReferenceDataRefresh={onReferenceListsRefresh}
               />
             </div>
             <DialogFooter className="mx-0 mb-0 shrink-0 rounded-none border-t bg-muted/30 px-4 py-3 sm:justify-end">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={submitting}
+              >
                 Cancel
               </Button>
-              <Button type="submit" disabled={!companyId || !roleId || !status}>
-                Save
+              <Button
+                type="submit"
+                disabled={!companyId || !roleId || !status || submitting}
+              >
+                {submitting ? "Saving…" : "Save"}
               </Button>
             </DialogFooter>
           </form>
-        ) : open && !isCreate && opportunityId && !existing ? (
+        ) : null}
+
+        {showNotFound ? (
           <div className="p-4">
             <DialogHeader>
               <DialogTitle>Oportunidade não encontrada</DialogTitle>

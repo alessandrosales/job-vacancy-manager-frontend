@@ -57,10 +57,14 @@ export async function listOpportunities(
   })
 }
 
-export async function getOpportunity(id: string): Promise<ApiOpportunity> {
+export async function getOpportunity(
+  id: string,
+  options?: { signal?: AbortSignal }
+): Promise<ApiOpportunity> {
   return apiRequestJson<ApiOpportunity>({
     path: `opportunities/${encodeURIComponent(id)}`,
     method: "GET",
+    signal: options?.signal,
   })
 }
 

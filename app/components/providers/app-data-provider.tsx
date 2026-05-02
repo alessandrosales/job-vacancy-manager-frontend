@@ -51,6 +51,10 @@ export interface Opportunity {
   hourly_rate?: number
   /** Total annual compensation (major currency units); optional. */
   annual_salary?: number
+  /** ISO 8601 da API; usado para ordenar cards (ex.: Kanban). */
+  updated_at?: string
+  /** ISO 8601 da API; fallback na ordenação quando `updated_at` não existe. */
+  created_at?: string
 }
 
 export interface Company {
@@ -485,6 +489,18 @@ function parseStored(raw: string | null): AppDataState | null {
           "annual_salary",
           "annualSalary"
         )
+        const updated_at =
+          typeof o.updated_at === "string"
+            ? o.updated_at
+            : typeof o.updatedAt === "string"
+              ? o.updatedAt
+              : undefined
+        const created_at =
+          typeof o.created_at === "string"
+            ? o.created_at
+            : typeof o.createdAt === "string"
+              ? o.createdAt
+              : undefined
         return {
           id: o.id as string,
           company_id: resolveOpportunityCompanyId(o, companies),
@@ -496,6 +512,8 @@ function parseStored(raw: string | null): AppDataState | null {
           board_column_id,
           ...(hourly_rate != null ? { hourly_rate } : {}),
           ...(annual_salary != null ? { annual_salary } : {}),
+          ...(updated_at != null ? { updated_at } : {}),
+          ...(created_at != null ? { created_at } : {}),
         } as Opportunity
       }),
       companies,

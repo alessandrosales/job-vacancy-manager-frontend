@@ -1,12 +1,18 @@
 "use client"
 
 import * as React from "react"
+import type { DraggableAttributes } from "@dnd-kit/core"
 import { useDroppable } from "@dnd-kit/core"
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { Loader2Icon, GripVerticalIcon } from "lucide-react"
 
 import { KanbanJobCard } from "~/components/opportunities/kanban/kanban-job-card"
-import type { KanbanCustomColumn, Opportunity } from "~/components/providers/app-data-provider"
+import type {
+  Company,
+  KanbanCustomColumn,
+  Opportunity,
+  Role,
+} from "~/components/providers/app-data-provider"
 import type { OpportunityStatusDefinition } from "~/lib/labels"
 import { Badge } from "~/components/ui/badge"
 import { columnDroppableId } from "~/lib/kanban-columns"
@@ -24,7 +30,10 @@ export type KanbanColumnProps = {
   opportunityStatuses: readonly OpportunityStatusDefinition[]
   onDelete: (id: string) => void
   onOpportunityDoubleClick?: (id: string) => void
-  dragHandleAttributes?: Record<string, unknown>
+  companies?: readonly Company[]
+  roles?: readonly Role[]
+  badgeColumnUsesStatusOnly?: boolean
+  dragHandleAttributes?: DraggableAttributes
   dragHandleListeners?: Record<string, unknown>
   isDraggingColumn?: boolean
 }
@@ -44,6 +53,9 @@ export function KanbanColumn({
   opportunityStatuses,
   onDelete,
   onOpportunityDoubleClick,
+  companies,
+  roles,
+  badgeColumnUsesStatusOnly,
   dragHandleAttributes,
   dragHandleListeners,
   isDraggingColumn = false,
@@ -78,7 +90,7 @@ export function KanbanColumn({
   }, [hasMore, onLoadMore, ids.length])
 
   return (
-    <div className="flex min-h-0 w-[min(100%,280px)] shrink-0 flex-col self-stretch sm:w-72">
+    <div className="flex h-full min-h-0 w-[min(100%,280px)] shrink-0 flex-col sm:w-72">
       <div className="mb-2 flex shrink-0 items-center justify-between gap-2 px-0.5">
         <span className="truncate text-sm font-medium text-foreground" title={title}>
           {title}
@@ -129,6 +141,9 @@ export function KanbanColumn({
                   onOpportunityDoubleClick={onOpportunityDoubleClick}
                   customColumns={customColumns}
                   opportunityStatuses={opportunityStatuses}
+                  companies={companies}
+                  roles={roles}
+                  badgeColumnUsesStatusOnly={badgeColumnUsesStatusOnly}
                 />
               )
             })}

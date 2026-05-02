@@ -7,7 +7,12 @@ import { CSS } from "@dnd-kit/utilities"
 import { ExternalLinkIcon, PencilIcon, StarIcon, Trash2Icon } from "lucide-react"
 
 import { useAppData } from "~/components/providers/app-data-provider"
-import type { KanbanCustomColumn, Opportunity } from "~/components/providers/app-data-provider"
+import type {
+  Company,
+  KanbanCustomColumn,
+  Opportunity,
+  Role,
+} from "~/components/providers/app-data-provider"
 import type { OpportunityStatusDefinition } from "~/lib/labels"
 import {
   formatOpportunityCompensationSummary,
@@ -26,6 +31,14 @@ export type KanbanJobCardContentProps = {
   customColumns: readonly KanbanCustomColumn[]
   opportunityStatuses: readonly OpportunityStatusDefinition[]
   className?: string
+  /**
+   * Quando definidos (ex.: página Opportunities + API), substituem `useAppData()` para
+   * resolver nome de empresa e cargo nos cards.
+   */
+  companies?: readonly Company[]
+  roles?: readonly Role[]
+  /** Com true, o badge do card usa só `opp.status` (alinhado ao Kanban só-status). */
+  badgeColumnUsesStatusOnly?: boolean
 }
 
 /**
@@ -37,10 +50,15 @@ export function KanbanJobCardContent({
   customColumns,
   opportunityStatuses,
   className,
+  companies: companiesProp,
+  roles: rolesProp,
+  badgeColumnUsesStatusOnly = false,
 }: KanbanJobCardContentProps) {
-  const { companies, roles } = useAppData()
+  const appData = useAppData()
+  const companies = companiesProp ?? appData.companies
+  const roles = rolesProp ?? appData.roles
   const compensationLine = formatOpportunityCompensationSummary(opp)
-  const columnId = getEffectiveColumnId(opp)
+  const columnId = badgeColumnUsesStatusOnly ? opp.status : getEffectiveColumnId(opp)
   const badge = getColumnBadgeProps(
     columnId,
     opportunityStatuses,
@@ -147,6 +165,9 @@ type KanbanJobCardProps = {
   onOpportunityDoubleClick?: (id: string) => void
   customColumns: readonly KanbanCustomColumn[]
   opportunityStatuses: readonly OpportunityStatusDefinition[]
+  companies?: readonly Company[]
+  roles?: readonly Role[]
+  badgeColumnUsesStatusOnly?: boolean
 }
 
 /**
@@ -158,6 +179,9 @@ export function KanbanJobCard({
   onOpportunityDoubleClick,
   customColumns,
   opportunityStatuses,
+  companies,
+  roles,
+  badgeColumnUsesStatusOnly,
 }: KanbanJobCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({
@@ -188,6 +212,9 @@ export function KanbanJobCard({
         onDelete={onDelete}
         customColumns={customColumns}
         opportunityStatuses={opportunityStatuses}
+        companies={companies}
+        roles={roles}
+        badgeColumnUsesStatusOnly={badgeColumnUsesStatusOnly}
       />
     </div>
   )

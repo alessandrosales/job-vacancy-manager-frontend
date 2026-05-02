@@ -38,7 +38,11 @@ import {
 } from "~/components/ui/table"
 import { OpportunityDialog } from "~/components/opportunities/opportunity-dialog"
 import { useAppData } from "~/components/providers/app-data-provider"
-import { getColumnBadgeProps, getEffectiveColumnId } from "~/lib/kanban-columns"
+import {
+  getColumnBadgeProps,
+  getEffectiveColumnId,
+  sortOpportunitiesByUpdatedAtDesc,
+} from "~/lib/kanban-columns"
 import {
   formatOpportunityAnnualSalary,
   formatOpportunityHourlyRate,
@@ -140,8 +144,14 @@ export default function DashboardPage() {
     roles,
   } = useAppData()
   const [dialogOppId, setDialogOppId] = useState<string | null>(null)
-  /** Últimas entradas na ordem do armazenamento (mais recentes ao final do array). */
-  const recent = opportunities.slice(-DASHBOARD_TABLE_LIMIT)
+  const recent = useMemo(
+    () =>
+      sortOpportunitiesByUpdatedAtDesc(opportunities).slice(
+        0,
+        DASHBOARD_TABLE_LIMIT
+      ),
+    [opportunities]
+  )
 
   const topJobs = useMemo(() => {
     return [...opportunities]
