@@ -2,10 +2,8 @@
 
 import * as React from "react"
 
-import { InterestLevelStarPicker } from "~/components/shared/interest-level-star-picker"
 import { apiFormErrorFromUnknown } from "~/components/opportunities/quick-add/api-form-error"
 import type { QuickAddRelationDialogProps } from "~/components/opportunities/quick-add/types"
-import { useAppData } from "~/components/providers/app-data-provider"
 import { Button } from "~/components/ui/button"
 import {
   Dialog,
@@ -15,27 +13,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog"
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from "~/components/ui/field"
+import { Field, FieldGroup, FieldLabel } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
-import { createRole } from "~/lib/api/resources/roles"
-import type { InterestLevel } from "~/lib/labels"
+import { createSkill } from "~/lib/api/resources/skills"
 
-export function QuickAddRoleDialog({
+export function QuickAddSkillDialog({
   open,
   onOpenChange,
   onAdded,
-  persistViaApi = false,
   onPersistedViaApi,
 }: QuickAddRelationDialogProps) {
-  const { addRole } = useAppData()
   const [name, setName] = React.useState("")
   const [description, setDescription] = React.useState("")
-  const [interestLevel, setInterestLevel] = React.useState<InterestLevel>(3)
   const [submitting, setSubmitting] = React.useState(false)
   const [formError, setFormError] = React.useState<string | null>(null)
 
@@ -43,7 +33,6 @@ export function QuickAddRoleDialog({
     if (!open) return
     setName("")
     setDescription("")
-    setInterestLevel(3)
     setFormError(null)
   }, [open])
 
@@ -52,33 +41,21 @@ export function QuickAddRoleDialog({
     const t = name.trim()
     if (!t) return
 
-    if (persistViaApi) {
-      setFormError(null)
-      setSubmitting(true)
-      try {
-        const created = await createRole({
-          name: t,
-          description: description.trim() === "" ? null : description.trim(),
-          interest_level: interestLevel,
-        })
-        onAdded(created.id)
-        await onPersistedViaApi?.()
-        onOpenChange(false)
-      } catch (err) {
-        setFormError(apiFormErrorFromUnknown(err, "Could not create role."))
-      } finally {
-        setSubmitting(false)
-      }
-      return
+    setFormError(null)
+    setSubmitting(true)
+    try {
+      const created = await createSkill({
+        name: t,
+        description: description.trim() === "" ? null : description.trim(),
+      })
+      onAdded(created.id)
+      await onPersistedViaApi?.()
+      onOpenChange(false)
+    } catch (err) {
+      setFormError(apiFormErrorFromUnknown(err, "Could not create skill."))
+    } finally {
+      setSubmitting(false)
     }
-
-    const id = addRole({
-      name: t,
-      description: description.trim(),
-      interest_level: interestLevel,
-    })
-    onAdded(id)
-    onOpenChange(false)
   }
 
   return (
@@ -86,9 +63,9 @@ export function QuickAddRoleDialog({
       <DialogContent className="max-w-md overflow-hidden p-0 sm:max-w-md" showCloseButton>
         <form onSubmit={(ev) => void handleSubmit(ev)} className="flex flex-col">
           <DialogHeader className="shrink-0 px-4 pt-4 pb-2">
-            <DialogTitle>New role</DialogTitle>
+            <DialogTitle>New skill</DialogTitle>
             <DialogDescription>
-              Cria o cargo para poder selecioná-lo no formulário.
+              Cria a habilidade para poder vinculá-la a este currículo.
             </DialogDescription>
           </DialogHeader>
           <div className="max-h-[min(70vh,420px)] overflow-y-auto px-4 pt-2 pb-6">
@@ -99,29 +76,25 @@ export function QuickAddRoleDialog({
                 </p>
               ) : null}
               <Field>
-                <FieldLabel htmlFor="qar-name">Name</FieldLabel>
+                <FieldLabel htmlFor="qas-name">Name</FieldLabel>
                 <Input
-                  id="qar-name"
+                  id="qas-name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
                   autoFocus
+                  disabled={submitting}
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qar-desc">Description</FieldLabel>
+                <FieldLabel htmlFor="qas-desc">Description</FieldLabel>
                 <Textarea
-                  id="qar-desc"
+                  id="qas-desc"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={3}
-                />
-              </Field>
-              <Field>
-                <FieldLabel>Interest level</FieldLabel>
-                <InterestLevelStarPicker
-                  value={interestLevel}
-                  onChange={setInterestLevel}
+                  placeholder="Optional"
+                  disabled={submitting}
                 />
               </Field>
             </FieldGroup>

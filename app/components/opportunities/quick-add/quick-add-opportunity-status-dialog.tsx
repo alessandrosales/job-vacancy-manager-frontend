@@ -106,7 +106,7 @@ export function QuickAddOpportunityStatusDialog({
               Novo estágio no pipeline (coluna no Kanban).
             </DialogDescription>
           </DialogHeader>
-          <div className="max-h-[min(70vh,420px)] overflow-y-auto px-4 py-2">
+          <div className="max-h-[min(70vh,420px)] overflow-y-auto px-4 pt-2 pb-6">
             <FieldGroup>
               {formError ? (
                 <p role="alert" className="text-destructive text-sm">
@@ -154,7 +154,7 @@ export function QuickAddOpportunityStatusDialog({
               </Field>
             </FieldGroup>
           </div>
-          <DialogFooter className="mx-0 mb-0 shrink-0 rounded-none border-t bg-muted/30 px-4 py-3 sm:justify-end">
+          <DialogFooter className="mx-0 mb-0 shrink-0 rounded-b-xl border-t bg-muted/30 px-4 pt-3 pb-5 sm:justify-end">
             <Button
               type="button"
               variant="outline"

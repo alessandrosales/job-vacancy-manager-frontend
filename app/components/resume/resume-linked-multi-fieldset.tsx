@@ -1,7 +1,9 @@
 "use client"
 
 import * as React from "react"
+import { PlusIcon } from "lucide-react"
 
+import { Button } from "~/components/ui/button"
 import {
   Field,
   FieldDescription,
@@ -25,6 +27,10 @@ export function ResumeLinkedMultiFieldset({
   rows,
   selectedIds,
   onSelectedIdsChange,
+  emptyMessage,
+  emptyHint,
+  onAddNew,
+  addNewAriaLabel,
 }: {
   idPrefix: string
   legend: string
@@ -32,6 +38,11 @@ export function ResumeLinkedMultiFieldset({
   rows: readonly ResumePickRow[]
   selectedIds: readonly string[]
   onSelectedIdsChange: (next: string[]) => void
+  /** Quando não há linhas e `onAddNew` existe, substitui o texto padrão “No records yet.” */
+  emptyMessage?: string
+  emptyHint?: string
+  onAddNew?: () => void
+  addNewAriaLabel?: string
 }) {
   const [needle, setNeedle] = React.useState("")
   const q = needle.trim().toLowerCase()
@@ -54,25 +65,60 @@ export function ResumeLinkedMultiFieldset({
     onSelectedIdsChange(selectedIds.filter((x) => x !== id))
   }
 
+  const emptyBody =
+    emptyMessage ?? "No records yet."
+
   return (
     <FieldSet data-slot="checkbox-group">
       <FieldLegend variant="label">{legend}</FieldLegend>
       <FieldDescription>{description}</FieldDescription>
-      <Field>
-        <FieldLabel htmlFor={`${idPrefix}-filter`}>Filter</FieldLabel>
-        <Input
-          id={`${idPrefix}-filter`}
-          value={needle}
-          onChange={(e) => setNeedle(e.target.value)}
-          placeholder="Search…"
-          autoComplete="off"
-        />
-      </Field>
+      {rows.length > 0 ? (
+        <div className="flex flex-row items-end gap-2">
+          <Field className="min-w-0 flex-1">
+            <FieldLabel htmlFor={`${idPrefix}-filter`}>Filter</FieldLabel>
+            <Input
+              id={`${idPrefix}-filter`}
+              value={needle}
+              onChange={(e) => setNeedle(e.target.value)}
+              placeholder="Search…"
+              autoComplete="off"
+            />
+          </Field>
+          {onAddNew ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="mb-0.5 shrink-0"
+              aria-label={addNewAriaLabel ?? `Add ${legend}`}
+              onClick={onAddNew}
+            >
+              <PlusIcon />
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
       <div className="max-h-48 overflow-y-auto rounded-md border border-border p-2">
         {rows.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No records yet.</p>
+          onAddNew ? (
+            <div className="text-muted-foreground flex min-h-8 flex-row items-stretch gap-2">
+              <p className="flex flex-1 items-center text-sm">{emptyBody}</p>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="shrink-0"
+                aria-label={addNewAriaLabel ?? `Add ${legend}`}
+                onClick={onAddNew}
+              >
+                <PlusIcon />
+              </Button>
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-sm">{emptyBody}</p>
+          )
         ) : filtered.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No matches.</p>
+          <p className="text-muted-foreground text-sm">No matches.</p>
         ) : (
           <FieldGroup className="gap-2">
             {filtered.map((row) => {
@@ -101,6 +147,9 @@ export function ResumeLinkedMultiFieldset({
           </FieldGroup>
         )}
       </div>
+      {onAddNew && emptyHint ? (
+        <FieldDescription>{emptyHint}</FieldDescription>
+      ) : null}
       <FieldDescription>Selected: {selectedIds.length}</FieldDescription>
     </FieldSet>
   )

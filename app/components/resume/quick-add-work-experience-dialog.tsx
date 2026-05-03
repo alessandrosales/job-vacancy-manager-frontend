@@ -1,0 +1,198 @@
+"use client"
+
+import * as React from "react"
+
+import { apiFormErrorFromUnknown } from "~/components/opportunities/quick-add/api-form-error"
+import type { QuickAddRelationDialogProps } from "~/components/opportunities/quick-add/types"
+import {
+  WorkExperienceSkillFieldset,
+  type WorkExperienceSkillPickerRow,
+} from "~/components/work-experience/work-experience-skill-fieldset"
+import { Button } from "~/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog"
+import { Field, FieldGroup, FieldLabel } from "~/components/ui/field"
+import { Input } from "~/components/ui/input"
+import { Switch } from "~/components/ui/switch"
+import {
+  createWorkExperience,
+  syncWorkExperienceSkills,
+} from "~/lib/api/resources/work-experiences"
+
+function emptyToNull(s: string): string | null {
+  const t = s.trim()
+  return t === "" ? null : t
+}
+
+export type QuickAddWorkExperienceDialogProps = QuickAddRelationDialogProps & {
+  skills: readonly WorkExperienceSkillPickerRow[]
+  onEmptySkillsAddNew?: () => void
+  emptySkillsMessage?: string
+  emptySkillsHint?: string
+}
+
+export function QuickAddWorkExperienceDialog({
+  open,
+  onOpenChange,
+  onAdded,
+  onPersistedViaApi,
+  skills,
+  onEmptySkillsAddNew,
+  emptySkillsMessage,
+  emptySkillsHint,
+}: QuickAddWorkExperienceDialogProps) {
+  const [title, setTitle] = React.useState("")
+  const [companyName, setCompanyName] = React.useState("")
+  const [isRemote, setIsRemote] = React.useState(false)
+  const [dateFrom, setDateFrom] = React.useState("")
+  const [dateTo, setDateTo] = React.useState("")
+  const [skillIds, setSkillIds] = React.useState<string[]>([])
+  const [submitting, setSubmitting] = React.useState(false)
+  const [formError, setFormError] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    if (!open) return
+    setTitle("")
+    setCompanyName("")
+    setIsRemote(false)
+    setDateFrom("")
+    setDateTo("")
+    setSkillIds([])
+    setFormError(null)
+  }, [open])
+
+  function validSkillIds(): string[] {
+    const allowed = new Set(skills.map((s) => s.id))
+    return skillIds.filter((sid) => allowed.has(sid))
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    const t = title.trim()
+    const c = companyName.trim()
+    if (!t || !c) return
+
+    setFormError(null)
+    setSubmitting(true)
+    try {
+      const created = await createWorkExperience({
+        title: t,
+        company_name: c,
+        is_remote: isRemote,
+        date_from: emptyToNull(dateFrom),
+        date_to: emptyToNull(dateTo),
+      })
+      await syncWorkExperienceSkills(created.id, validSkillIds())
+      onAdded(created.id)
+      await onPersistedViaApi?.()
+      onOpenChange(false)
+    } catch (err) {
+      setFormError(apiFormErrorFromUnknown(err, "Could not create work experience."))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md overflow-hidden p-0 sm:max-w-md" showCloseButton>
+        <form onSubmit={(ev) => void handleSubmit(ev)} className="flex flex-col">
+          <DialogHeader className="shrink-0 px-4 pt-4 pb-2">
+            <DialogTitle>New work experience</DialogTitle>
+            <DialogDescription>
+              Cria o registro para poder vinculá-lo a este currículo.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[min(70vh,560px)] overflow-y-auto px-4 pt-2 pb-6">
+            <FieldGroup>
+              {formError ? (
+                <p role="alert" className="text-destructive text-sm">
+                  {formError}
+                </p>
+              ) : null}
+              <Field>
+                <FieldLabel htmlFor="qawe-title">Title</FieldLabel>
+                <Input
+                  id="qawe-title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                  autoFocus
+                  disabled={submitting}
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="qawe-company">Company name</FieldLabel>
+                <Input
+                  id="qawe-company"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  required
+                  disabled={submitting}
+                />
+              </Field>
+              <Field orientation="horizontal">
+                <FieldLabel htmlFor="qawe-remote">Remote</FieldLabel>
+                <Switch
+                  id="qawe-remote"
+                  checked={isRemote}
+                  onCheckedChange={(v) => setIsRemote(Boolean(v))}
+                  disabled={submitting}
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="qawe-from">Date from</FieldLabel>
+                <Input
+                  id="qawe-from"
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  disabled={submitting}
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="qawe-to">Date to</FieldLabel>
+                <Input
+                  id="qawe-to"
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  disabled={submitting}
+                />
+              </Field>
+              <WorkExperienceSkillFieldset
+                idPrefix="qawe"
+                skills={skills}
+                skillIds={skillIds}
+                onSkillIdsChange={setSkillIds}
+                emptyMessage={emptySkillsMessage}
+                emptyHint={emptySkillsHint}
+                onAddNew={onEmptySkillsAddNew}
+                addNewAriaLabel="Add skill"
+              />
+            </FieldGroup>
+          </div>
+          <DialogFooter className="mx-0 mb-0 shrink-0 rounded-b-xl border-t bg-muted/30 px-4 pt-3 pb-5 sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={submitting}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={submitting}>
+              {submitting ? "Saving…" : "Save"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}

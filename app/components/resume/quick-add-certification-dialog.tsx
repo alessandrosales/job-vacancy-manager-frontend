@@ -2,10 +2,8 @@
 
 import * as React from "react"
 
-import { InterestLevelStarPicker } from "~/components/shared/interest-level-star-picker"
 import { apiFormErrorFromUnknown } from "~/components/opportunities/quick-add/api-form-error"
 import type { QuickAddRelationDialogProps } from "~/components/opportunities/quick-add/types"
-import { useAppData } from "~/components/providers/app-data-provider"
 import { Button } from "~/components/ui/button"
 import {
   Dialog,
@@ -15,35 +13,32 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog"
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from "~/components/ui/field"
+import { Field, FieldGroup, FieldLabel } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
-import { Textarea } from "~/components/ui/textarea"
-import { createRole } from "~/lib/api/resources/roles"
-import type { InterestLevel } from "~/lib/labels"
+import { createCertification } from "~/lib/api/resources/certifications"
 
-export function QuickAddRoleDialog({
+function emptyToNull(s: string): string | null {
+  const t = s.trim()
+  return t === "" ? null : t
+}
+
+export function QuickAddCertificationDialog({
   open,
   onOpenChange,
   onAdded,
-  persistViaApi = false,
   onPersistedViaApi,
 }: QuickAddRelationDialogProps) {
-  const { addRole } = useAppData()
   const [name, setName] = React.useState("")
-  const [description, setDescription] = React.useState("")
-  const [interestLevel, setInterestLevel] = React.useState<InterestLevel>(3)
+  const [dateFrom, setDateFrom] = React.useState("")
+  const [dateTo, setDateTo] = React.useState("")
   const [submitting, setSubmitting] = React.useState(false)
   const [formError, setFormError] = React.useState<string | null>(null)
 
   React.useEffect(() => {
     if (!open) return
     setName("")
-    setDescription("")
-    setInterestLevel(3)
+    setDateFrom("")
+    setDateTo("")
     setFormError(null)
   }, [open])
 
@@ -52,33 +47,22 @@ export function QuickAddRoleDialog({
     const t = name.trim()
     if (!t) return
 
-    if (persistViaApi) {
-      setFormError(null)
-      setSubmitting(true)
-      try {
-        const created = await createRole({
-          name: t,
-          description: description.trim() === "" ? null : description.trim(),
-          interest_level: interestLevel,
-        })
-        onAdded(created.id)
-        await onPersistedViaApi?.()
-        onOpenChange(false)
-      } catch (err) {
-        setFormError(apiFormErrorFromUnknown(err, "Could not create role."))
-      } finally {
-        setSubmitting(false)
-      }
-      return
+    setFormError(null)
+    setSubmitting(true)
+    try {
+      const created = await createCertification({
+        name: t,
+        date_from: emptyToNull(dateFrom),
+        date_to: emptyToNull(dateTo),
+      })
+      onAdded(created.id)
+      await onPersistedViaApi?.()
+      onOpenChange(false)
+    } catch (err) {
+      setFormError(apiFormErrorFromUnknown(err, "Could not create certification."))
+    } finally {
+      setSubmitting(false)
     }
-
-    const id = addRole({
-      name: t,
-      description: description.trim(),
-      interest_level: interestLevel,
-    })
-    onAdded(id)
-    onOpenChange(false)
   }
 
   return (
@@ -86,12 +70,12 @@ export function QuickAddRoleDialog({
       <DialogContent className="max-w-md overflow-hidden p-0 sm:max-w-md" showCloseButton>
         <form onSubmit={(ev) => void handleSubmit(ev)} className="flex flex-col">
           <DialogHeader className="shrink-0 px-4 pt-4 pb-2">
-            <DialogTitle>New role</DialogTitle>
+            <DialogTitle>New certification</DialogTitle>
             <DialogDescription>
-              Cria o cargo para poder selecioná-lo no formulário.
+              Cria a certificação para poder vinculá-la a este currículo.
             </DialogDescription>
           </DialogHeader>
-          <div className="max-h-[min(70vh,420px)] overflow-y-auto px-4 pt-2 pb-6">
+          <div className="max-h-[min(70vh,480px)] overflow-y-auto px-4 pt-2 pb-6">
             <FieldGroup>
               {formError ? (
                 <p role="alert" className="text-destructive text-sm">
@@ -99,29 +83,34 @@ export function QuickAddRoleDialog({
                 </p>
               ) : null}
               <Field>
-                <FieldLabel htmlFor="qar-name">Name</FieldLabel>
+                <FieldLabel htmlFor="qac-name">Name</FieldLabel>
                 <Input
-                  id="qar-name"
+                  id="qac-name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
                   autoFocus
+                  disabled={submitting}
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qar-desc">Description</FieldLabel>
-                <Textarea
-                  id="qar-desc"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={3}
+                <FieldLabel htmlFor="qac-from">Date from</FieldLabel>
+                <Input
+                  id="qac-from"
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  disabled={submitting}
                 />
               </Field>
               <Field>
-                <FieldLabel>Interest level</FieldLabel>
-                <InterestLevelStarPicker
-                  value={interestLevel}
-                  onChange={setInterestLevel}
+                <FieldLabel htmlFor="qac-to">Date to</FieldLabel>
+                <Input
+                  id="qac-to"
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  disabled={submitting}
                 />
               </Field>
             </FieldGroup>

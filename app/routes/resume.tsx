@@ -1,6 +1,11 @@
 import * as React from "react"
 import { Link, useNavigate, useParams } from "react-router"
 
+import { QuickAddRoleDialog } from "~/components/opportunities/quick-add/quick-add-role-dialog"
+import { QuickAddCertificationDialog } from "~/components/resume/quick-add-certification-dialog"
+import { QuickAddEducationDialog } from "~/components/resume/quick-add-education-dialog"
+import { QuickAddSkillDialog } from "~/components/resume/quick-add-skill-dialog"
+import { QuickAddWorkExperienceDialog } from "~/components/resume/quick-add-work-experience-dialog"
 import { ResumeDescriptionAiDialog } from "~/components/resume/resume-description-ai-dialog"
 import { ResumeLinkedMultiFieldset } from "~/components/resume/resume-linked-multi-fieldset"
 import { WorkExperienceSkillFieldset } from "~/components/work-experience/work-experience-skill-fieldset"
@@ -60,7 +65,7 @@ import { listSkills } from "~/lib/api/resources/skills"
 import type { ApiWorkExperience } from "~/lib/api/resources/work-experiences"
 import { listWorkExperiences } from "~/lib/api/resources/work-experiences"
 import { apiRoleToRole } from "~/lib/opportunity-api-mappers"
-import { SparklesIcon } from "lucide-react"
+import { PlusIcon, SparklesIcon } from "lucide-react"
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 
 function apiErrorText(err: unknown, fallback: string): string {
@@ -177,6 +182,27 @@ export default function ResumeDocumentPage() {
   const [saving, setSaving] = React.useState(false)
   const [retryNonce, setRetryNonce] = React.useState(0)
 
+  const [roleDialogOpen, setRoleDialogOpen] = React.useState(false)
+  const [weDialogOpen, setWeDialogOpen] = React.useState(false)
+  const [certDialogOpen, setCertDialogOpen] = React.useState(false)
+  const [eduDialogOpen, setEduDialogOpen] = React.useState(false)
+  const [skillDialogOpen, setSkillDialogOpen] = React.useState(false)
+
+  const reloadReferenceLists = React.useCallback(async () => {
+    const [rolesApi, weApi, certApi, eduApi, skApi] = await Promise.all([
+      listRoles({ paginated: false }),
+      listWorkExperiences({ paginated: false }),
+      listCertifications({ paginated: false }),
+      listEducations({ paginated: false }),
+      listSkills({ paginated: false }),
+    ])
+    setRoles(rolesApi.map(apiRoleToRole))
+    setWorkExperiences(weApi.map(apiWorkExperienceToWorkExperience))
+    setCertifications(certApi.map(apiCertificationToCertification))
+    setEducation(eduApi.map(apiEducationToEducation))
+    setSkills(skApi.map(apiSkillToSkill))
+  }, [])
+
   React.useEffect(() => {
     let cancelled = false
     async function load() {
@@ -184,19 +210,8 @@ export default function ResumeDocumentPage() {
       setPageError(null)
       setEditDocument(null)
       try {
-        const [rolesApi, weApi, certApi, eduApi, skApi] = await Promise.all([
-          listRoles({ paginated: false }),
-          listWorkExperiences({ paginated: false }),
-          listCertifications({ paginated: false }),
-          listEducations({ paginated: false }),
-          listSkills({ paginated: false }),
-        ])
+        await reloadReferenceLists()
         if (cancelled) return
-        setRoles(rolesApi.map(apiRoleToRole))
-        setWorkExperiences(weApi.map(apiWorkExperienceToWorkExperience))
-        setCertifications(certApi.map(apiCertificationToCertification))
-        setEducation(eduApi.map(apiEducationToEducation))
-        setSkills(skApi.map(apiSkillToSkill))
 
         if (id) {
           try {
@@ -224,7 +239,7 @@ export default function ResumeDocumentPage() {
     return () => {
       cancelled = true
     }
-  }, [id, retryNonce])
+  }, [id, retryNonce, reloadReferenceLists])
 
   const rolesIdSignature = React.useMemo(
     () => roles.map((r) => r.id).sort().join("\0"),
@@ -510,36 +525,53 @@ export default function ResumeDocumentPage() {
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="resume-role">Role</FieldLabel>
-                  {roles.length > 0 ? (
-                    <Select
-                      key={`${id ?? "new"}-${rolesIdSignature}`}
-                      value={
-                        resolvedSelectRoleId === "" ? undefined : resolvedSelectRoleId
-                      }
-                      onValueChange={setRoleId}
-                      required
+                  <div className="flex min-w-0 flex-row items-stretch gap-2">
+                    {roles.length > 0 ? (
+                      <Select
+                        key={`${id ?? "new"}-${rolesIdSignature}`}
+                        value={
+                          resolvedSelectRoleId === "" ? undefined : resolvedSelectRoleId
+                        }
+                        onValueChange={setRoleId}
+                        required
+                      >
+                        <SelectTrigger id="resume-role" className="w-full min-w-0 flex-1">
+                          <SelectValue placeholder="Select one role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            {roles.map((r) => (
+                              <SelectItem key={r.id} value={r.id}>
+                                {r.name}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <p
+                        id="resume-role"
+                        className="text-muted-foreground flex min-h-8 flex-1 items-center text-sm"
+                      >
+                        Nenhum cargo cadastrado.
+                      </p>
+                    )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="shrink-0"
+                      aria-label="Add role"
+                      onClick={() => setRoleDialogOpen(true)}
                     >
-                      <SelectTrigger id="resume-role" className="w-full min-w-0">
-                        <SelectValue placeholder="Select one role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          {roles.map((r) => (
-                            <SelectItem key={r.id} value={r.id}>
-                              {r.name}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <p
-                      id="resume-role"
-                      className="text-muted-foreground flex min-h-8 items-center text-sm"
-                    >
-                      No roles defined yet. Add a role under Reference first.
-                    </p>
-                  )}
+                      <PlusIcon />
+                    </Button>
+                  </div>
+                  {roles.length === 0 ? (
+                    <FieldDescription>
+                      Use + to create a role and select it here.
+                    </FieldDescription>
+                  ) : null}
                   {roles.length > 0 && !hasValidRole ? (
                     <FieldDescription className="text-destructive">
                       Select a role to enable saving.
@@ -556,6 +588,10 @@ export default function ResumeDocumentPage() {
                   rows={workExperienceRows}
                   selectedIds={workExperienceIds}
                   onSelectedIdsChange={setWorkExperienceIds}
+                  emptyMessage="Nenhuma experiência cadastrada."
+                  emptyHint="Use + para criar uma experiência e selecioná-la aqui."
+                  onAddNew={() => setWeDialogOpen(true)}
+                  addNewAriaLabel="Add work experience"
                 />
                 <ResumeLinkedMultiFieldset
                   idPrefix="resume-cert"
@@ -564,6 +600,10 @@ export default function ResumeDocumentPage() {
                   rows={certificationRows}
                   selectedIds={certificationIds}
                   onSelectedIdsChange={setCertificationIds}
+                  emptyMessage="Nenhuma certificação cadastrada."
+                  emptyHint="Use + para criar uma certificação e selecioná-la aqui."
+                  onAddNew={() => setCertDialogOpen(true)}
+                  addNewAriaLabel="Add certification"
                 />
                 <ResumeLinkedMultiFieldset
                   idPrefix="resume-edu"
@@ -572,12 +612,20 @@ export default function ResumeDocumentPage() {
                   rows={educationRows}
                   selectedIds={educationIds}
                   onSelectedIdsChange={setEducationIds}
+                  emptyMessage="Nenhuma formação cadastrada."
+                  emptyHint="Use + para criar uma formação e selecioná-la aqui."
+                  onAddNew={() => setEduDialogOpen(true)}
+                  addNewAriaLabel="Add education"
                 />
                 <WorkExperienceSkillFieldset
                   idPrefix="resume-skills"
                   skills={skills}
                   skillIds={skillIds}
                   onSkillIdsChange={setSkillIds}
+                  emptyMessage="Nenhuma habilidade cadastrada."
+                  emptyHint="Use + para criar uma habilidade e selecioná-la aqui."
+                  onAddNew={() => setSkillDialogOpen(true)}
+                  addNewAriaLabel="Add skill"
                 />
               </div>
             </CardContent>
@@ -597,6 +645,55 @@ export default function ResumeDocumentPage() {
           initialDescription={description}
           context={aiContext}
           onApply={setDescription}
+        />
+        <QuickAddRoleDialog
+          open={roleDialogOpen}
+          onOpenChange={setRoleDialogOpen}
+          persistViaApi
+          onAdded={(newId) => {
+            setRoleId(newId)
+          }}
+          onPersistedViaApi={() => reloadReferenceLists()}
+        />
+        <QuickAddWorkExperienceDialog
+          open={weDialogOpen}
+          onOpenChange={setWeDialogOpen}
+          skills={skills}
+          onEmptySkillsAddNew={() => setSkillDialogOpen(true)}
+          emptySkillsMessage="Nenhuma habilidade cadastrada."
+          emptySkillsHint="Use + para criar uma habilidade e marcá-la aqui."
+          onAdded={(newId) => {
+            setWorkExperienceIds((prev) =>
+              prev.includes(newId) ? prev : [...prev, newId]
+            )
+          }}
+          onPersistedViaApi={() => reloadReferenceLists()}
+        />
+        <QuickAddCertificationDialog
+          open={certDialogOpen}
+          onOpenChange={setCertDialogOpen}
+          onAdded={(newId) => {
+            setCertificationIds((prev) =>
+              prev.includes(newId) ? prev : [...prev, newId]
+            )
+          }}
+          onPersistedViaApi={() => reloadReferenceLists()}
+        />
+        <QuickAddEducationDialog
+          open={eduDialogOpen}
+          onOpenChange={setEduDialogOpen}
+          onAdded={(newId) => {
+            setEducationIds((prev) => (prev.includes(newId) ? prev : [...prev, newId]))
+          }}
+          onPersistedViaApi={() => reloadReferenceLists()}
+        />
+        <QuickAddSkillDialog
+          open={skillDialogOpen}
+          onOpenChange={setSkillDialogOpen}
+          onAdded={(newId) => {
+            setSkillIds((prev) => (prev.includes(newId) ? prev : [...prev, newId]))
+          }}
+          onPersistedViaApi={() => reloadReferenceLists()}
         />
       </div>
       <PostSaveDialog

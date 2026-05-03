@@ -303,7 +303,7 @@ export function OpportunityDialog({
                   : "Atualize os dados desta vaga. Mesmos campos da página de oportunidade."}
               </DialogDescription>
             </DialogHeader>
-            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-2">
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-2 pb-6">
               {formError ? (
                 <p
                   role="alert"
@@ -334,7 +334,7 @@ export function OpportunityDialog({
                 onReferenceDataRefresh={onReferenceListsRefresh}
               />
             </div>
-            <DialogFooter className="mx-0 mb-0 shrink-0 rounded-none border-t bg-muted/30 px-4 py-3 sm:justify-end">
+            <DialogFooter className="mx-0 mb-0 shrink-0 rounded-b-xl border-t bg-muted/30 px-4 pt-3 pb-5 sm:justify-end">
               <Button
                 type="button"
                 variant="outline"
