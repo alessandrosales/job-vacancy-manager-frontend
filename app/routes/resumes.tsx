@@ -3,6 +3,7 @@ import { Link } from "react-router"
 
 import { ListingPageHeader } from "~/components/listing/listing-page-header"
 import { ListingTableCard } from "~/components/listing/listing-table-card"
+import { ResumeImportPdfDialog } from "~/components/resumes/resume-import-pdf-dialog"
 import type {
   ResumeDocument,
   Role,
@@ -35,7 +36,7 @@ import {
 } from "~/lib/api/resources/resumes"
 import { listRoles } from "~/lib/api/resources/roles"
 import { apiRoleToRole } from "~/lib/opportunity-api-mappers"
-import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
+import { FileUpIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
 function apiErrorText(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
@@ -87,6 +88,8 @@ export default function ResumesPage() {
 
   const [searchQuery, setSearchQuery] = React.useState("")
   const searchNeedle = searchQuery.trim()
+
+  const [importPdfOpen, setImportPdfOpen] = React.useState(false)
 
   const fetchAll = React.useCallback(async () => {
     setLoadState("loading")
@@ -144,12 +147,22 @@ export default function ResumesPage() {
           title="Resumes"
           description="Saved CV versions — browse as cards and open one to edit."
           action={
-            <Button asChild>
-              <Link to="/resumes/resume">
-                <PlusIcon data-icon="inline-start" />
-                Add resume
-              </Link>
-            </Button>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setImportPdfOpen(true)}
+              >
+                <FileUpIcon data-icon="inline-start" />
+                Import PDF
+              </Button>
+              <Button asChild>
+                <Link to="/resumes/resume">
+                  <PlusIcon data-icon="inline-start" />
+                  Add resume
+                </Link>
+              </Button>
+            </div>
           }
         />
 
@@ -246,6 +259,8 @@ export default function ResumesPage() {
             </div>
           )}
         </ListingTableCard>
+
+        <ResumeImportPdfDialog open={importPdfOpen} onOpenChange={setImportPdfOpen} />
 
         <AlertDialog
           open={deleteId !== null}
