@@ -5,7 +5,7 @@ import type { ApiSessionUser } from "~/lib/api/resources/auth"
 
 const LEGACY_SESSION_KEY = "job-vacancy-session-user-v1"
 const PERSIST_KEY = "job-vacancy-store-session-v1"
-const PERSIST_VERSION = 4
+const PERSIST_VERSION = 5
 
 function sessionFieldsFromApiUser(api: ApiSessionUser): SessionUser {
   return {
@@ -19,6 +19,7 @@ function sessionFieldsFromApiUser(api: ApiSessionUser): SessionUser {
     full_address: api.full_address ?? "",
     relationship_status: api.relationship_status ?? "",
     gender: api.gender ?? "",
+    preferred_language: api.preferred_language ?? "en",
     created_at: api.created_at,
     updated_at: api.updated_at,
   }
@@ -38,6 +39,7 @@ export interface SessionUser {
   full_address: string
   relationship_status: string
   gender: string
+  preferred_language: string
   created_at: string
   updated_at: string
 }
@@ -54,6 +56,7 @@ export function defaultSessionUser(): SessionUser {
     full_address: "",
     relationship_status: "",
     gender: "",
+    preferred_language: "en",
     created_at: "",
     updated_at: "",
   }
@@ -133,6 +136,17 @@ export const useSessionUserStore = create<SessionUserStoreState>()(
                   : ""
             const { avatar: _removed, ...rest } = u
             return { ...state, user: { ...rest, avatar_url } }
+          }
+          if (oldVersion < 5 && state.user && typeof state.user === "object") {
+            const u = state.user as Record<string, unknown>
+            return {
+              ...state,
+              user: {
+                ...u,
+                preferred_language:
+                  typeof u.preferred_language === "string" ? u.preferred_language : "en",
+              },
+            }
           }
           return persistedState as { user: SessionUser }
         },

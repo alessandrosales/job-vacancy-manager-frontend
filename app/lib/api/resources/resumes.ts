@@ -1,4 +1,8 @@
-import { apiRequestJson, apiRequestNoContent } from "~/lib/api/client"
+import {
+  apiRequestJson,
+  apiRequestMultipartJson,
+  apiRequestNoContent,
+} from "~/lib/api/client"
 import type {
   ApiIndexParams,
   PaginatedEnvelope,
@@ -86,6 +90,23 @@ export async function createResume(
     path: "resumes",
     method: "POST",
     body: { resume: payload },
+  })
+}
+
+/** Importa currículo a partir de PDF (multipart: `file`, `role_id`). */
+export async function importResumeFromPdf(params: {
+  file: File
+  role_id: string
+  signal?: AbortSignal
+}): Promise<ApiResume> {
+  const formData = new FormData()
+  formData.append("file", params.file)
+  formData.append("role_id", params.role_id)
+  return apiRequestMultipartJson<ApiResume>({
+    path: "resumes/pdf-import",
+    method: "POST",
+    formData,
+    signal: params.signal,
   })
 }
 

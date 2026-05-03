@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Link } from "react-router"
+import { Link, useNavigate } from "react-router"
 
 import { ListingPageHeader } from "~/components/listing/listing-page-header"
 import { ListingTableCard } from "~/components/listing/listing-table-card"
@@ -75,6 +75,7 @@ function formatUpdated(isoDate: string): string {
 }
 
 export default function ResumesPage() {
+  const navigate = useNavigate()
   const [resumes, setResumes] = React.useState<ResumeDocument[]>([])
   const [roles, setRoles] = React.useState<Role[]>([])
   const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
@@ -260,7 +261,22 @@ export default function ResumesPage() {
           )}
         </ListingTableCard>
 
-        <ResumeImportPdfDialog open={importPdfOpen} onOpenChange={setImportPdfOpen} />
+        <ResumeImportPdfDialog
+          open={importPdfOpen}
+          onOpenChange={setImportPdfOpen}
+          roles={roles}
+          onImported={async (api) => {
+            const doc = apiResumeToResumeDocument(api)
+            setResumes((prev) => {
+              if (prev.some((r) => r.id === doc.id)) {
+                return prev.map((r) => (r.id === doc.id ? doc : r))
+              }
+              return [doc, ...prev]
+            })
+            void fetchAll()
+            navigate(`/resumes/resume/${encodeURIComponent(api.id)}`)
+          }}
+        />
 
         <AlertDialog
           open={deleteId !== null}

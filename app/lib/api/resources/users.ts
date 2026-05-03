@@ -29,6 +29,7 @@ export type ApiUserUpdate = Partial<{
   full_address: string
   relationship_status: string
   gender: string
+  preferred_language: string
 }>
 
 /** Lista contém apenas o usuário autenticado. */

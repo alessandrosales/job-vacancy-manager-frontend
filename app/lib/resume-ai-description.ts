@@ -1,6 +1,9 @@
+import { ApiError } from "~/lib/api/errors"
+import { createResumeDescriptionSuggestion } from "~/lib/api/resources/resume-description-suggestions"
+
 /**
  * Context for drafting a resume description (used by the AI assistant dialog).
- * No network call — keeps the layout usable without API keys.
+ * Variáveis locais no formulário podem usar camelCase; o payload da API usa snake_case.
  */
 export type ResumeDescriptionAiContext = {
   title: string
@@ -9,53 +12,40 @@ export type ResumeDescriptionAiContext = {
   certificationNames: readonly string[]
   educationSummaries: readonly string[]
   skillNames: readonly string[]
-  /** Current description text when the user opened "Generate". */
+  /** Current description text when the user ran Generate (or the dialog preview). */
   previousDescription: string
 }
 
+function suggestionErrorMessage(err: unknown, fallback: string): string {
+  if (err instanceof ApiError) {
+    const base = err.fieldErrors.base?.[0]
+    if (base) return base
+    const titleErr = err.fieldErrors.title?.[0]
+    if (titleErr) return titleErr
+    const first = Object.values(err.fieldErrors).flat()[0]
+    if (first) return first
+  }
+  return fallback
+}
+
 /**
- * Simulates an AI pass: short delay, then a structured draft from title, role,
- * linked records, and the previous description as source notes.
+ * Chama o backend (RubyLLM) para gerar um rascunho de descrição a partir do título, cargo
+ * e registros vinculados.
  */
 export async function generateResumeDescriptionWithAi(
   ctx: ResumeDescriptionAiContext
 ): Promise<string> {
-  await new Promise((r) => setTimeout(r, 700))
-
-  const head = ctx.title.trim() || "Professional profile"
-  const blocks: string[] = []
-
-  blocks.push(
-    `${head} — summary drafted for your tracker. Use it as a starting point and edit freely.`
-  )
-
-  if (ctx.roleName) {
-    blocks.push(
-      `Target role: ${ctx.roleName}. Highlight impact, ownership, and collaboration relevant to this position.`
-    )
+  try {
+    return await createResumeDescriptionSuggestion({
+      title: ctx.title,
+      role_name: ctx.roleName,
+      work_experience_summaries: [...ctx.workExperienceSummaries],
+      certification_names: [...ctx.certificationNames],
+      education_summaries: [...ctx.educationSummaries],
+      skill_names: [...ctx.skillNames],
+      previous_description: ctx.previousDescription,
+    })
+  } catch (err) {
+    throw new Error(suggestionErrorMessage(err, "Could not generate a description."))
   }
-
-  if (ctx.workExperienceSummaries.length > 0) {
-    const list = ctx.workExperienceSummaries.slice(0, 8).join("\n• ")
-    blocks.push(`Selected experience:\n• ${list}`)
-  }
-
-  if (ctx.certificationNames.length > 0) {
-    blocks.push(`Certifications: ${ctx.certificationNames.slice(0, 12).join(", ")}.`)
-  }
-
-  if (ctx.educationSummaries.length > 0) {
-    blocks.push(`Education: ${ctx.educationSummaries.slice(0, 6).join(" | ")}.`)
-  }
-
-  if (ctx.skillNames.length > 0) {
-    blocks.push(`Key skills: ${ctx.skillNames.slice(0, 24).join(", ")}.`)
-  }
-
-  const prev = ctx.previousDescription.trim()
-  if (prev) {
-    blocks.push(`\n---\nYour previous notes (merged into this draft):\n${prev}`)
-  }
-
-  return blocks.join("\n\n")
 }

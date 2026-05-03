@@ -91,6 +91,43 @@ export async function apiRequestJson<T>(options: ApiRequestOptions): Promise<T> 
   return data as T
 }
 
+/**
+ * POST multipart (`FormData`): não define `Content-Type` para o browser incluir o boundary.
+ * Resposta JSON em sucesso; erros Rails viram {@link ApiError}.
+ */
+export async function apiRequestMultipartJson<T>(options: {
+  path: string
+  method?: HttpMethod
+  formData: FormData
+  auth?: boolean
+  signal?: AbortSignal
+}): Promise<T> {
+  const method = options.method ?? "POST"
+  const url = buildUrl(options.path, undefined)
+  const headers = new Headers()
+  headers.set("Accept", "application/json")
+  const sendAuth = options.auth !== false
+  if (sendAuth) {
+    const token = getAuthToken()
+    if (token) headers.set("Authorization", `Bearer ${token}`)
+  }
+
+  const res = await fetch(url, {
+    method,
+    headers,
+    body: options.formData,
+    signal: options.signal,
+  })
+
+  const data = await parseJsonBody(res)
+
+  if (!res.ok) {
+    throw apiErrorFromResponse(res, data)
+  }
+
+  return data as T
+}
+
 /** Para respostas sem corpo (`204 No Content` ou corpo vazio). */
 export async function apiRequestNoContent(options: ApiRequestOptions): Promise<void> {
   const method = options.method ?? "GET"

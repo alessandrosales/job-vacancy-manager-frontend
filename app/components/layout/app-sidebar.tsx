@@ -27,6 +27,7 @@ import {
   ListOrderedIcon,
   UserCogIcon,
   SparklesIcon,
+  LanguagesIcon,
   Link2Icon,
   CirclePlusIcon,
   FileStackIcon,
@@ -139,6 +140,11 @@ const data = {
       name: "Skills",
       url: "/skills",
       icon: <SparklesIcon />,
+    },
+    {
+      name: "Languages",
+      url: "/languages",
+      icon: <LanguagesIcon />,
     },
     {
       name: "Links",

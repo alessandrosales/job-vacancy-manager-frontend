@@ -39,16 +39,19 @@ export function ResumeDescriptionAiDialog({
 }) {
   const [draft, setDraft] = React.useState(initialDescription)
   const [isGenerating, setIsGenerating] = React.useState(false)
+  const [generateError, setGenerateError] = React.useState<string | null>(null)
   const wasOpenRef = React.useRef(false)
 
   React.useEffect(() => {
     if (open && !wasOpenRef.current) {
       setDraft(initialDescription)
+      setGenerateError(null)
     }
     wasOpenRef.current = open
   }, [open, initialDescription])
 
   async function handleGenerate() {
+    setGenerateError(null)
     setIsGenerating(true)
     try {
       const next = await generateResumeDescriptionWithAi({
@@ -56,6 +59,8 @@ export function ResumeDescriptionAiDialog({
         previousDescription: draft,
       })
       setDraft(next)
+    } catch (e) {
+      setGenerateError(e instanceof Error ? e.message : "Could not generate a description.")
     } finally {
       setIsGenerating(false)
     }
@@ -76,10 +81,14 @@ export function ResumeDescriptionAiDialog({
           <DialogHeader>
             <DialogTitle>AI description assistant</DialogTitle>
             <DialogDescription>
-              Generates a structured draft from your title, role, linked records, and the text
-              below. Review it, then use Apply to copy it into the resume description field.
+              Generate improves the preview text. Apply copies it to your resume description.
             </DialogDescription>
           </DialogHeader>
+          {generateError ? (
+            <p className="text-destructive text-sm" role="alert">
+              {generateError}
+            </p>
+          ) : null}
           <FieldGroup>
             <Field>
               <FieldLabel htmlFor="resume-ai-draft">Preview</FieldLabel>
@@ -92,7 +101,7 @@ export function ResumeDescriptionAiDialog({
                 disabled={isGenerating}
               />
               <FieldDescription className="pb-4">
-                Generate replaces this preview. You can still edit before applying.
+                You can edit the preview before applying.
               </FieldDescription>
             </Field>
           </FieldGroup>

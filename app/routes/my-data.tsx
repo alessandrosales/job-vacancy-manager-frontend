@@ -19,6 +19,14 @@ import {
   FieldLabel,
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select"
 import { Textarea } from "~/components/ui/textarea"
 import { ApiError } from "~/lib/api/errors"
 import { updateUser as patchUserApi } from "~/lib/api/resources/users"
@@ -38,6 +46,7 @@ function formErrorMessage(err: unknown): string {
       ...(fe.full_address ?? []),
       ...(fe.relationship_status ?? []),
       ...(fe.gender ?? []),
+      ...(fe.preferred_language ?? []),
       ...(fe.base ?? []),
     ]
     if (parts.length > 0) return parts.join(" ")
@@ -68,6 +77,9 @@ export default function MyDataPage() {
     user.relationship_status
   )
   const [gender, setGender] = React.useState(user.gender)
+  const [preferredLanguage, setPreferredLanguage] = React.useState(
+    user.preferred_language || "en"
+  )
 
   const [formError, setFormError] = React.useState<string | null>(null)
   const [submitting, setSubmitting] = React.useState(false)
@@ -82,6 +94,7 @@ export default function MyDataPage() {
     setFullAddress(user.full_address)
     setRelationshipStatus(user.relationship_status)
     setGender(user.gender)
+    setPreferredLanguage(user.preferred_language || "en")
   }, [user])
 
   const token = getAuthToken()
@@ -114,6 +127,7 @@ export default function MyDataPage() {
         full_address: fullAddress.trim(),
         relationship_status: relationshipStatus.trim(),
         gender: gender.trim(),
+        preferred_language: preferredLanguage,
       })
       const t = getAuthToken()
       if (t) {
@@ -186,6 +200,28 @@ export default function MyDataPage() {
                       required
                       disabled={submitting}
                     />
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="profile-preferred-language">Preferred language</FieldLabel>
+                    <Select
+                      value={preferredLanguage}
+                      onValueChange={setPreferredLanguage}
+                      disabled={submitting}
+                    >
+                      <SelectTrigger id="profile-preferred-language" className="w-full">
+                        <SelectValue placeholder="Language" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem value="en">English</SelectItem>
+                          <SelectItem value="pt-br">Português (BR)</SelectItem>
+                          <SelectItem value="es">Español</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    <FieldDescription>
+                      Used for UI copy and defaults in the app (not the spoken languages list).
+                    </FieldDescription>
                   </Field>
                   <Field>
                     <FieldLabel htmlFor="profile-phone">Phone</FieldLabel>

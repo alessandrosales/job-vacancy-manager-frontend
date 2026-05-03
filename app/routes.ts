@@ -23,6 +23,8 @@ export default [
   route("roles", "routes/roles.tsx"),
   route("skills/skill/:id?", "routes/skill.tsx"),
   route("skills", "routes/skills.tsx"),
+  route("languages/language/:id?", "routes/language.tsx"),
+  route("languages", "routes/languages.tsx"),
   route("links/link/:id?", "routes/reference-link.tsx"),
   route("links", "routes/links.tsx"),
   route("work-experiences/work-experience/:id?", "routes/work-experience.tsx"),
