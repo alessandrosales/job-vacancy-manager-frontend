@@ -50,12 +50,12 @@ export function RecoverPasswordForm({
         const baseMsg = err.fieldErrors.base?.join(". ")
         setFormError(
           baseMsg ??
-            "Não foi possível enviar o pedido. Tente novamente em instantes."
+            "Could not send the request. Please try again in a moment."
         )
         return
       }
       setFormError(
-        "Não foi possível conectar. Verifique sua rede e se a API está disponível (URL base em VITE_API_BASE_URL)."
+        "Could not connect. Check your network and that the API is reachable (base URL in VITE_API_BASE_URL)."
       )
     } finally {
       setPending(false)
@@ -66,9 +66,9 @@ export function RecoverPasswordForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Recuperar senha</CardTitle>
+          <CardTitle className="text-xl">Reset password</CardTitle>
           <CardDescription>
-            Digite seu e-mail e enviaremos um link para redefinir a senha.
+            Enter your email and we&apos;ll send you a link to reset your password.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -80,8 +80,8 @@ export function RecoverPasswordForm({
                     role="status"
                     className="rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400"
                   >
-                    Se existir uma conta com este e-mail, você receberá em breve
-                    as instruções para redefinir a senha.
+                    If an account exists for this email, you&apos;ll receive reset
+                    instructions shortly.
                   </p>
                 </Field>
               ) : null}
@@ -96,7 +96,7 @@ export function RecoverPasswordForm({
                 </Field>
               ) : null}
               <Field>
-                <FieldLabel htmlFor="recover-email">E-mail</FieldLabel>
+                <FieldLabel htmlFor="recover-email">Email</FieldLabel>
                 <Input
                   id="recover-email"
                   type="email"
@@ -111,14 +111,14 @@ export function RecoverPasswordForm({
               </Field>
               <Field>
                 <Button type="submit" disabled={pending || success}>
-                  {pending ? "Enviando…" : "Enviar link"}
+                  {pending ? "Sending…" : "Send link"}
                 </Button>
                 <FieldDescription className="text-center">
                   <Link
                     to="/"
                     className="underline-offset-4 hover:underline"
                   >
-                    Voltar ao login
+                    Back to sign in
                   </Link>
                 </FieldDescription>
               </Field>
@@ -127,7 +127,7 @@ export function RecoverPasswordForm({
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center text-balance">
-        O e-mail pode levar alguns minutos. Verifique também a pasta de spam.
+        The email may take a few minutes. Check your spam folder too.
       </FieldDescription>
     </div>
   )

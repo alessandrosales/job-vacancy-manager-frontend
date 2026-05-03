@@ -61,12 +61,12 @@ export function LoginForm({
         const baseMsg = err.fieldErrors.base?.join(". ")
         setFormError(
           baseMsg ??
-            "Não foi possível entrar. Verifique os dados e tente novamente."
+            "Could not sign in. Check your details and try again."
         )
         return
       }
       setFormError(
-        "Não foi possível conectar. Verifique sua rede e se a API está disponível (URL base em VITE_API_BASE_URL)."
+        "Could not connect. Check your network and that the API is reachable (base URL in VITE_API_BASE_URL)."
       )
     } finally {
       setPending(false)
@@ -77,9 +77,9 @@ export function LoginForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Bem-vindo de volta</CardTitle>
+          <CardTitle className="text-xl">Welcome back</CardTitle>
           <CardDescription>
-            Entre com Apple, Google ou e-mail
+            Sign in with Apple, Google, or email
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -103,7 +103,7 @@ export function LoginForm({
                       fill="currentColor"
                     />
                   </svg>
-                  Entrar com Apple
+                  Sign in with Apple
                 </Button>
                 <Button variant="outline" type="button" disabled={pending}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -112,14 +112,14 @@ export function LoginForm({
                       fill="currentColor"
                     />
                   </svg>
-                  Entrar com Google
+                  Sign in with Google
                 </Button>
               </Field>
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
-                Ou continue com
+                Or continue with
               </FieldSeparator>
               <Field>
-                <FieldLabel htmlFor="email">E-mail</FieldLabel>
+                <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
                   id="email"
                   type="email"
@@ -134,12 +134,12 @@ export function LoginForm({
               </Field>
               <Field>
                 <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Senha</FieldLabel>
+                  <FieldLabel htmlFor="password">Password</FieldLabel>
                   <Link
                     to="/recover-password"
                     className="ms-auto text-sm underline-offset-4 hover:underline"
                   >
-                    Esqueceu a senha?
+                    Forgot password?
                   </Link>
                 </div>
                 <Input
@@ -155,15 +155,15 @@ export function LoginForm({
               </Field>
               <Field>
                 <Button type="submit" disabled={pending}>
-                  {pending ? "Entrando…" : "Entrar"}
+                  {pending ? "Signing in…" : "Sign in"}
                 </Button>
                 <FieldDescription className="text-center">
-                  Não tem uma conta?{" "}
+                  Don&apos;t have an account?{" "}
                   <Link
                     to="/register"
                     className="underline-offset-4 hover:underline"
                   >
-                    Cadastre-se
+                    Sign up
                   </Link>
                 </FieldDescription>
               </Field>
@@ -172,13 +172,13 @@ export function LoginForm({
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center">
-        Ao continuar, você concorda com os{" "}
+        By continuing, you agree to our{" "}
         <a href="#" className="underline-offset-4 hover:underline">
-          Termos de uso
+          Terms of use
         </a>{" "}
-        e a{" "}
+        and{" "}
         <a href="#" className="underline-offset-4 hover:underline">
-          Política de privacidade
+          Privacy policy
         </a>
         .
       </FieldDescription>

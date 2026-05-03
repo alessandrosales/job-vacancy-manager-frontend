@@ -61,13 +61,15 @@ export function ResetPasswordForm({
     setFieldErrors({})
 
     if (tokenMissing) {
-      setFormError("Link inválido ou incompleto. Solicite um novo e-mail de recuperação.")
+      setFormError(
+        "Invalid or incomplete link. Request a new password reset email."
+      )
       return
     }
 
     if (password !== passwordConfirmation) {
       setFieldErrors({
-        password_confirmation: ["não coincide com Senha"],
+        password_confirmation: ["doesn't match Password"],
       })
       return
     }
@@ -92,7 +94,7 @@ export function ResetPasswordForm({
         return
       }
       setFormError(
-        "Não foi possível conectar. Verifique sua rede e se a API está disponível (URL base em VITE_API_BASE_URL)."
+        "Could not connect. Check your network and that the API is reachable (base URL in VITE_API_BASE_URL)."
       )
     } finally {
       setPending(false)
@@ -103,9 +105,9 @@ export function ResetPasswordForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Nova senha</CardTitle>
+          <CardTitle className="text-xl">New password</CardTitle>
           <CardDescription>
-            Escolha uma nova senha para a sua conta.
+            Choose a new password for your account.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -117,12 +119,12 @@ export function ResetPasswordForm({
                     role="alert"
                     className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive"
                   >
-                    Este link não contém um token válido.{" "}
+                    This link does not include a valid token.{" "}
                     <Link
                       to="/recover-password"
                       className="font-medium underline underline-offset-4"
                     >
-                      Pedir novo link
+                      Request a new link
                     </Link>
                     .
                   </p>
@@ -139,7 +141,7 @@ export function ResetPasswordForm({
                 </Field>
               ) : null}
               <Field>
-                <FieldLabel htmlFor="reset-password">Nova senha</FieldLabel>
+                <FieldLabel htmlFor="reset-password">New password</FieldLabel>
                 <Input
                   id="reset-password"
                   type="password"
@@ -158,7 +160,7 @@ export function ResetPasswordForm({
               </Field>
               <Field>
                 <FieldLabel htmlFor="reset-password-confirm">
-                  Confirmar senha
+                  Confirm password
                 </FieldLabel>
                 <Input
                   id="reset-password-confirm"
@@ -187,14 +189,14 @@ export function ResetPasswordForm({
               ) : null}
               <Field>
                 <Button type="submit" disabled={pending || tokenMissing}>
-                  {pending ? "Salvando…" : "Salvar nova senha"}
+                  {pending ? "Saving…" : "Save new password"}
                 </Button>
                 <FieldDescription className="text-center">
                   <Link
                     to="/"
                     className="underline-offset-4 hover:underline"
                   >
-                    Voltar ao login
+                    Back to sign in
                   </Link>
                 </FieldDescription>
               </Field>
@@ -203,9 +205,9 @@ export function ResetPasswordForm({
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center">
-        O link expira após algumas horas. Se precisar, solicite outro em{" "}
+        The link expires after a few hours. If you need another, use{" "}
         <Link to="/recover-password" className="underline-offset-4 hover:underline">
-          recuperar senha
+          reset password
         </Link>
         .
       </FieldDescription>

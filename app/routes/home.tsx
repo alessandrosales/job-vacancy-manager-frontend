@@ -7,7 +7,7 @@ export default function Home() {
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 p-6">
       <div className="flex max-w-md min-w-0 flex-col gap-6 text-center text-sm leading-loose">
         <div className="flex flex-col gap-2">
-          <h1 className="text-lg font-medium">Job Vacancy Manager</h1>
+          <h1 className="text-lg font-medium">Vacancy Manager</h1>
           <p className="text-muted-foreground">
             Páginas de exemplo com shadcn: login e painel com sidebar.
           </p>

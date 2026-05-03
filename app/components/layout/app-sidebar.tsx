@@ -42,7 +42,7 @@ const data = {
   // TODO: seletor de empresa (TeamSwitcher) — descomente `teams` abaixo, importe GalleryVerticalEndIcon, AudioLinesIcon, TerminalIcon do lucide-react, importe TeamSwitcher + SidebarHeader e o JSX comentado mais abaixo.
   // teams: [
   //   {
-  //     name: "Acme Inc",
+  //     name: "Vacancy Manager",
   //     logo: <GalleryVerticalEndIcon />,
   //     plan: "Enterprise",
   //   },
