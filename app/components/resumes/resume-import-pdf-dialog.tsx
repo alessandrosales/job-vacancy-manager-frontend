@@ -162,8 +162,8 @@ export function ResumeImportPdfDialog({
           <DialogTitle>Import resume from PDF</DialogTitle>
           <DialogDescription>
             Choose the target role, then pick or drop a PDF. The server extracts structured
-            data (experience with employers as companies, education, certifications, skills,
-            languages, profile links such as LinkedIn or GitHub, and additional roles when
+            data (experience with employers as companies, education, certifications, skills
+            including those named in each role, languages, profile links such as LinkedIn or GitHub, and additional roles when
             listed on the CV) and creates a new resume linked to the role you
             selected.
           </DialogDescription>
