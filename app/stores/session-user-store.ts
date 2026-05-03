@@ -5,7 +5,7 @@ import type { ApiSessionUser } from "~/lib/api/resources/auth"
 
 const LEGACY_SESSION_KEY = "job-vacancy-session-user-v1"
 const PERSIST_KEY = "job-vacancy-store-session-v1"
-const PERSIST_VERSION = 5
+const PERSIST_VERSION = 6
 
 function sessionFieldsFromApiUser(api: ApiSessionUser): SessionUser {
   return {
@@ -145,6 +145,18 @@ export const useSessionUserStore = create<SessionUserStoreState>()(
                 ...u,
                 preferred_language:
                   typeof u.preferred_language === "string" ? u.preferred_language : "en",
+              },
+            }
+          }
+          if (oldVersion < 6 && state.user && typeof state.user === "object") {
+            const u = state.user as Record<string, unknown>
+            const pl =
+              typeof u.preferred_language === "string" ? u.preferred_language : "en"
+            return {
+              ...state,
+              user: {
+                ...u,
+                preferred_language: pl === "pt-br" ? "pt_br" : pl,
               },
             }
           }

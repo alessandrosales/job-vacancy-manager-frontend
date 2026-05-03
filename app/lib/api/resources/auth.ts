@@ -13,7 +13,7 @@ export interface ApiSessionUser {
   full_address: string | null
   relationship_status: string | null
   gender: string | null
-  /** Preferência de idioma da UI: `en` | `pt-br` | `es`. */
+  /** Preferência de idioma da UI: `en` | `pt_br` | `es`. */
   preferred_language: string
   created_at: string
   updated_at: string
@@ -51,9 +51,11 @@ export function parseApiSessionUser(data: unknown): ApiSessionUser {
   const preferredRaw = o.preferred_language
   const preferred_language =
     typeof preferredRaw === "string" &&
-    (preferredRaw === "en" || preferredRaw === "pt-br" || preferredRaw === "es")
+    (preferredRaw === "en" || preferredRaw === "pt_br" || preferredRaw === "es")
       ? preferredRaw
-      : "en"
+      : preferredRaw === "pt-br"
+        ? "pt_br"
+        : "en"
 
   return {
     id: o.id,

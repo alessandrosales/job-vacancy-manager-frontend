@@ -214,7 +214,7 @@ export default function MyDataPage() {
                       <SelectContent>
                         <SelectGroup>
                           <SelectItem value="en">English</SelectItem>
-                          <SelectItem value="pt-br">Português (BR)</SelectItem>
+                          <SelectItem value="pt_br">Português (BR)</SelectItem>
                           <SelectItem value="es">Español</SelectItem>
                         </SelectGroup>
                       </SelectContent>
