@@ -13,6 +13,7 @@ import {
   DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS,
   type InterestLevel,
 } from "~/lib/labels"
+import { RESUME_PREFERRED_LANGUAGE_CODES } from "~/lib/resume-preferred-language"
 
 /** Totals used for default seed — tune for stress-testing the UI. */
 export const MOCK_SEED_TOTALS = {
@@ -281,6 +282,9 @@ export function generateMockResumes(
       id: `seed-res-${i}`,
       title: `${pick(RESUME_LABELS, i)}${i >= RESUME_LABELS.length ? ` #${i + 1}` : ""}`,
       description: `Snapshot #${i + 1}: headline, highlights, and keywords tailored for applications. Edit from the card actions or detail form.`,
+      preferred_language: RESUME_PREFERRED_LANGUAGE_CODES[
+        i % RESUME_PREFERRED_LANGUAGE_CODES.length
+      ]!,
       updated_at: `${y}-${pad(m)}-${pad(d)}`,
       role_id: roleIds[i % roleIds.length] ?? "",
       work_experience_ids: pickDistinctFrom(weIds, 2 + (i % 3), i),

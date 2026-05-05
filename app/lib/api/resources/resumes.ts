@@ -12,6 +12,10 @@ import type { ApiCertification } from "~/lib/api/resources/certifications"
 import type { ApiEducation } from "~/lib/api/resources/educations"
 import type { ApiSkill } from "~/lib/api/resources/skills"
 import type { ResumeDocument } from "~/components/providers/app-data-provider"
+import {
+  normalizeResumePreferredLanguage,
+  type ResumePreferredLanguage,
+} from "~/lib/resume-preferred-language"
 import type { ApiWorkExperience } from "~/lib/api/resources/work-experiences"
 
 export interface ApiResume {
@@ -20,6 +24,7 @@ export interface ApiResume {
   role_id: string
   title: string
   description: string | null
+  preferred_language: ResumePreferredLanguage
   created_at: string
   updated_at: string
   work_experience_ids: string[]
@@ -35,6 +40,7 @@ export function apiResumeToResumeDocument(api: ApiResume): ResumeDocument {
     id: api.id,
     title: api.title,
     description: api.description ?? "",
+    preferred_language: normalizeResumePreferredLanguage(api.preferred_language),
     updated_at: api.updated_at,
     role_id:
       rawRoleId == null || rawRoleId === ""
@@ -49,7 +55,7 @@ export function apiResumeToResumeDocument(api: ApiResume): ResumeDocument {
 
 export type ApiResumeWrite = Pick<
   ApiResume,
-  "title" | "description" | "role_id"
+  "title" | "description" | "role_id" | "preferred_language"
 >
 
 export async function listResumes(params: {
@@ -97,11 +103,15 @@ export async function createResume(
 export async function importResumeFromPdf(params: {
   file: File
   role_id: string
+  preferred_language?: ResumePreferredLanguage
   signal?: AbortSignal
 }): Promise<ApiResume> {
   const formData = new FormData()
   formData.append("file", params.file)
   formData.append("role_id", params.role_id)
+  if (params.preferred_language != null) {
+    formData.append("preferred_language", params.preferred_language)
+  }
   return apiRequestMultipartJson<ApiResume>({
     path: "resumes/pdf-import",
     method: "POST",

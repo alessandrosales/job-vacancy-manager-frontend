@@ -9,6 +9,10 @@ import {
   type OpportunityStatus,
   type OpportunityStatusDefinition,
 } from "~/lib/labels"
+import {
+  normalizeResumePreferredLanguage,
+  type ResumePreferredLanguage,
+} from "~/lib/resume-preferred-language"
 
 export type {
   OpportunityStatus,
@@ -116,6 +120,8 @@ export interface ResumeDocument {
   id: string
   title: string
   description: string
+  /** Idioma-alvo ao gerar/exportar o currículo (`en`, `pt_br`, `es`). */
+  preferred_language: ResumePreferredLanguage
   /** YYYY-MM-DD — última atualização. */
   updated_at: string
   /** Exactly one role (FK). */
@@ -372,6 +378,9 @@ function parseResumes(
       id: o.id,
       title: asString(o.title),
       description: asString(o.description),
+      preferred_language: normalizeResumePreferredLanguage(
+        o.preferred_language ?? o.preferredLanguage
+      ),
       updated_at: asString(o.updated_at ?? o.updatedAt),
       role_id,
       work_experience_ids: normalizeSkillIds(

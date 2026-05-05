@@ -67,6 +67,12 @@ import { listWorkExperiences } from "~/lib/api/resources/work-experiences"
 import { apiRoleToRole } from "~/lib/opportunity-api-mappers"
 import { PlusIcon, SparklesIcon } from "lucide-react"
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
+import {
+  DEFAULT_RESUME_PREFERRED_LANGUAGE,
+  RESUME_PREFERRED_LANGUAGE_OPTIONS,
+  normalizeResumePreferredLanguage,
+  type ResumePreferredLanguage,
+} from "~/lib/resume-preferred-language"
 
 function apiErrorText(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
@@ -172,6 +178,9 @@ export default function ResumeDocumentPage() {
   const [title, setTitle] = React.useState("")
   const [description, setDescription] = React.useState("")
   const [roleId, setRoleId] = React.useState("")
+  const [preferredLanguage, setPreferredLanguage] = React.useState<ResumePreferredLanguage>(
+    DEFAULT_RESUME_PREFERRED_LANGUAGE
+  )
   const [workExperienceIds, setWorkExperienceIds] = React.useState<string[]>([])
   const [certificationIds, setCertificationIds] = React.useState<string[]>([])
   const [educationIds, setEducationIds] = React.useState<string[]>([])
@@ -261,6 +270,7 @@ export default function ResumeDocumentPage() {
       setTitle("")
       setDescription("")
       setRoleId("")
+      setPreferredLanguage(DEFAULT_RESUME_PREFERRED_LANGUAGE)
       setWorkExperienceIds([])
       setCertificationIds([])
       setEducationIds([])
@@ -270,6 +280,7 @@ export default function ResumeDocumentPage() {
     if (!editDocument) return
     setTitle(editDocument.title)
     setDescription(editDocument.description)
+    setPreferredLanguage(normalizeResumePreferredLanguage(editDocument.preferred_language))
     setWorkExperienceIds([...editDocument.work_experience_ids])
     setCertificationIds([...editDocument.certification_ids])
     setEducationIds([...editDocument.education_ids])
@@ -280,6 +291,7 @@ export default function ResumeDocumentPage() {
     setTitle("")
     setDescription("")
     setRoleId("")
+    setPreferredLanguage(DEFAULT_RESUME_PREFERRED_LANGUAGE)
     setWorkExperienceIds([])
     setCertificationIds([])
     setEducationIds([])
@@ -310,6 +322,7 @@ export default function ResumeDocumentPage() {
         roles.length === 0
           ? ""
           : resolvedSelectRoleId,
+      preferred_language: preferredLanguage,
     }
 
     setSaving(true)
@@ -482,13 +495,38 @@ export default function ResumeDocumentPage() {
             <CardTitle>{pageTitle}</CardTitle>
             <CardDescription>
               {isEdit
-                ? "Update this saved resume. Link one role and any number of experiences, certifications, education rows, and skills."
-                : "Create a resume: pick the target role, then attach supporting records."}
+                ? "Update this saved resume. Set the output language, link one role, and attach any experiences, certifications, education rows, and skills."
+                : "Create a resume: choose the output language first, then pick the target role and attach supporting records."}
             </CardDescription>
           </CardHeader>
           <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
             <CardContent>
               <FieldGroup>
+                <Field>
+                  <FieldLabel htmlFor="resume-preferred-lang">Resume language</FieldLabel>
+                  <Select
+                    value={preferredLanguage}
+                    onValueChange={(v) => setPreferredLanguage(v as ResumePreferredLanguage)}
+                    disabled={saving}
+                  >
+                    <SelectTrigger id="resume-preferred-lang" className="w-full">
+                      <SelectValue placeholder="Language for generated resume" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {RESUME_PREFERRED_LANGUAGE_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <FieldDescription>
+                    Language used when this resume is generated or exported (English, Portuguese — Brazil,
+                    or Spanish). Choose this before filling in the rest of the form.
+                  </FieldDescription>
+                </Field>
                 <Field>
                   <FieldLabel htmlFor="resume-title">Title</FieldLabel>
                   <Input

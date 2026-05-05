@@ -43,6 +43,11 @@ import {
 } from "~/components/ui/select"
 import { ApiError } from "~/lib/api/errors"
 import { importResumeFromPdf, type ApiResume } from "~/lib/api/resources/resumes"
+import {
+  DEFAULT_RESUME_PREFERRED_LANGUAGE,
+  RESUME_PREFERRED_LANGUAGE_OPTIONS,
+  type ResumePreferredLanguage,
+} from "~/lib/resume-preferred-language"
 import { cn } from "~/lib/utils"
 
 const PDF_ACCEPT = ".pdf,application/pdf"
@@ -91,14 +96,14 @@ function PdfImportNeonUploadRing({
       <p className="sr-only">{statusText}</p>
       <div className="relative flex size-[8rem] items-center justify-center overflow-visible">
         <div
-          className="pointer-events-none absolute inset-[-22%] motion-safe:animate-[pdf-import-halo_3.2s_ease-in-out_infinite] rounded-full bg-[conic-gradient(from_200deg,var(--neon-cyan),var(--neon-magenta),var(--neon-violet),var(--neon-cyan))] opacity-[0.26] blur-2xl"
+          className="pointer-events-none absolute inset-[-22%] motion-safe:animate-[pdf-import-halo_3.2s_ease-in-out_infinite] rounded-full bg-[conic-gradient(from_200deg,var(--neon-cyan),var(--neon-magenta),var(--neon-violet),var(--neon-cyan))] opacity-[0.14] blur-2xl dark:opacity-[0.26]"
           style={{
             ["--neon-cyan" as string]: "rgb(34 211 238)",
             ["--neon-magenta" as string]: "rgb(232 121 249)",
             ["--neon-violet" as string]: "rgb(167 139 250)",
           }}
         />
-        <div className="pointer-events-none absolute inset-[6%] rounded-full bg-fuchsia-500/10 blur-xl motion-safe:animate-pulse" />
+        <div className="pointer-events-none absolute inset-[6%] rounded-full bg-primary/10 blur-xl motion-safe:animate-pulse dark:bg-fuchsia-500/10" />
 
         {/* Trilho + arco espesso (rotação normal) */}
         <svg
@@ -108,9 +113,10 @@ function PdfImportNeonUploadRing({
         >
           <defs>
             <linearGradient id={gradPrimary} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#22d3ee" />
-              <stop offset="45%" stopColor="#e879f9" />
-              <stop offset="100%" stopColor="#a78bfa" />
+              {/* Saturação média: legível no light mode; ainda vibrante no dark */}
+              <stop offset="0%" stopColor="#0891b2" />
+              <stop offset="45%" stopColor="#c026d3" />
+              <stop offset="100%" stopColor="#7c3aed" />
             </linearGradient>
             <filter id={filterGlow} x="-55%" y="-55%" width="210%" height="210%">
               <feGaussianBlur stdDeviation="2.4" result="blur" />
@@ -125,7 +131,7 @@ function PdfImportNeonUploadRing({
             cy="50"
             r="40"
             fill="none"
-            className="stroke-muted-foreground/20"
+            className="stroke-muted-foreground/35 dark:stroke-muted-foreground/20"
             strokeWidth="4.5"
           />
           <circle
@@ -138,7 +144,7 @@ function PdfImportNeonUploadRing({
             strokeLinecap="round"
             strokeDasharray="95 156"
             filter={`url(#${filterGlow})`}
-            className="drop-shadow-[0_0_12px_rgba(232,121,249,0.45)]"
+            className="drop-shadow-[0_0_8px_rgba(124,58,237,0.35)] dark:drop-shadow-[0_0_12px_rgba(232,121,249,0.45)]"
           />
         </svg>
 
@@ -150,8 +156,8 @@ function PdfImportNeonUploadRing({
         >
           <defs>
             <linearGradient id={gradTrail} x1="100%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#f0abfc" stopOpacity="0.95" />
-              <stop offset="100%" stopColor="#22d3ee" stopOpacity="0.35" />
+              <stop offset="0%" stopColor="#c026d3" stopOpacity="0.85" />
+              <stop offset="100%" stopColor="#0891b2" stopOpacity="0.45" />
             </linearGradient>
           </defs>
           <circle
@@ -163,17 +169,17 @@ function PdfImportNeonUploadRing({
             strokeWidth="2.25"
             strokeLinecap="round"
             strokeDasharray="48 178"
-            className="opacity-80 drop-shadow-[0_0_8px_rgba(240,171,252,0.65)]"
+            className="opacity-90 drop-shadow-[0_0_6px_rgba(192,38,211,0.35)] dark:opacity-80 dark:drop-shadow-[0_0_8px_rgba(240,171,252,0.55)]"
           />
         </svg>
 
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div
             key={statusText}
-            className="rounded-full bg-background/45 p-2.5 shadow-[0_0_28px_rgba(34,211,238,0.22),0_0_42px_rgba(232,121,249,0.12),inset_0_0_22px_rgba(232,121,249,0.1)] ring-1 ring-cyan-400/45 backdrop-blur-sm duration-300 animate-in fade-in zoom-in-95"
+            className="rounded-full bg-muted/80 p-2.5 shadow-sm ring-1 ring-border backdrop-blur-sm duration-300 animate-in fade-in zoom-in-95 dark:bg-background/45 dark:shadow-[0_0_28px_rgba(34,211,238,0.22),0_0_42px_rgba(232,121,249,0.12)] dark:ring-cyan-400/45"
           >
             <StageIcon
-              className="size-8 text-cyan-100 drop-shadow-[0_0_14px_rgba(34,211,238,0.85),0_0_10px_rgba(232,121,249,0.35)]"
+              className="size-8 text-primary dark:text-cyan-100 dark:drop-shadow-[0_0_12px_rgba(34,211,238,0.65)]"
               strokeWidth={1.75}
               aria-hidden
             />
@@ -184,7 +190,7 @@ function PdfImportNeonUploadRing({
       <div className="flex max-w-xs flex-col gap-1 text-center">
         <p
           key={statusText}
-          className="text-sm font-medium tracking-tight text-cyan-100 drop-shadow-[0_0_12px_rgba(34,211,238,0.35)] duration-300 animate-in fade-in slide-in-from-bottom-1"
+          className="text-foreground text-sm font-medium tracking-tight duration-300 animate-in fade-in slide-in-from-bottom-1 dark:text-cyan-100 dark:drop-shadow-[0_0_12px_rgba(34,211,238,0.35)]"
         >
           {statusText}
         </p>
@@ -199,11 +205,11 @@ function PdfImportNeonUploadRing({
         @keyframes pdf-import-halo {
           0%,
           100% {
-            opacity: 0.18;
+            opacity: 0.12;
             transform: scale(0.96);
           }
           50% {
-            opacity: 0.32;
+            opacity: 0.22;
             transform: scale(1.04);
           }
         }
@@ -245,6 +251,9 @@ export function ResumeImportPdfDialog({
   const [isDragging, setIsDragging] = React.useState(false)
   const [submitting, setSubmitting] = React.useState(false)
   const [pdfImportStageIndex, setPdfImportStageIndex] = React.useState(0)
+  const [preferredLanguage, setPreferredLanguage] = React.useState<ResumePreferredLanguage>(
+    DEFAULT_RESUME_PREFERRED_LANGUAGE
+  )
 
   React.useEffect(() => {
     if (!open) return
@@ -255,6 +264,7 @@ export function ResumeImportPdfDialog({
     setSubmitting(false)
     setPdfImportStageIndex(0)
     setRoleId("")
+    setPreferredLanguage(DEFAULT_RESUME_PREFERRED_LANGUAGE)
     if (inputRef.current) inputRef.current.value = ""
   }, [open])
 
@@ -326,6 +336,7 @@ export function ResumeImportPdfDialog({
       const resume = await importResumeFromPdf({
         file: selectedFile,
         role_id: roleId.trim(),
+        preferred_language: preferredLanguage,
       })
       await onImported(resume)
       onOpenChange(false)
@@ -354,6 +365,31 @@ export function ResumeImportPdfDialog({
           onChange={handleInputChange}
         />
         <FieldGroup className="gap-4">
+          <Field>
+            <FieldLabel htmlFor="resume-import-preferred-lang">Resume language</FieldLabel>
+            <Select
+              value={preferredLanguage}
+              onValueChange={(v) => setPreferredLanguage(v as ResumePreferredLanguage)}
+              disabled={submitting}
+            >
+              <SelectTrigger id="resume-import-preferred-lang" className="w-full">
+                <SelectValue placeholder="Language for generated resume" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {RESUME_PREFERRED_LANGUAGE_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            <FieldDescription>
+              Choose this first: it sets the locale for the resume we create from your PDF.
+            </FieldDescription>
+          </Field>
+
           <Field>
             <FieldLabel htmlFor="resume-import-role">Role</FieldLabel>
             {hasRoles ? (
@@ -399,7 +435,7 @@ export function ResumeImportPdfDialog({
               className={cn(
                 "border-muted-foreground/35 bg-muted/25 text-muted-foreground flex min-h-[11rem] flex-col items-center justify-center gap-3 rounded-lg border border-dashed px-4 py-8 text-center outline-none transition-colors",
                 submitting &&
-                  "relative overflow-visible border-cyan-500/40 shadow-[0_0_32px_-12px_rgba(34,211,238,0.35)] bg-[radial-gradient(ellipse_85%_70%_at_50%_42%,rgba(232,121,249,0.09),transparent_72%),radial-gradient(ellipse_90%_55%_at_50%_38%,rgba(34,211,238,0.06),transparent_70%)]",
+                  "relative overflow-visible border-primary/45 bg-muted/50 shadow-sm dark:border-cyan-500/40 dark:bg-[radial-gradient(ellipse_85%_70%_at_50%_42%,rgba(232,121,249,0.09),transparent_72%),radial-gradient(ellipse_90%_55%_at_50%_38%,rgba(34,211,238,0.06),transparent_70%)] dark:shadow-[0_0_32px_-12px_rgba(34,211,238,0.35)]",
                 !submitting &&
                   "hover:border-muted-foreground/55 hover:bg-muted/35 cursor-pointer",
                 !submitting &&
