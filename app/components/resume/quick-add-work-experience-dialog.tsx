@@ -20,6 +20,7 @@ import {
 import { Field, FieldGroup, FieldLabel } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { Switch } from "~/components/ui/switch"
+import { Textarea } from "~/components/ui/textarea"
 import {
   createWorkExperience,
   syncWorkExperienceSkills,
@@ -49,6 +50,7 @@ export function QuickAddWorkExperienceDialog({
 }: QuickAddWorkExperienceDialogProps) {
   const [title, setTitle] = React.useState("")
   const [companyName, setCompanyName] = React.useState("")
+  const [description, setDescription] = React.useState("")
   const [isRemote, setIsRemote] = React.useState(false)
   const [dateFrom, setDateFrom] = React.useState("")
   const [dateTo, setDateTo] = React.useState("")
@@ -60,6 +62,7 @@ export function QuickAddWorkExperienceDialog({
     if (!open) return
     setTitle("")
     setCompanyName("")
+    setDescription("")
     setIsRemote(false)
     setDateFrom("")
     setDateTo("")
@@ -84,6 +87,7 @@ export function QuickAddWorkExperienceDialog({
       const created = await createWorkExperience({
         title: t,
         company_name: c,
+        description: emptyToNull(description),
         is_remote: isRemote,
         date_from: emptyToNull(dateFrom),
         date_to: emptyToNull(dateTo),
@@ -135,6 +139,18 @@ export function QuickAddWorkExperienceDialog({
                   onChange={(e) => setCompanyName(e.target.value)}
                   required
                   disabled={submitting}
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="qawe-description">Description</FieldLabel>
+                <Textarea
+                  id="qawe-description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Opcional — responsabilidades ou conquistas nesta função"
+                  disabled={submitting}
+                  rows={3}
+                  className="min-h-[72px] resize-y"
                 />
               </Field>
               <Field orientation="horizontal">

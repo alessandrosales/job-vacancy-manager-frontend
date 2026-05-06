@@ -40,7 +40,7 @@ function filterWorkExperiences(
   if (!needle) return [...rows]
   const q = needle.toLowerCase()
   return rows.filter((r) =>
-    `${r.title} ${r.company_name} ${r.date_from ?? ""} ${r.date_to ?? ""} ${r.is_remote ? "remote" : ""}`
+    `${r.title} ${r.company_name} ${r.description ?? ""} ${r.date_from ?? ""} ${r.date_to ?? ""} ${r.is_remote ? "remote" : ""}`
       .toLowerCase()
       .includes(q)
   )
@@ -151,6 +151,7 @@ export default function WorkExperiencesPage() {
                 <TableHead className="w-28">Actions</TableHead>
                 <TableHead>Title</TableHead>
                 <TableHead>Company</TableHead>
+                <TableHead>Description</TableHead>
                 <TableHead>Remote</TableHead>
                 <TableHead>From</TableHead>
                 <TableHead>To</TableHead>
@@ -160,13 +161,13 @@ export default function WorkExperiencesPage() {
             <TableBody>
               {loadState === "loading" ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-muted-foreground">
+                  <TableCell colSpan={8} className="text-muted-foreground">
                     Loading work experience…
                   </TableCell>
                 </TableRow>
               ) : loadState === "error" ? (
                 <TableRow>
-                  <TableCell colSpan={7}>
+                  <TableCell colSpan={8}>
                     <div className="flex flex-wrap items-center gap-3">
                       <span className="text-destructive">{listError}</span>
                       <Button
@@ -182,13 +183,13 @@ export default function WorkExperiencesPage() {
                 </TableRow>
               ) : workExperiences.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-muted-foreground">
+                  <TableCell colSpan={8} className="text-muted-foreground">
                     No work experience yet. Add one to get started.
                   </TableCell>
                 </TableRow>
               ) : filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-muted-foreground">
+                  <TableCell colSpan={8} className="text-muted-foreground">
                     No matches for your search.
                   </TableCell>
                 </TableRow>
@@ -220,6 +221,9 @@ export default function WorkExperiencesPage() {
                     </TableCell>
                     <TableCell className="font-medium">{row.title}</TableCell>
                     <TableCell>{row.company_name}</TableCell>
+                    <TableCell className="max-w-xs truncate text-muted-foreground">
+                      {row.description?.trim() ? row.description : "—"}
+                    </TableCell>
                     <TableCell>{row.is_remote ? "Yes" : "No"}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {row.date_from ?? "—"}
@@ -235,7 +239,7 @@ export default function WorkExperiencesPage() {
               )}
               {loadState === "idle" && workExperiences.length > 0 ? (
                 <InfiniteScrollSentinelRow
-                  colSpan={7}
+                  colSpan={8}
                   sentinelRef={sentinelRef}
                   hasMore={hasMore}
                   totalCount={totalCount}

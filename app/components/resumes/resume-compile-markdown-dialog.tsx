@@ -181,22 +181,27 @@ export function ResumeCompileMarkdownDialog({
   resumeId,
   resumeTitle,
   onCompiled,
+  autoStart = false,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   resumeId: string
   resumeTitle: string
   onCompiled: (resume: ApiResume) => void | Promise<void>
+  /** When true, opening the dialog immediately runs compile (no manual Generate click). */
+  autoStart?: boolean
 }) {
   const [compiling, setCompiling] = React.useState(false)
   const [stageIndex, setStageIndex] = React.useState(0)
   const [error, setError] = React.useState<string | null>(null)
+  const autoStartRanRef = React.useRef(false)
 
   React.useEffect(() => {
     if (!open) {
       setError(null)
       setCompiling(false)
       setStageIndex(0)
+      autoStartRanRef.current = false
     }
   }, [open])
 
@@ -209,7 +214,7 @@ export function ResumeCompileMarkdownDialog({
     return () => clearInterval(id)
   }, [compiling])
 
-  async function handleCompile() {
+  const handleCompile = React.useCallback(async () => {
     setError(null)
     setCompiling(true)
     try {
@@ -221,7 +226,13 @@ export function ResumeCompileMarkdownDialog({
     } finally {
       setCompiling(false)
     }
-  }
+  }, [resumeId, onCompiled, onOpenChange])
+
+  React.useLayoutEffect(() => {
+    if (!open || !autoStart || autoStartRanRef.current) return
+    autoStartRanRef.current = true
+    void handleCompile()
+  }, [open, autoStart, handleCompile])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -229,8 +240,18 @@ export function ResumeCompileMarkdownDialog({
         <DialogHeader>
           <DialogTitle>Generate ATS Resume</DialogTitle>
           <DialogDescription>
-            Generate an ATS-optimised markdown resume from the data linked to{" "}
-            <span className="text-foreground font-medium">{resumeTitle}</span>.
+            {autoStart ? (
+              <>
+                Generating an ATS-optimised markdown resume for{" "}
+                <span className="text-foreground font-medium">{resumeTitle}</span> from your saved
+                profile data.
+              </>
+            ) : (
+              <>
+                Generate an ATS-optimised markdown resume from the data linked to{" "}
+                <span className="text-foreground font-medium">{resumeTitle}</span>.
+              </>
+            )}
           </DialogDescription>
         </DialogHeader>
 
@@ -275,23 +296,25 @@ export function ResumeCompileMarkdownDialog({
           >
             Cancel
           </Button>
-          <Button
-            type="button"
-            disabled={compiling}
-            onClick={() => void handleCompile()}
-          >
-            {compiling ? (
-              <>
-                <Loader2Icon className="size-4 animate-spin" data-icon="inline-start" />
-                Generating…
-              </>
-            ) : (
-              <>
-                <Sparkles className="size-4" data-icon="inline-start" />
-                Generate
-              </>
-            )}
-          </Button>
+          {autoStart ? null : (
+            <Button
+              type="button"
+              disabled={compiling}
+              onClick={() => void handleCompile()}
+            >
+              {compiling ? (
+                <>
+                  <Loader2Icon className="size-4 animate-spin" data-icon="inline-start" />
+                  Generating…
+                </>
+              ) : (
+                <>
+                  <Sparkles className="size-4" data-icon="inline-start" />
+                  Generate
+                </>
+              )}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

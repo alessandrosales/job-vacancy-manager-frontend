@@ -81,7 +81,9 @@ export function ResumeDescriptionAiDialog({
           <DialogHeader>
             <DialogTitle>AI description assistant</DialogTitle>
             <DialogDescription>
-              Generate improves the preview text. Apply copies it to your resume description.
+              Generate improves the preview text using your resume language, linked role, and linked
+              profile data as context—keep editing the preview, then Apply to copy it into your resume
+              description.
             </DialogDescription>
           </DialogHeader>
           {generateError ? (

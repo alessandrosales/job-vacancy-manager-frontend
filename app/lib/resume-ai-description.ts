@@ -1,5 +1,6 @@
 import { ApiError } from "~/lib/api/errors"
 import { createResumeDescriptionSuggestion } from "~/lib/api/resources/resume-description-suggestions"
+import type { ResumePreferredLanguage } from "~/lib/resume-preferred-language"
 
 /**
  * Context for drafting a resume description (used by the AI assistant dialog).
@@ -8,6 +9,8 @@ import { createResumeDescriptionSuggestion } from "~/lib/api/resources/resume-de
 export type ResumeDescriptionAiContext = {
   title: string
   roleName: string | null
+  /** Idioma selecionado no currículo — a API instrui o modelo a escrever nesse idioma. */
+  preferredLanguage: ResumePreferredLanguage
   workExperienceSummaries: readonly string[]
   certificationNames: readonly string[]
   educationSummaries: readonly string[]
@@ -39,6 +42,7 @@ export async function generateResumeDescriptionWithAi(
     return await createResumeDescriptionSuggestion({
       title: ctx.title,
       role_name: ctx.roleName,
+      preferred_language: ctx.preferredLanguage,
       work_experience_summaries: [...ctx.workExperienceSummaries],
       certification_names: [...ctx.certificationNames],
       education_summaries: [...ctx.educationSummaries],

@@ -61,13 +61,14 @@ import {
   syncResumeSkills,
   syncResumeWorkExperiences,
   updateResume as updateResumeApi,
+  type ApiResume,
 } from "~/lib/api/resources/resumes"
 import type { ApiSkill } from "~/lib/api/resources/skills"
 import { listSkills } from "~/lib/api/resources/skills"
 import type { ApiWorkExperience } from "~/lib/api/resources/work-experiences"
 import { listWorkExperiences } from "~/lib/api/resources/work-experiences"
 import { apiRoleToRole } from "~/lib/opportunity-api-mappers"
-import { FileCode2Icon, PlusIcon, SparklesIcon } from "lucide-react"
+import { PlusIcon, SparklesIcon } from "lucide-react"
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 import {
   DEFAULT_RESUME_PREFERRED_LANGUAGE,
@@ -90,6 +91,7 @@ function apiWorkExperienceToWorkExperience(w: ApiWorkExperience): WorkExperience
   return {
     id: w.id,
     title: w.title,
+    description: w.description ?? "",
     company_name: w.company_name,
     is_remote: w.is_remote,
     date_from: w.date_from ?? "",
@@ -199,6 +201,14 @@ export default function ResumeDocumentPage() {
   const [eduDialogOpen, setEduDialogOpen] = React.useState(false)
   const [skillDialogOpen, setSkillDialogOpen] = React.useState(false)
   const [compileDialogOpen, setCompileDialogOpen] = React.useState(false)
+  const [compileAutoStart, setCompileAutoStart] = React.useState(false)
+
+  const handleResumeMarkdownCompiled = React.useCallback((api: ApiResume) => {
+    setEditDocument((prev) =>
+      prev ? { ...prev, compiled_markdown: api.compiled_markdown ?? null } : prev
+    )
+    navigate("/resumes")
+  }, [navigate])
 
   const reloadReferenceLists = React.useCallback(async () => {
     const [rolesApi, weApi, certApi, eduApi, skApi] = await Promise.all([
@@ -334,7 +344,8 @@ export default function ResumeDocumentPage() {
       if (isEdit && id) {
         await updateResumeApi(id, corePayload)
         await syncResumeRelations(id, relationPayload)
-        navigate("/resumes")
+        setCompileAutoStart(true)
+        setCompileDialogOpen(true)
       } else {
         const created = await createResumeApi(corePayload)
         await syncResumeRelations(created.id, relationPayload)
@@ -391,6 +402,7 @@ export default function ResumeDocumentPage() {
     return {
       title,
       roleName,
+      preferredLanguage,
       workExperienceSummaries,
       certificationNames,
       educationSummaries,
@@ -401,6 +413,7 @@ export default function ResumeDocumentPage() {
     title,
     resolvedSelectRoleId,
     roles,
+    preferredLanguage,
     workExperienceIds,
     workExperiences,
     certificationIds,
@@ -678,16 +691,6 @@ export default function ResumeDocumentPage() {
               <Button type="button" variant="outline" onClick={() => navigate(-1)}>
                 Cancel
               </Button>
-              {isEdit ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setCompileDialogOpen(true)}
-                >
-                  <FileCode2Icon data-icon="inline-start" />
-                  Generate CV
-                </Button>
-              ) : null}
               {isEdit && id ? (
                 <ResumeCompiledDownloadMenu
                   resumeId={id}
@@ -711,14 +714,14 @@ export default function ResumeDocumentPage() {
         {isEdit && id ? (
           <ResumeCompileMarkdownDialog
             open={compileDialogOpen}
-            onOpenChange={setCompileDialogOpen}
+            onOpenChange={(next) => {
+              setCompileDialogOpen(next)
+              if (!next) setCompileAutoStart(false)
+            }}
             resumeId={id}
             resumeTitle={title || "Resume"}
-            onCompiled={(api) => {
-              setEditDocument((prev) =>
-                prev ? { ...prev, compiled_markdown: api.compiled_markdown ?? null } : prev
-              )
-            }}
+            autoStart={compileAutoStart}
+            onCompiled={handleResumeMarkdownCompiled}
           />
         ) : null}
         <QuickAddRoleDialog

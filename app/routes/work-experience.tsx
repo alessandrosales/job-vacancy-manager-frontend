@@ -19,6 +19,7 @@ import {
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { Switch } from "~/components/ui/switch"
+import { Textarea } from "~/components/ui/textarea"
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 import { ApiError } from "~/lib/api/errors"
 import { listSkills, type ApiSkill } from "~/lib/api/resources/skills"
@@ -42,6 +43,7 @@ function formErrorMessage(err: unknown): string {
       ...(err.fieldErrors.is_remote ?? []),
       ...(err.fieldErrors.date_from ?? []),
       ...(err.fieldErrors.date_to ?? []),
+      ...(err.fieldErrors.description ?? []),
       ...(err.fieldErrors.skill_ids ?? []),
       ...(err.fieldErrors.base ?? []),
     ]
@@ -59,6 +61,7 @@ export default function WorkExperiencePage() {
   const [skillsLoading, setSkillsLoading] = React.useState(true)
 
   const [title, setTitle] = React.useState("")
+  const [description, setDescription] = React.useState("")
   const [companyName, setCompanyName] = React.useState("")
   const [isRemote, setIsRemote] = React.useState(false)
   const [dateFrom, setDateFrom] = React.useState("")
@@ -101,6 +104,7 @@ export default function WorkExperiencePage() {
       .then((row) => {
         if (cancelled) return
         setTitle(row.title)
+        setDescription(row.description ?? "")
         setCompanyName(row.company_name)
         setIsRemote(row.is_remote)
         setDateFrom(row.date_from ?? "")
@@ -119,6 +123,7 @@ export default function WorkExperiencePage() {
 
   function resetForm() {
     setTitle("")
+    setDescription("")
     setCompanyName("")
     setIsRemote(false)
     setDateFrom("")
@@ -139,6 +144,7 @@ export default function WorkExperiencePage() {
 
     const payload = {
       title: title.trim(),
+      description: emptyToNull(description),
       company_name: companyName.trim(),
       is_remote: isRemote,
       date_from: emptyToNull(dateFrom),
@@ -231,6 +237,18 @@ export default function WorkExperiencePage() {
                     onChange={(e) => setCompanyName(e.target.value)}
                     required
                     disabled={submitting}
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="we-description">Description</FieldLabel>
+                  <Textarea
+                    id="we-description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Responsibilities, scope, or achievements for this role…"
+                    disabled={submitting}
+                    rows={5}
+                    className="min-h-[120px] resize-y"
                   />
                 </Field>
                 <Field orientation="horizontal">

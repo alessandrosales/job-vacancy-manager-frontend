@@ -5,7 +5,6 @@ import { ListingPageHeader } from "~/components/listing/listing-page-header"
 import { ListingTableCard } from "~/components/listing/listing-table-card"
 import { ResumeImportPdfDialog } from "~/components/resumes/resume-import-pdf-dialog"
 import { ResumeCompiledDownloadMenu } from "~/components/resumes/resume-compiled-download-menu"
-import { ResumeCompileMarkdownDialog } from "~/components/resumes/resume-compile-markdown-dialog"
 import type {
   ResumeDocument,
   Role,
@@ -39,7 +38,7 @@ import {
 
 import { listRoles } from "~/lib/api/resources/roles"
 import { apiRoleToRole } from "~/lib/opportunity-api-mappers"
-import { FileCode2Icon, FileUpIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
+import { FileUpIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
 function apiErrorText(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
@@ -94,11 +93,6 @@ export default function ResumesPage() {
   const searchNeedle = searchQuery.trim()
 
   const [importPdfOpen, setImportPdfOpen] = React.useState(false)
-
-  const [compileDialogResume, setCompileDialogResume] = React.useState<Pick<
-    ResumeDocument,
-    "id" | "title"
-  > | null>(null)
 
   const fetchAll = React.useCallback(async () => {
     setLoadState("loading")
@@ -252,15 +246,6 @@ export default function ResumesPage() {
                         <Trash2Icon data-icon="inline-start" />
                         Delete
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        aria-label={`Generate CV for ${r.title}`}
-                        onClick={() => setCompileDialogResume({ id: r.id, title: r.title })}
-                      >
-                        <FileCode2Icon data-icon="inline-start" />
-                        Generate CV
-                      </Button>
                       <ResumeCompiledDownloadMenu
                         resumeId={r.id}
                         resumeTitle={r.title}
@@ -299,21 +284,6 @@ export default function ResumesPage() {
             navigate(`/resumes/resume/${encodeURIComponent(api.id)}`)
           }}
         />
-
-        {compileDialogResume ? (
-          <ResumeCompileMarkdownDialog
-            open={compileDialogResume !== null}
-            onOpenChange={(open) => {
-              if (!open) setCompileDialogResume(null)
-            }}
-            resumeId={compileDialogResume.id}
-            resumeTitle={compileDialogResume.title}
-            onCompiled={(api) => {
-              const doc = apiResumeToResumeDocument(api)
-              setResumes((prev) => prev.map((r) => (r.id === doc.id ? doc : r)))
-            }}
-          />
-        ) : null}
 
         <AlertDialog
           open={deleteId !== null}

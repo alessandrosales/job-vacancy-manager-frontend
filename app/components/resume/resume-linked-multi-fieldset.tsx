@@ -69,33 +69,57 @@ export function ResumeLinkedMultiFieldset({
     emptyMessage ?? "No records yet."
 
   return (
-    <FieldSet data-slot="checkbox-group">
+    <FieldSet className="gap-3" data-slot="checkbox-group">
       <FieldLegend variant="label">{legend}</FieldLegend>
       <FieldDescription>{description}</FieldDescription>
       {rows.length > 0 ? (
-        <div className="flex flex-row items-end gap-2">
-          <Field className="min-w-0 flex-1">
-            <FieldLabel htmlFor={`${idPrefix}-filter`}>Filter</FieldLabel>
-            <Input
-              id={`${idPrefix}-filter`}
-              value={needle}
-              onChange={(e) => setNeedle(e.target.value)}
-              placeholder="Search…"
-              autoComplete="off"
-            />
-          </Field>
-          {onAddNew ? (
+        <div className="flex flex-col gap-1">
+          <div className="flex flex-row items-end gap-2">
+            <Field className="min-w-0 flex-1">
+              <FieldLabel htmlFor={`${idPrefix}-filter`}>Filter</FieldLabel>
+              <Input
+                id={`${idPrefix}-filter`}
+                value={needle}
+                onChange={(e) => setNeedle(e.target.value)}
+                placeholder="Search…"
+                autoComplete="off"
+              />
+            </Field>
+            {onAddNew ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="mb-0.5 shrink-0"
+                aria-label={addNewAriaLabel ?? `Add ${legend}`}
+                onClick={onAddNew}
+              >
+                <PlusIcon />
+              </Button>
+            ) : null}
+          </div>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0">
             <Button
               type="button"
-              variant="outline"
-              size="icon"
-              className="mb-0.5 shrink-0"
-              aria-label={addNewAriaLabel ?? `Add ${legend}`}
-              onClick={onAddNew}
+              variant="ghost"
+              size="xs"
+              className="text-muted-foreground h-6 px-1.5 font-normal"
+              onClick={() => onSelectedIdsChange(rows.map((r) => r.id))}
+              disabled={rows.every((r) => selectedSet.has(r.id))}
             >
-              <PlusIcon />
+              Selecionar todos
             </Button>
-          ) : null}
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              className="text-muted-foreground h-6 px-1.5 font-normal"
+              onClick={() => onSelectedIdsChange([])}
+              disabled={selectedIds.length === 0}
+            >
+              Remover seleção
+            </Button>
+          </div>
         </div>
       ) : null}
       <div className="max-h-48 overflow-y-auto rounded-md border border-border p-2">

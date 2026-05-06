@@ -62,35 +62,59 @@ export function WorkExperienceSkillFieldset({
   const emptyBody = emptyMessage ?? "No skills defined yet."
 
   return (
-    <FieldSet data-slot="checkbox-group">
+    <FieldSet className="gap-3" data-slot="checkbox-group">
       <FieldLegend variant="label">Skills</FieldLegend>
       <FieldDescription>
         Filter and select skills for this experience. Selected: {skillIds.length}.
       </FieldDescription>
       {skills.length > 0 ? (
-        <div className="flex flex-row items-end gap-2">
-          <Field className="min-w-0 flex-1">
-            <FieldLabel htmlFor={`${idPrefix}-skill-filter`}>Filter skills</FieldLabel>
-            <Input
-              id={`${idPrefix}-skill-filter`}
-              value={needle}
-              onChange={(e) => setNeedle(e.target.value)}
-              placeholder="Search by name or description…"
-              autoComplete="off"
-            />
-          </Field>
-          {onAddNew ? (
+        <div className="flex flex-col gap-1">
+          <div className="flex flex-row items-end gap-2">
+            <Field className="min-w-0 flex-1">
+              <FieldLabel htmlFor={`${idPrefix}-skill-filter`}>Filter skills</FieldLabel>
+              <Input
+                id={`${idPrefix}-skill-filter`}
+                value={needle}
+                onChange={(e) => setNeedle(e.target.value)}
+                placeholder="Search by name or description…"
+                autoComplete="off"
+              />
+            </Field>
+            {onAddNew ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="mb-0.5 shrink-0"
+                aria-label={addNewAriaLabel ?? "Add skill"}
+                onClick={onAddNew}
+              >
+                <PlusIcon />
+              </Button>
+            ) : null}
+          </div>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0">
             <Button
               type="button"
-              variant="outline"
-              size="icon"
-              className="mb-0.5 shrink-0"
-              aria-label={addNewAriaLabel ?? "Add skill"}
-              onClick={onAddNew}
+              variant="ghost"
+              size="xs"
+              className="text-muted-foreground h-6 px-1.5 font-normal"
+              onClick={() => onSkillIdsChange(skills.map((s) => s.id))}
+              disabled={skills.every((s) => selectedSet.has(s.id))}
             >
-              <PlusIcon />
+              Selecionar todos
             </Button>
-          ) : null}
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              className="text-muted-foreground h-6 px-1.5 font-normal"
+              onClick={() => onSkillIdsChange([])}
+              disabled={skillIds.length === 0}
+            >
+              Remover seleção
+            </Button>
+          </div>
         </div>
       ) : null}
       <div className="max-h-56 overflow-y-auto rounded-md border border-border p-2">

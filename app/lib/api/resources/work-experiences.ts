@@ -12,6 +12,8 @@ export interface ApiWorkExperience {
   id: string
   user_id: string
   title: string
+  /** Responsabilidades ou realizações na função (texto longo; opcional). */
+  description: string | null
   company_name: string
   is_remote: boolean
   date_from: string | null
@@ -24,7 +26,7 @@ export interface ApiWorkExperience {
 
 export type ApiWorkExperienceWrite = Pick<
   ApiWorkExperience,
-  "title" | "company_name" | "is_remote" | "date_from" | "date_to"
+  "title" | "description" | "company_name" | "is_remote" | "date_from" | "date_to"
 >
 
 export async function listWorkExperiences(params: {

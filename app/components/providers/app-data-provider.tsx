@@ -92,6 +92,7 @@ export interface ReferenceLink {
 export interface WorkExperience {
   id: string
   title: string
+  description: string
   company_name: string
   is_remote: boolean
   date_from: string
@@ -295,6 +296,7 @@ function parseWorkExperiences(
     out.push({
       id: o.id,
       title: asString(o.title),
+      description: asString(o.description),
       company_name: asString(o.company_name ?? o.companyName),
       is_remote: asBoolean(o.is_remote ?? o.isRemote),
       date_from: asString(o.date_from ?? o.dateFrom),

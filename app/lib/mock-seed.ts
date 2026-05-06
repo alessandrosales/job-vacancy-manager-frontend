@@ -179,6 +179,7 @@ export function generateMockWorkExperiences(
     rows.push({
       id: `seed-we-${i}`,
       title: `${pick(ROLE_TITLES, i)}${i >= ROLE_TITLES.length ? ` — ${i}` : ""}`,
+      description: "",
       company_name: co.name,
       is_remote: i % 3 === 0,
       date_from: `${y}-${pad2(m)}-01`,
