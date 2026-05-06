@@ -107,7 +107,7 @@ export function ResumeLinkedMultiFieldset({
               onClick={() => onSelectedIdsChange(rows.map((r) => r.id))}
               disabled={rows.every((r) => selectedSet.has(r.id))}
             >
-              Selecionar todos
+              Select all
             </Button>
             <Button
               type="button"
@@ -117,7 +117,7 @@ export function ResumeLinkedMultiFieldset({
               onClick={() => onSelectedIdsChange([])}
               disabled={selectedIds.length === 0}
             >
-              Remover seleção
+              Clear selection
             </Button>
           </div>
         </div>

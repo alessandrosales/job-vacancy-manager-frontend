@@ -102,7 +102,7 @@ export function WorkExperienceSkillFieldset({
               onClick={() => onSkillIdsChange(skills.map((s) => s.id))}
               disabled={skills.every((s) => selectedSet.has(s.id))}
             >
-              Selecionar todos
+              Select all
             </Button>
             <Button
               type="button"
@@ -112,7 +112,7 @@ export function WorkExperienceSkillFieldset({
               onClick={() => onSkillIdsChange([])}
               disabled={skillIds.length === 0}
             >
-              Remover seleção
+              Clear selection
             </Button>
           </div>
         </div>
