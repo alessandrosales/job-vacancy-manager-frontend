@@ -7,6 +7,7 @@ import { QuickAddEducationDialog } from "~/components/resume/quick-add-education
 import { QuickAddSkillDialog } from "~/components/resume/quick-add-skill-dialog"
 import { QuickAddWorkExperienceDialog } from "~/components/resume/quick-add-work-experience-dialog"
 import { ResumeDescriptionAiDialog } from "~/components/resume/resume-description-ai-dialog"
+import { ResumeCompileMarkdownDialog } from "~/components/resumes/resume-compile-markdown-dialog"
 import { ResumeLinkedMultiFieldset } from "~/components/resume/resume-linked-multi-fieldset"
 import { WorkExperienceSkillFieldset } from "~/components/work-experience/work-experience-skill-fieldset"
 import type {
@@ -65,7 +66,7 @@ import { listSkills } from "~/lib/api/resources/skills"
 import type { ApiWorkExperience } from "~/lib/api/resources/work-experiences"
 import { listWorkExperiences } from "~/lib/api/resources/work-experiences"
 import { apiRoleToRole } from "~/lib/opportunity-api-mappers"
-import { PlusIcon, SparklesIcon } from "lucide-react"
+import { FileCode2Icon, PlusIcon, SparklesIcon } from "lucide-react"
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 import {
   DEFAULT_RESUME_PREFERRED_LANGUAGE,
@@ -196,6 +197,7 @@ export default function ResumeDocumentPage() {
   const [certDialogOpen, setCertDialogOpen] = React.useState(false)
   const [eduDialogOpen, setEduDialogOpen] = React.useState(false)
   const [skillDialogOpen, setSkillDialogOpen] = React.useState(false)
+  const [compileDialogOpen, setCompileDialogOpen] = React.useState(false)
 
   const reloadReferenceLists = React.useCallback(async () => {
     const [rolesApi, weApi, certApi, eduApi, skApi] = await Promise.all([
@@ -218,29 +220,52 @@ export default function ResumeDocumentPage() {
       setPageStatus("loading")
       setPageError(null)
       setEditDocument(null)
+
+      if (!id) {
+        setTitle("")
+        setDescription("")
+        setRoleId("")
+        setPreferredLanguage(DEFAULT_RESUME_PREFERRED_LANGUAGE)
+        setWorkExperienceIds([])
+        setCertificationIds([])
+        setEducationIds([])
+        setSkillIds([])
+        try {
+          await reloadReferenceLists()
+          if (!cancelled) setPageStatus("ready")
+        } catch (e) {
+          if (!cancelled) {
+            setPageStatus("error")
+            setPageError(apiErrorText(e, "Could not load resume data."))
+          }
+        }
+        return
+      }
+
       try {
         await reloadReferenceLists()
         if (cancelled) return
-
-        if (id) {
-          try {
-            const api = await getResume(id)
-            if (cancelled) return
-            setEditDocument(apiResumeToResumeDocument(api))
-          } catch (e) {
-            if (cancelled) return
-            if (e instanceof ApiError && e.status === 404) {
-              setPageStatus("not_found")
-              return
-            }
-            throw e
-          }
-        }
-        if (!cancelled) setPageStatus("ready")
+        const api = await getResume(id)
+        if (cancelled) return
+        const doc = apiResumeToResumeDocument(api)
+        setEditDocument(doc)
+        setTitle(doc.title)
+        setDescription(doc.description)
+        setPreferredLanguage(normalizeResumePreferredLanguage(doc.preferred_language))
+        setRoleId(doc.role_id ?? "")
+        setWorkExperienceIds([...doc.work_experience_ids])
+        setCertificationIds([...doc.certification_ids])
+        setEducationIds([...doc.education_ids])
+        setSkillIds([...doc.skill_ids])
+        setPageStatus("ready")
       } catch (e) {
         if (!cancelled) {
-          setPageStatus("error")
-          setPageError(apiErrorText(e, "Could not load resume data."))
+          if (e instanceof ApiError && e.status === 404) {
+            setPageStatus("not_found")
+          } else {
+            setPageStatus("error")
+            setPageError(apiErrorText(e, "Could not load resume data."))
+          }
         }
       }
     }
@@ -264,28 +289,6 @@ export default function ResumeDocumentPage() {
     if (!raw || roles.length === 0) return ""
     return canonicalRoleIdFromRolesList(roles, raw)
   }, [roleId, editDocument?.role_id, roles, rolesIdSignature])
-
-  React.useLayoutEffect(() => {
-    if (!id) {
-      setTitle("")
-      setDescription("")
-      setRoleId("")
-      setPreferredLanguage(DEFAULT_RESUME_PREFERRED_LANGUAGE)
-      setWorkExperienceIds([])
-      setCertificationIds([])
-      setEducationIds([])
-      setSkillIds([])
-      return
-    }
-    if (!editDocument) return
-    setTitle(editDocument.title)
-    setDescription(editDocument.description)
-    setPreferredLanguage(normalizeResumePreferredLanguage(editDocument.preferred_language))
-    setWorkExperienceIds([...editDocument.work_experience_ids])
-    setCertificationIds([...editDocument.certification_ids])
-    setEducationIds([...editDocument.education_ids])
-    setSkillIds([...editDocument.skill_ids])
-  }, [id, editDocument])
 
   function resetForm() {
     setTitle("")
@@ -505,8 +508,11 @@ export default function ResumeDocumentPage() {
                 <Field>
                   <FieldLabel htmlFor="resume-preferred-lang">Resume language</FieldLabel>
                   <Select
-                    value={preferredLanguage}
-                    onValueChange={(v) => setPreferredLanguage(v as ResumePreferredLanguage)}
+                    key={`resume-preferred-lang-${id ?? "new"}`}
+                    value={normalizeResumePreferredLanguage(preferredLanguage)}
+                    onValueChange={(v) =>
+                      setPreferredLanguage(v as ResumePreferredLanguage)
+                    }
                     disabled={saving}
                   >
                     <SelectTrigger id="resume-preferred-lang" className="w-full">
@@ -671,6 +677,16 @@ export default function ResumeDocumentPage() {
               <Button type="button" variant="outline" onClick={() => navigate(-1)}>
                 Cancel
               </Button>
+              {isEdit ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setCompileDialogOpen(true)}
+                >
+                  <FileCode2Icon data-icon="inline-start" />
+                  Generate CV
+                </Button>
+              ) : null}
               <Button type="submit" disabled={!canSave}>
                 {saving ? "Saving…" : isEdit ? "Save changes" : "Save"}
               </Button>
@@ -684,6 +700,19 @@ export default function ResumeDocumentPage() {
           context={aiContext}
           onApply={setDescription}
         />
+        {isEdit && id ? (
+          <ResumeCompileMarkdownDialog
+            open={compileDialogOpen}
+            onOpenChange={setCompileDialogOpen}
+            resumeId={id}
+            resumeTitle={title || "Resume"}
+            onCompiled={(api) => {
+              setEditDocument((prev) =>
+                prev ? { ...prev, compiled_markdown: api.compiled_markdown ?? null } : prev
+              )
+            }}
+          />
+        ) : null}
         <QuickAddRoleDialog
           open={roleDialogOpen}
           onOpenChange={setRoleDialogOpen}

@@ -25,6 +25,7 @@ export interface ApiResume {
   title: string
   description: string | null
   preferred_language: ResumePreferredLanguage
+  compiled_markdown: string | null
   created_at: string
   updated_at: string
   work_experience_ids: string[]
@@ -35,22 +36,35 @@ export interface ApiResume {
 
 /** Converte resposta `GET/PATCH/POST resumes` para o documento usado na UI. */
 export function apiResumeToResumeDocument(api: ApiResume): ResumeDocument {
+  const row = api as unknown as Record<string, unknown>
+  const prefRaw =
+    row.preferred_language ?? row.preferredLanguage ?? (api as ApiResume).preferred_language
+
   const rawRoleId = api.role_id
   return {
     id: api.id,
     title: api.title,
     description: api.description ?? "",
-    preferred_language: normalizeResumePreferredLanguage(api.preferred_language),
+    preferred_language: normalizeResumePreferredLanguage(prefRaw),
     updated_at: api.updated_at,
     role_id:
       rawRoleId == null || rawRoleId === ""
         ? ""
         : String(rawRoleId).trim(),
+    compiled_markdown: api.compiled_markdown ?? null,
     work_experience_ids: api.work_experience_ids ?? [],
     certification_ids: api.certification_ids ?? [],
     education_ids: api.education_ids ?? [],
     skill_ids: api.skill_ids ?? [],
   }
+}
+
+/** Compila o currículo em markdown ATS via LLM e persiste no campo `compiled_markdown`. */
+export async function compileResumeMarkdown(id: string): Promise<ApiResume> {
+  return apiRequestJson<ApiResume>({
+    path: `resumes/${encodeURIComponent(id)}/compile-markdown`,
+    method: "POST",
+  })
 }
 
 export type ApiResumeWrite = Pick<

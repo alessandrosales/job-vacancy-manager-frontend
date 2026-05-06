@@ -122,6 +122,8 @@ export interface ResumeDocument {
   description: string
   /** Idioma-alvo ao gerar/exportar o currículo (`en`, `pt_br`, `es`). */
   preferred_language: ResumePreferredLanguage
+  /** Markdown ATS gerado pelo LLM — null quando ainda não compilado. */
+  compiled_markdown: string | null
   /** YYYY-MM-DD — última atualização. */
   updated_at: string
   /** Exactly one role (FK). */
@@ -383,6 +385,8 @@ function parseResumes(
       ),
       updated_at: asString(o.updated_at ?? o.updatedAt),
       role_id,
+      compiled_markdown:
+        typeof o.compiled_markdown === "string" ? o.compiled_markdown : null,
       work_experience_ids: normalizeSkillIds(
         o.work_experience_ids ?? o.workExperienceIds,
         ctx.validWorkExperienceIds

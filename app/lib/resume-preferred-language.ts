@@ -14,9 +14,33 @@ export const RESUME_PREFERRED_LANGUAGE_OPTIONS: ReadonlyArray<{
   { value: "es", label: "Español" },
 ]
 
+/** Normaliza códigos vindos da API / legado (hífen, camelCase, caixa). */
 export function normalizeResumePreferredLanguage(raw: unknown): ResumePreferredLanguage {
-  const s = typeof raw === "string" ? raw.trim() : ""
-  return (RESUME_PREFERRED_LANGUAGE_CODES as readonly string[]).includes(s)
-    ? (s as ResumePreferredLanguage)
-    : DEFAULT_RESUME_PREFERRED_LANGUAGE
+  let s =
+    typeof raw === "string"
+      ? raw.trim()
+      : typeof raw === "number"
+        ? String(raw).trim()
+        : ""
+  if (!s) return DEFAULT_RESUME_PREFERRED_LANGUAGE
+
+  s = s.toLowerCase().replace(/-/g, "_")
+
+  if ((RESUME_PREFERRED_LANGUAGE_CODES as readonly string[]).includes(s)) {
+    return s as ResumePreferredLanguage
+  }
+
+  const aliases: Record<string, ResumePreferredLanguage> = {
+    ptbr: "pt_br",
+    pt_br_br: "pt_br",
+    pt_brazil: "pt_br",
+    brazilian_portuguese: "pt_br",
+    es_es: "es",
+    es_mx: "es",
+    spanish: "es",
+    english: "en",
+    en_us: "en",
+    en_gb: "en",
+  }
+  return aliases[s] ?? DEFAULT_RESUME_PREFERRED_LANGUAGE
 }

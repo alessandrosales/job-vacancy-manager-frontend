@@ -285,6 +285,7 @@ export function generateMockResumes(
       preferred_language: RESUME_PREFERRED_LANGUAGE_CODES[
         i % RESUME_PREFERRED_LANGUAGE_CODES.length
       ]!,
+      compiled_markdown: null,
       updated_at: `${y}-${pad(m)}-${pad(d)}`,
       role_id: roleIds[i % roleIds.length] ?? "",
       work_experience_ids: pickDistinctFrom(weIds, 2 + (i % 3), i),
