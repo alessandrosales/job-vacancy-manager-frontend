@@ -1,5 +1,6 @@
 {
   "name": "job-vacancy-manager-layout",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "scripts": {
