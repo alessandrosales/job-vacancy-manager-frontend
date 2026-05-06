@@ -7,6 +7,7 @@ import { QuickAddEducationDialog } from "~/components/resume/quick-add-education
 import { QuickAddSkillDialog } from "~/components/resume/quick-add-skill-dialog"
 import { QuickAddWorkExperienceDialog } from "~/components/resume/quick-add-work-experience-dialog"
 import { ResumeDescriptionAiDialog } from "~/components/resume/resume-description-ai-dialog"
+import { ResumeCompiledDownloadMenu } from "~/components/resumes/resume-compiled-download-menu"
 import { ResumeCompileMarkdownDialog } from "~/components/resumes/resume-compile-markdown-dialog"
 import { ResumeLinkedMultiFieldset } from "~/components/resume/resume-linked-multi-fieldset"
 import { WorkExperienceSkillFieldset } from "~/components/work-experience/work-experience-skill-fieldset"
@@ -686,6 +687,13 @@ export default function ResumeDocumentPage() {
                   <FileCode2Icon data-icon="inline-start" />
                   Generate CV
                 </Button>
+              ) : null}
+              {isEdit && id ? (
+                <ResumeCompiledDownloadMenu
+                  resumeId={id}
+                  resumeTitle={title.trim() || "Resume"}
+                  compiledMarkdown={editDocument?.compiled_markdown}
+                />
               ) : null}
               <Button type="submit" disabled={!canSave}>
                 {saving ? "Saving…" : isEdit ? "Save changes" : "Save"}

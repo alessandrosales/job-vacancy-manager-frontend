@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router"
 import { ListingPageHeader } from "~/components/listing/listing-page-header"
 import { ListingTableCard } from "~/components/listing/listing-table-card"
 import { ResumeImportPdfDialog } from "~/components/resumes/resume-import-pdf-dialog"
+import { ResumeCompiledDownloadMenu } from "~/components/resumes/resume-compiled-download-menu"
 import { ResumeCompileMarkdownDialog } from "~/components/resumes/resume-compile-markdown-dialog"
 import type {
   ResumeDocument,
@@ -260,6 +261,11 @@ export default function ResumesPage() {
                         <FileCode2Icon data-icon="inline-start" />
                         Generate CV
                       </Button>
+                      <ResumeCompiledDownloadMenu
+                        resumeId={r.id}
+                        resumeTitle={r.title}
+                        compiledMarkdown={r.compiled_markdown}
+                      />
                       <Button variant="outline" size="sm" asChild>
                         <Link
                           to={`/resumes/resume/${encodeURIComponent(r.id)}`}

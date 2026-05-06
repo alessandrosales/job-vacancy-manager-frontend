@@ -1,4 +1,5 @@
 import {
+  apiRequestBlob,
   apiRequestJson,
   apiRequestMultipartJson,
   apiRequestNoContent,
@@ -65,6 +66,36 @@ export async function compileResumeMarkdown(id: string): Promise<ApiResume> {
     path: `resumes/${encodeURIComponent(id)}/compile-markdown`,
     method: "POST",
   })
+}
+
+export type ResumeCompiledExportFormat = "md" | "docx" | "pdf"
+
+/** Baixa o arquivo gerado a partir de `compiled_markdown` já persistido (GET compiled-export). */
+export async function downloadResumeCompiledExport(
+  resumeId: string,
+  format: ResumeCompiledExportFormat,
+  signal?: AbortSignal
+): Promise<void> {
+  const { blob, filename } = await apiRequestBlob({
+    path: `resumes/${encodeURIComponent(resumeId)}/compiled-export`,
+    method: "GET",
+    query: { format },
+    signal,
+    accept: "*/*",
+  })
+
+  const fallback = `resume.${format === "md" ? "md" : format}`
+  const name = filename ?? fallback
+
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement("a")
+  anchor.href = url
+  anchor.download = name
+  anchor.rel = "noopener"
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+  URL.revokeObjectURL(url)
 }
 
 export type ApiResumeWrite = Pick<
