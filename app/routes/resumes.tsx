@@ -33,12 +33,20 @@ import { ApiError } from "~/lib/api/errors"
 import {
   apiResumeToResumeDocument,
   deleteResume as deleteResumeApi,
+  duplicateResume as duplicateResumeApi,
   listResumes,
 } from "~/lib/api/resources/resumes"
 
 import { listRoles } from "~/lib/api/resources/roles"
 import { apiRoleToRole } from "~/lib/opportunity-api-mappers"
-import { FileUpIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
+import {
+  CopyIcon,
+  FileUpIcon,
+  Loader2Icon,
+  PencilIcon,
+  PlusIcon,
+  Trash2Icon,
+} from "lucide-react"
 
 function apiErrorText(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
@@ -88,6 +96,7 @@ export default function ResumesPage() {
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
   const [deleteSubmitting, setDeleteSubmitting] = React.useState(false)
   const [deleteError, setDeleteError] = React.useState<string | null>(null)
+  const [duplicatingId, setDuplicatingId] = React.useState<string | null>(null)
 
   const [searchQuery, setSearchQuery] = React.useState("")
   const searchNeedle = searchQuery.trim()
@@ -140,6 +149,20 @@ export default function ResumesPage() {
       setDeleteError(apiErrorText(e, "Could not delete resume."))
     } finally {
       setDeleteSubmitting(false)
+    }
+  }
+
+  async function duplicateResume(id: string) {
+    setDuplicatingId(id)
+    setListError(null)
+    try {
+      const api = await duplicateResumeApi(id)
+      const doc = apiResumeToResumeDocument(api)
+      setResumes((prev) => [doc, ...prev])
+    } catch (e) {
+      setListError(apiErrorText(e, "Could not duplicate resume."))
+    } finally {
+      setDuplicatingId(null)
     }
   }
 
@@ -235,29 +258,49 @@ export default function ResumesPage() {
                         {r.description}
                       </p>
                     </CardContent>
-                    <CardFooter className="mt-auto flex flex-wrap justify-end gap-2 border-t border-border pt-4">
+                    <CardFooter className="mt-auto flex flex-wrap items-center justify-end gap-2 border-t border-border pt-4">
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        className="text-destructive hover:text-destructive"
+                        className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive max-sm:size-9 max-sm:min-h-9 max-sm:min-w-9 max-sm:justify-center max-sm:gap-0 max-sm:!px-0 max-sm:!ps-0 max-sm:!pe-0"
                         aria-label={`Delete ${r.title}`}
                         onClick={() => setDeleteId(r.id)}
                       >
-                        <Trash2Icon data-icon="inline-start" />
-                        Delete
+                        <Trash2Icon className="size-4 shrink-0" aria-hidden />
+                        <span className="max-sm:sr-only">Delete</span>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="max-sm:size-9 max-sm:min-h-9 max-sm:min-w-9 max-sm:justify-center max-sm:gap-0 max-sm:!px-0 max-sm:!ps-0 max-sm:!pe-0"
+                        aria-label={`Duplicate ${r.title}`}
+                        disabled={duplicatingId !== null}
+                        onClick={() => void duplicateResume(r.id)}
+                      >
+                        {duplicatingId === r.id ? (
+                          <Loader2Icon className="size-4 shrink-0 animate-spin" aria-hidden />
+                        ) : (
+                          <CopyIcon className="size-4 shrink-0" aria-hidden />
+                        )}
+                        <span className="max-sm:sr-only">Duplicate</span>
                       </Button>
                       <ResumeCompiledDownloadMenu
                         resumeId={r.id}
                         resumeTitle={r.title}
                         compiledMarkdown={r.compiled_markdown}
                       />
-                      <Button variant="outline" size="sm" asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="max-sm:size-9 max-sm:min-h-9 max-sm:min-w-9 max-sm:justify-center max-sm:gap-0 max-sm:!px-0 max-sm:!ps-0 max-sm:!pe-0"
+                        asChild
+                      >
                         <Link
                           to={`/resumes/resume/${encodeURIComponent(r.id)}`}
                           aria-label={`Edit ${r.title}`}
                         >
-                          <PencilIcon data-icon="inline-start" />
-                          Edit
+                          <PencilIcon className="size-4 shrink-0" aria-hidden />
+                          <span className="max-sm:sr-only">Edit</span>
                         </Link>
                       </Button>
                     </CardFooter>

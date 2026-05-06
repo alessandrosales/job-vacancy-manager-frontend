@@ -61,23 +61,24 @@ export function ResumeCompiledDownloadMenu({
   const triggerLabel = busy ? "Downloading…" : "Download"
 
   return (
-    <div className="flex flex-col items-stretch gap-1">
+    <div className="inline-flex shrink-0 flex-col items-stretch gap-1">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             type="button"
             variant="outline"
             size="sm"
+            className="max-sm:size-9 max-sm:min-h-9 max-sm:min-w-9 max-sm:justify-center max-sm:gap-0 max-sm:!px-0 max-sm:!ps-0 max-sm:!pe-0"
             disabled={busy !== null}
             aria-label={`Download compiled CV for ${resumeTitle}`}
           >
             {busy !== null ? (
-              <Loader2Icon data-icon="inline-start" className="animate-spin" />
+              <Loader2Icon className="size-4 shrink-0 animate-spin" aria-hidden />
             ) : (
-              <DownloadIcon data-icon="inline-start" />
+              <DownloadIcon className="size-4 shrink-0" aria-hidden />
             )}
-            {triggerLabel}
-            <ChevronDownIcon data-icon="inline-end" />
+            <span className="max-sm:sr-only">{triggerLabel}</span>
+            <ChevronDownIcon className="max-sm:hidden" aria-hidden />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-[12rem]">

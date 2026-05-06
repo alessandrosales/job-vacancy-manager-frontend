@@ -183,6 +183,13 @@ export async function deleteResume(id: string): Promise<void> {
   })
 }
 
+export async function duplicateResume(id: string): Promise<ApiResume> {
+  return apiRequestJson<ApiResume>({
+    path: `resumes/${encodeURIComponent(id)}/duplication`,
+    method: "POST",
+  })
+}
+
 const resumePath = (resumeId: string, suffix: string) =>
   `resumes/${encodeURIComponent(resumeId)}/${suffix}`
 

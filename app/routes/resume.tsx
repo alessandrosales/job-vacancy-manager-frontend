@@ -68,7 +68,7 @@ import { listSkills } from "~/lib/api/resources/skills"
 import type { ApiWorkExperience } from "~/lib/api/resources/work-experiences"
 import { listWorkExperiences } from "~/lib/api/resources/work-experiences"
 import { apiRoleToRole } from "~/lib/opportunity-api-mappers"
-import { PlusIcon, SparklesIcon } from "lucide-react"
+import { CheckIcon, Loader2Icon, PlusIcon, SparklesIcon, XIcon } from "lucide-react"
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 import {
   DEFAULT_RESUME_PREFERRED_LANGUAGE,
@@ -688,8 +688,16 @@ export default function ResumeDocumentPage() {
               </div>
             </CardContent>
             <CardFooter className="flex flex-wrap justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-                Cancel
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="max-sm:size-9 max-sm:min-h-9 max-sm:min-w-9 max-sm:justify-center max-sm:gap-0 max-sm:!px-0 max-sm:!ps-0 max-sm:!pe-0"
+                aria-label="Cancel"
+                onClick={() => navigate(-1)}
+              >
+                <XIcon className="size-4 shrink-0 sm:hidden" aria-hidden />
+                <span className="max-sm:sr-only">Cancel</span>
               </Button>
               {isEdit && id ? (
                 <ResumeCompiledDownloadMenu
@@ -698,8 +706,26 @@ export default function ResumeDocumentPage() {
                   compiledMarkdown={editDocument?.compiled_markdown}
                 />
               ) : null}
-              <Button type="submit" disabled={!canSave}>
-                {saving ? "Saving…" : isEdit ? "Save changes" : "Save"}
+              <Button
+                type="submit"
+                size="sm"
+                className="max-sm:size-9 max-sm:min-h-9 max-sm:min-w-9 max-sm:justify-center max-sm:gap-0 max-sm:!px-0 max-sm:!ps-0 max-sm:!pe-0"
+                aria-label={isEdit ? "Save changes" : "Save"}
+                disabled={!canSave}
+              >
+                {saving ? (
+                  <>
+                    <Loader2Icon className="size-4 shrink-0 animate-spin" aria-hidden />
+                    <span className="max-sm:sr-only">Saving…</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckIcon className="size-4 shrink-0 sm:hidden" aria-hidden />
+                    <span className="max-sm:sr-only">
+                      {isEdit ? "Save changes" : "Save"}
+                    </span>
+                  </>
+                )}
               </Button>
             </CardFooter>
           </form>

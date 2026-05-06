@@ -78,12 +78,12 @@ export function FloatingAgentAssistant() {
             aria-expanded={open}
             aria-label="Open agent assistant"
             className={cn(
-              "fixed bottom-6 end-6 z-40 size-14 rounded-full shadow-lg",
+              "fixed bottom-20 end-4 z-40 size-11 rounded-full shadow-lg sm:bottom-6 sm:end-6 sm:size-14",
               "ring-2 ring-background/80 hover:shadow-md"
             )}
             onClick={() => setOpen(true)}
           >
-            <BotIcon className="size-6" aria-hidden />
+            <BotIcon className="size-5 sm:size-6" aria-hidden />
           </Button>
         </TooltipTrigger>
         <TooltipContent side="left" className="max-w-[12rem]">
