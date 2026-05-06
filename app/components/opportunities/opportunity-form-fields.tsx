@@ -277,8 +277,10 @@ export function OpportunityFormFields({
             value={url}
             onChange={(e) => onUrlChange(e.target.value)}
             placeholder="https://"
-            required
           />
+          <FieldDescription>
+            Optional. Link to the vacancy posting or company page.
+          </FieldDescription>
         </Field>
         <Field>
           <FieldLabel htmlFor={`${idPrefix}-hourly-rate`}>Hourly rate</FieldLabel>
