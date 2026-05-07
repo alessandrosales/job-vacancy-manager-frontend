@@ -137,6 +137,29 @@ export async function loginWithEmail(params: {
   }
 }
 
+export async function loginWithFirebaseIdToken(
+  id_token: string
+): Promise<AuthSessionPayload> {
+  try {
+    const data = await apiRequestJson<unknown>({
+      path: "auth/firebase",
+      method: "POST",
+      auth: false,
+      body: {
+        auth: { id_token },
+      },
+    })
+    return parseAuthSessionPayload(data)
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 401) {
+      throw new ApiError(401, {
+        base: ["Invalid Firebase session. Please sign in again."],
+      })
+    }
+    throw e
+  }
+}
+
 /** Usuário atual a partir do JWT (`GET /api/v1/auth/me`). */
 export async function fetchAuthMe(options?: {
   signal?: AbortSignal

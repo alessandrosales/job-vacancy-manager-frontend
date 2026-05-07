@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "firebase-auth-basics": {
+      "source": "firebase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/firebase-auth-basics/SKILL.md",
+      "computedHash": "a68238619839f44f3b4c7d02d0c96bc05df2b018edd62dd299c964ce871d80a3"
+    },
     "inertia-rails-architecture": {
       "source": "inertia-rails/skills",
       "sourceType": "github",
