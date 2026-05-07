@@ -41,6 +41,7 @@ import {
 } from "~/components/ui/alert-dialog"
 import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
 import { ApiError } from "~/lib/api/errors"
+import { useSessionUserStore } from "~/stores/session-user-store"
 import {
   apiCompanyToCompany,
   apiOpportunityStatusToDefinition,
@@ -72,6 +73,17 @@ import { listOpportunityStatuses } from "~/lib/api/resources/opportunity-statuse
 import { listRoles } from "~/lib/api/resources/roles"
 import type { InterestLevel, OpportunityStatusDefinition } from "~/lib/labels"
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
+
+const OPPORTUNITIES_VIEW_MODE_STORAGE_KEY_PREFIX =
+  "job-vacancy-opportunities-view-mode-v1"
+
+function opportunitiesViewModeStorageKey(userId: string): string {
+  return `${OPPORTUNITIES_VIEW_MODE_STORAGE_KEY_PREFIX}:${userId}`
+}
+
+function isListingViewMode(value: string | null): value is ListingViewMode {
+  return value === "list" || value === "kanban"
+}
 
 function filterOpportunitiesBySearch(
   rows: readonly Opportunity[],
@@ -133,6 +145,7 @@ export default function OpportunitiesPage() {
   const [dialogOppId, setDialogOppId] = React.useState<string | null>(null)
   const [statusQuickAddOpen, setStatusQuickAddOpen] = React.useState(false)
   const [viewMode, setViewMode] = React.useState<ListingViewMode>("list")
+  const sessionUserId = useSessionUserStore((s) => s.user.id)
   const [searchQuery, setSearchQuery] = React.useState("")
   const searchNeedle = searchQuery.trim()
 
@@ -173,6 +186,35 @@ export default function OpportunitiesPage() {
   React.useEffect(() => {
     void fetchAll()
   }, [fetchAll])
+
+  React.useEffect(() => {
+    if (!sessionUserId) return
+    try {
+      const storedMode = localStorage.getItem(
+        opportunitiesViewModeStorageKey(sessionUserId)
+      )
+      if (isListingViewMode(storedMode)) {
+        setViewMode(storedMode)
+      } else {
+        setViewMode("list")
+      }
+    } catch {
+      setViewMode("list")
+    }
+  }, [sessionUserId])
+
+  const handleViewModeChange = React.useCallback(
+    (mode: ListingViewMode) => {
+      setViewMode(mode)
+      if (!sessionUserId) return
+      try {
+        localStorage.setItem(opportunitiesViewModeStorageKey(sessionUserId), mode)
+      } catch {
+        /* ignore localStorage failures */
+      }
+    },
+    [sessionUserId]
+  )
 
   const filteredOpportunities = React.useMemo(
     () =>
@@ -310,7 +352,7 @@ export default function OpportunitiesPage() {
           titleAccessory={
             <ListingViewModeToggle
               value={viewMode}
-              onValueChange={setViewMode}
+              onValueChange={handleViewModeChange}
               groupLabel="Opportunity view"
               listLabel="List view"
               kanbanLabel="Kanban board"

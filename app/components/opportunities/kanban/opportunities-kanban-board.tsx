@@ -118,19 +118,11 @@ type SortableBoardColumnProps = {
   companies?: readonly Company[]
   roles?: readonly Role[]
   badgeColumnUsesStatusOnly?: boolean
-  /** Ordem das colunas vem da API (`position`); desliga reordenação por arraste. */
-  columnDragDisabled?: boolean
 }
 
-function SortableBoardColumn({
-  columnDragDisabled,
-  ...columnProps
-}: SortableBoardColumnProps) {
+function SortableBoardColumn(props: SortableBoardColumnProps) {
   const { transform, transition, setNodeRef, attributes, listeners, isDragging } =
-    useSortable({
-      id: columnSortableId(columnProps.columnId),
-      disabled: columnDragDisabled ?? false,
-    })
+    useSortable({ id: columnSortableId(props.columnId) })
 
   return (
     <div
@@ -143,11 +135,10 @@ function SortableBoardColumn({
       }}
     >
       <KanbanColumn
-        {...columnProps}
+        {...props}
         isDraggingColumn={isDragging}
         dragHandleAttributes={attributes}
         dragHandleListeners={listeners}
-        showColumnDragHandle={!columnDragDisabled}
       />
     </div>
   )
@@ -200,7 +191,7 @@ export function OpportunitiesKanbanBoard({
   const canonicalColumnIds = React.useMemo(
     () =>
       statusColumnsOnly
-        ? getOrderedKanbanColumnIds(opportunityStatuses, [])
+        ? opportunityStatuses.map((s) => s.id)
         : getOrderedKanbanColumnIds(opportunityStatuses, customColumns),
     [statusColumnsOnly, opportunityStatuses, customColumns]
   )
@@ -212,10 +203,7 @@ export function OpportunitiesKanbanBoard({
   )
 
   const [orderedColumnIds, setOrderedColumnIds] = React.useState<string[]>(() =>
-    applyPersistedColumnOrder(
-      canonicalColumnIds,
-      statusColumnsOnly ? [] : columnOrder
-    )
+    applyPersistedColumnOrder(canonicalColumnIds, columnOrder)
   )
 
   const opportunityById = React.useMemo(() => {
@@ -265,8 +253,7 @@ export function OpportunitiesKanbanBoard({
 
   React.useEffect(() => {
     if (activeId !== null) return
-    const persistedOrder = statusColumnsOnly ? [] : columnOrder
-    const nextOrder = applyPersistedColumnOrder(canonicalColumnIds, persistedOrder)
+    const nextOrder = applyPersistedColumnOrder(canonicalColumnIds, columnOrder)
     setOrderedColumnIds(nextOrder)
     const nextItems = itemsByColumnFromOpportunities(
       opportunities,
@@ -289,7 +276,6 @@ export function OpportunitiesKanbanBoard({
     activeId,
     canonicalColumnIds,
     columnOrder,
-    statusColumnsOnly,
     opportunityStatuses,
     itemsByColumnOpts,
   ])
@@ -418,7 +404,6 @@ export function OpportunitiesKanbanBoard({
 
     const activeColumnSortableId = parseColumnSortableId(String(active.id))
     if (activeColumnSortableId) {
-      if (statusColumnsOnly) return
       const overColumnSortableId = parseColumnSortableId(String(over.id))
       if (!overColumnSortableId || activeColumnSortableId === overColumnSortableId) return
 
@@ -572,7 +557,6 @@ export function OpportunitiesKanbanBoard({
                   companies={companies}
                   roles={roles}
                   badgeColumnUsesStatusOnly={statusColumnsOnly}
-                  columnDragDisabled={statusColumnsOnly}
                 />
               )
             })}
