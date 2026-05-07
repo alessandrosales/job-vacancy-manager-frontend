@@ -5,7 +5,7 @@ import type { ApiSessionUser } from "~/lib/api/resources/auth"
 
 const LEGACY_SESSION_KEY = "job-vacancy-session-user-v1"
 const PERSIST_KEY = "job-vacancy-store-session-v1"
-const PERSIST_VERSION = 6
+const PERSIST_VERSION = 7
 
 function sessionFieldsFromApiUser(api: ApiSessionUser): SessionUser {
   return {
@@ -20,6 +20,7 @@ function sessionFieldsFromApiUser(api: ApiSessionUser): SessionUser {
     relationship_status: api.relationship_status ?? "",
     gender: api.gender ?? "",
     preferred_language: api.preferred_language ?? "en",
+    ai_token_configured: api.ai_token_configured ?? false,
     created_at: api.created_at,
     updated_at: api.updated_at,
   }
@@ -40,6 +41,7 @@ export interface SessionUser {
   relationship_status: string
   gender: string
   preferred_language: string
+  ai_token_configured: boolean
   created_at: string
   updated_at: string
 }
@@ -57,6 +59,7 @@ export function defaultSessionUser(): SessionUser {
     relationship_status: "",
     gender: "",
     preferred_language: "en",
+    ai_token_configured: false,
     created_at: "",
     updated_at: "",
   }
@@ -157,6 +160,16 @@ export const useSessionUserStore = create<SessionUserStoreState>()(
               user: {
                 ...u,
                 preferred_language: pl === "pt-br" ? "pt_br" : pl,
+              },
+            }
+          }
+          if (oldVersion < 7 && state.user && typeof state.user === "object") {
+            const u = state.user as Record<string, unknown>
+            return {
+              ...state,
+              user: {
+                ...u,
+                ai_token_configured: u.ai_token_configured === true,
               },
             }
           }

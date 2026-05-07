@@ -29,6 +29,7 @@ import {
 } from "~/components/ui/select"
 import { Textarea } from "~/components/ui/textarea"
 import { ApiError } from "~/lib/api/errors"
+import type { ApiUserUpdate } from "~/lib/api/resources/users"
 import { updateUser as patchUserApi } from "~/lib/api/resources/users"
 import { getAuthToken } from "~/lib/auth-token"
 import { useSessionUserStore } from "~/stores/session-user-store"
@@ -47,6 +48,7 @@ function formErrorMessage(err: unknown): string {
       ...(fe.relationship_status ?? []),
       ...(fe.gender ?? []),
       ...(fe.preferred_language ?? []),
+      ...(fe.ai_token ?? []),
       ...(fe.base ?? []),
     ]
     if (parts.length > 0) return parts.join(" ")
@@ -80,6 +82,8 @@ export default function MyDataPage() {
   const [preferredLanguage, setPreferredLanguage] = React.useState(
     user.preferred_language || "en"
   )
+  const [openAiToken, setOpenAiToken] = React.useState("")
+  const [removeOpenAiToken, setRemoveOpenAiToken] = React.useState(false)
 
   const [formError, setFormError] = React.useState<string | null>(null)
   const [submitting, setSubmitting] = React.useState(false)
@@ -95,6 +99,8 @@ export default function MyDataPage() {
     setRelationshipStatus(user.relationship_status)
     setGender(user.gender)
     setPreferredLanguage(user.preferred_language || "en")
+    setOpenAiToken("")
+    setRemoveOpenAiToken(false)
   }, [user])
 
   const token = getAuthToken()
@@ -117,7 +123,7 @@ export default function MyDataPage() {
 
     setSubmitting(true)
     try {
-      const updated = await patchUserApi(user.id, {
+      const patch: ApiUserUpdate = {
         name: name.trim(),
         email: email.trim(),
         phone: phone.trim(),
@@ -128,7 +134,13 @@ export default function MyDataPage() {
         relationship_status: relationshipStatus.trim(),
         gender: gender.trim(),
         preferred_language: preferredLanguage,
-      })
+      }
+      if (removeOpenAiToken) {
+        patch.ai_token = ""
+      } else if (openAiToken.trim()) {
+        patch.ai_token = openAiToken.trim()
+      }
+      const updated = await patchUserApi(user.id, patch)
       const t = getAuthToken()
       if (t) {
         useSessionUserStore.getState().hydrateFromAuthMeResponse(t, updated)
@@ -222,6 +234,47 @@ export default function MyDataPage() {
                     <FieldDescription>
                       Used for UI copy and defaults in the app (not the spoken languages list).
                     </FieldDescription>
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="profile-openai-token">
+                      OpenAI API key (optional)
+                    </FieldLabel>
+                    <Input
+                      id="profile-openai-token"
+                      type="password"
+                      autoComplete="off"
+                      value={openAiToken}
+                      onChange={(e) => {
+                        setOpenAiToken(e.target.value)
+                        setRemoveOpenAiToken(false)
+                      }}
+                      placeholder={
+                        user.ai_token_configured
+                          ? "New key to replace the saved one"
+                          : "sk-…"
+                      }
+                      disabled={submitting || removeOpenAiToken}
+                    />
+                    <FieldDescription>
+                      Stored on your account for AI resume features (import PDF, generate text,
+                      compile markdown). The key is never shown again after saving.
+                      {user.ai_token_configured ? " A key is already saved." : ""}
+                    </FieldDescription>
+                    {user.ai_token_configured ? (
+                      <label className="flex cursor-pointer items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          className="size-4 rounded border-input"
+                          checked={removeOpenAiToken}
+                          onChange={(e) => {
+                            setRemoveOpenAiToken(e.target.checked)
+                            if (e.target.checked) setOpenAiToken("")
+                          }}
+                          disabled={submitting}
+                        />
+                        Remove saved API key
+                      </label>
+                    ) : null}
                   </Field>
                   <Field>
                     <FieldLabel htmlFor="profile-phone">Phone</FieldLabel>

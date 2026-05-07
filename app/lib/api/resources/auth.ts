@@ -15,6 +15,8 @@ export interface ApiSessionUser {
   gender: string | null
   /** Preferência de idioma da UI: `en` | `pt_br` | `es`. */
   preferred_language: string
+  /** True se existe `ai_token` salvo no backend; o segredo nunca é retornado no JSON. */
+  ai_token_configured: boolean
   created_at: string
   updated_at: string
 }
@@ -69,6 +71,7 @@ export function parseApiSessionUser(data: unknown): ApiSessionUser {
     relationship_status: optionalApiString(o, "relationship_status"),
     gender: optionalApiString(o, "gender"),
     preferred_language,
+    ai_token_configured: o.ai_token_configured === true,
     created_at: o.created_at,
     updated_at: o.updated_at,
   }

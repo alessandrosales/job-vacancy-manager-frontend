@@ -30,6 +30,8 @@ export type ApiUserUpdate = Partial<{
   relationship_status: string
   gender: string
   preferred_language: string
+  /** Novo valor do token da OpenAI; string vazia remove a chave salva. Omita para não alterar. */
+  ai_token: string
 }>
 
 /** Lista contém apenas o usuário autenticado. */

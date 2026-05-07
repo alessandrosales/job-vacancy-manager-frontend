@@ -23,6 +23,7 @@ export function firebaseUserToApiSessionUser(user: User): ApiSessionUser {
     relationship_status: null,
     gender: null,
     preferred_language: "pt_br",
+    ai_token_configured: false,
     created_at: createdAt,
     updated_at: updatedAt,
   }
