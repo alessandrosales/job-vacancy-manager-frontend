@@ -12,6 +12,12 @@
       "sourceType": "github",
       "computedHash": "0df28a8608906ab197357e7b2668e649f9956b3d549594f00c8979c589b88f01"
     },
+    "react-i18n": {
+      "source": "fusengine/agents",
+      "sourceType": "github",
+      "skillPath": "plugins/react-expert/skills/react-i18n/SKILL.md",
+      "computedHash": "04c4b3dcb74fce3dc3a667ab4682b46e5dccbda993a04b7252c5cb6887d0e2e5"
+    },
     "ruby-on-rails-best-practices": {
       "source": "sergiodxa/agent-skills",
       "sourceType": "github",

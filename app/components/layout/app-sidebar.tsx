@@ -1,12 +1,14 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router"
 
 // import { NavMain } from "~/components/layout/nav-main"
 import { NavProjects } from "~/components/layout/nav-projects"
 import { NavUser } from "~/components/layout/nav-user"
 import { useSessionUser } from "~/components/providers/session-user-provider"
+import { defaultI18nNs } from "~/lib/i18n/config"
 // import { TeamSwitcher } from "~/components/layout/team-switcher"
 import {
   Sidebar,
@@ -38,142 +40,85 @@ import {
   ScrollTextIcon,
 } from "lucide-react"
 
-const data = {
-  // TODO: seletor de empresa (TeamSwitcher) — descomente `teams` abaixo, importe GalleryVerticalEndIcon, AudioLinesIcon, TerminalIcon do lucide-react, importe TeamSwitcher + SidebarHeader e o JSX comentado mais abaixo.
-  // teams: [
-  //   {
-  //     name: "Vacancy Manager",
-  //     logo: <GalleryVerticalEndIcon />,
-  //     plan: "Enterprise",
-  //   },
-  //   {
-  //     name: "Acme Corp.",
-  //     logo: <AudioLinesIcon />,
-  //     plan: "Startup",
-  //   },
-  //   {
-  //     name: "Evil Corp.",
-  //     logo: <TerminalIcon />,
-  //     plan: "Free",
-  //   },
-  // ],
-  // TODO: seção "Platform" (NavMain + subníveis) — descomente `navMain`, importe NavMain + ícones TerminalSquareIcon, BotIcon, BookOpenIcon, Settings2Icon e o <NavMain> no SidebarContent.
-  // navMain: [
-  //   {
-  //     title: "Playground",
-  //     url: "#",
-  //     icon: <TerminalSquareIcon />,
-  //     isActive: true,
-  //     items: [
-  //       { title: "History", url: "#" },
-  //       { title: "Starred", url: "#" },
-  //       { title: "Settings", url: "#" },
-  //     ],
-  //   },
-  //   {
-  //     title: "Models",
-  //     url: "#",
-  //     icon: <BotIcon />,
-  //     items: [
-  //       { title: "Genesis", url: "#" },
-  //       { title: "Explorer", url: "#" },
-  //       { title: "Quantum", url: "#" },
-  //     ],
-  //   },
-  //   {
-  //     title: "Documentation",
-  //     url: "#",
-  //     icon: <BookOpenIcon />,
-  //     items: [
-  //       { title: "Introduction", url: "#" },
-  //       { title: "Get Started", url: "#" },
-  //       { title: "Tutorials", url: "#" },
-  //       { title: "Changelog", url: "#" },
-  //     ],
-  //   },
-  //   {
-  //     title: "Settings",
-  //     url: "#",
-  //     icon: <Settings2Icon />,
-  //     items: [
-  //       { title: "General", url: "#" },
-  //       { title: "Team", url: "#" },
-  //       { title: "Billing", url: "#" },
-  //       { title: "Limits", url: "#" },
-  //     ],
-  //   },
-  // ],
-  menuTop: [
-    {
-      name: "Dashboard",
-      url: "/dashboard",
-      icon: <LayoutDashboardIcon />,
-    },
-    {
-      name: "Opportunities",
-      url: "/opportunities",
-      icon: <BriefcaseIcon />,
-    },
-    {
-      name: "Resumes",
-      url: "/resumes",
-      icon: <FileStackIcon />,
-    },
-  ],
-  menuReference: [
-    {
-      name: "Opportunity statuses",
-      url: "/opportunities/statuses",
-      icon: <ListOrderedIcon />,
-    },
-    {
-      name: "Companies",
-      url: "/companies",
-      icon: <BuildingIcon />,
-    },
-    {
-      name: "Roles",
-      url: "/roles",
-      icon: <UserCogIcon />,
-    },
-    {
-      name: "Skills",
-      url: "/skills",
-      icon: <SparklesIcon />,
-    },
-    {
-      name: "Languages",
-      url: "/languages",
-      icon: <LanguagesIcon />,
-    },
-    {
-      name: "Links",
-      url: "/links",
-      icon: <Link2Icon />,
-    },
-  ],
-  historyProjects: [
-    {
-      name: "Work experience",
-      url: "/work-experiences",
-      icon: <HistoryIcon />,
-    },
-    {
-      name: "Certifications",
-      url: "/certifications",
-      icon: <AwardIcon />,
-    },
-    {
-      name: "Education",
-      url: "/educations",
-      icon: <GraduationCapIcon />,
-    },
-  ],
-}
+/* TODO TeamSwitcher — ver histórico em git para `teams` + SidebarHeader */
+/* TODO NavMain + subníveis — ver histórico em git para `navMain` + ícones */
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { t } = useTranslation(defaultI18nNs)
   const { user } = useSessionUser()
   const navigate = useNavigate()
+
+  const { menuTop, menuReference, historyProjects } = React.useMemo(
+    () => ({
+      menuTop: [
+        {
+          name: t("nav_dashboard"),
+          url: "/dashboard",
+          icon: <LayoutDashboardIcon />,
+        },
+        {
+          name: t("nav_opportunities"),
+          url: "/opportunities",
+          icon: <BriefcaseIcon />,
+        },
+        {
+          name: t("nav_resumes"),
+          url: "/resumes",
+          icon: <FileStackIcon />,
+        },
+      ],
+      menuReference: [
+        {
+          name: t("nav_opportunity_statuses"),
+          url: "/opportunities/statuses",
+          icon: <ListOrderedIcon />,
+        },
+        {
+          name: t("nav_companies"),
+          url: "/companies",
+          icon: <BuildingIcon />,
+        },
+        {
+          name: t("nav_roles"),
+          url: "/roles",
+          icon: <UserCogIcon />,
+        },
+        {
+          name: t("nav_skills"),
+          url: "/skills",
+          icon: <SparklesIcon />,
+        },
+        {
+          name: t("nav_languages"),
+          url: "/languages",
+          icon: <LanguagesIcon />,
+        },
+        {
+          name: t("nav_links"),
+          url: "/links",
+          icon: <Link2Icon />,
+        },
+      ],
+      historyProjects: [
+        {
+          name: t("nav_work_experience"),
+          url: "/work-experiences",
+          icon: <HistoryIcon />,
+        },
+        {
+          name: t("nav_certifications"),
+          url: "/certifications",
+          icon: <AwardIcon />,
+        },
+        {
+          name: t("nav_education"),
+          url: "/educations",
+          icon: <GraduationCapIcon />,
+        },
+      ],
+    }),
+    [t]
+  )
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -191,31 +136,31 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuItem>
               <SidebarMenuButton
                 type="button"
-                tooltip="New opportunity"
+                tooltip={t("nav_new_opportunity")}
                 onClick={() => navigate("/opportunities/opportunity")}
               >
                 <CirclePlusIcon />
-                <span>New opportunity</span>
+                <span>{t("nav_new_opportunity")}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
         <SidebarSeparator />
         <NavProjects
-          label="Menu"
-          items={data.menuTop}
+          label={t("nav_menu_section")}
+          items={menuTop}
           submenus={[
             {
-              title: "History",
+              title: t("nav_history_section"),
               icon: <ScrollTextIcon />,
               defaultOpen: true,
-              items: data.historyProjects,
+              items: historyProjects,
             },
             {
-              title: "Reference",
+              title: t("nav_reference_section"),
               icon: <FolderTreeIcon />,
               defaultOpen: true,
-              items: data.menuReference,
+              items: menuReference,
             },
           ]}
         />

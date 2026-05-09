@@ -2,6 +2,7 @@
 
 import * as React from "react"
 
+import { AppLanguageBridge } from "~/components/providers/app-language-bridge"
 import { rehydrateAppStores } from "~/stores/rehydrate-app-stores"
 
 export type { SessionUser } from "~/stores/session-user-store"
@@ -16,5 +17,10 @@ export function SessionUserProvider({
     void rehydrateAppStores()
   }, [])
 
-  return children
+  return (
+    <>
+      <AppLanguageBridge />
+      {children}
+    </>
+  )
 }

@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router"
 
 import { AppLayout } from "~/components/layout/app-layout"
@@ -31,6 +34,7 @@ import { Textarea } from "~/components/ui/textarea"
 import { ApiError } from "~/lib/api/errors"
 import type { ApiUserUpdate } from "~/lib/api/resources/users"
 import { updateUser as patchUserApi } from "~/lib/api/resources/users"
+import { defaultI18nNs } from "~/lib/i18n/config"
 import { getAuthToken } from "~/lib/auth-token"
 import { useSessionUserStore } from "~/stores/session-user-store"
 
@@ -65,6 +69,7 @@ function parseAgeInput(raw: string): { ok: true; value: number | null } | { ok: 
 }
 
 export default function MyDataPage() {
+  const { t } = useTranslation(defaultI18nNs)
   const navigate = useNavigate()
   const { user } = useSessionUser()
 
@@ -154,16 +159,16 @@ export default function MyDataPage() {
 
   return (
     <AppLayout
-      title="My data"
+      title={t("my_data_title")}
       breadcrumbs={[
-        { label: "Dashboard", to: "/dashboard" },
-        { label: "My data" },
+        { label: t("breadcrumb_dashboard"), to: "/dashboard" },
+        { label: t("my_data_title") },
       ]}
     >
       <div className="min-h-0 flex-1 overflow-y-auto">
         <Card className="max-w-xl">
           <CardHeader>
-            <CardTitle>My data</CardTitle>
+            <CardTitle>{t("my_data_title")}</CardTitle>
             <CardDescription>
               View and update the information shown in the account menu in the
               sidebar. Data is loaded from your account and saved to the server.

@@ -5,18 +5,32 @@ import {
   Scripts,
   ScrollRestoration,
   isRouteErrorResponse,
+  useLoaderData,
 } from "react-router"
 
 import type { Route } from "./+types/root"
 import { AppDataProvider } from "~/components/providers/app-data-provider"
 import { SessionUserProvider } from "~/components/providers/session-user-provider"
+import { parseUiLangFromCookieHeader } from "~/lib/i18n/cookie"
+import {
+  acceptLanguageToUi,
+  preferredLanguageToHtmlLang,
+} from "~/lib/i18n/preferred-language"
 import { themeBootstrapInlineScript } from "~/lib/theme"
 import { TooltipProvider } from "~/components/ui/tooltip"
 import "./app.css"
 
+export async function loader({ request }: Route.LoaderArgs) {
+  const cookieLang = parseUiLangFromCookieHeader(request.headers.get("Cookie"))
+  const lng =
+    cookieLang ?? acceptLanguageToUi(request.headers.get("Accept-Language"))
+  return { htmlLang: preferredLanguageToHtmlLang(lng) }
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { htmlLang } = useLoaderData<typeof loader>()
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    <html lang={htmlLang} suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />

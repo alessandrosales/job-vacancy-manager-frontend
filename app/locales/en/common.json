@@ -1,0 +1,20 @@
+{
+  "my_data_title": "My data",
+  "breadcrumb_dashboard": "Dashboard",
+  "nav_dashboard": "Dashboard",
+  "nav_opportunities": "Opportunities",
+  "nav_resumes": "Resumes",
+  "nav_new_opportunity": "New opportunity",
+  "nav_menu_section": "Menu",
+  "nav_history_section": "History",
+  "nav_reference_section": "Reference",
+  "nav_opportunity_statuses": "Opportunity statuses",
+  "nav_companies": "Companies",
+  "nav_roles": "Roles",
+  "nav_skills": "Skills",
+  "nav_languages": "Languages",
+  "nav_links": "Links",
+  "nav_work_experience": "Work experience",
+  "nav_certifications": "Certifications",
+  "nav_education": "Education"
+}
