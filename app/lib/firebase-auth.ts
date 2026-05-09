@@ -16,7 +16,8 @@ export function firebaseUserToApiSessionUser(user: User): ApiSessionUser {
     name: user.displayName ?? user.email?.split("@")[0] ?? "Usuário",
     email: user.email ?? "",
     phone: user.phoneNumber ?? null,
-    avatar_url: user.photoURL ?? null,
+    // Foto do Google/Firebase não entra na sessão; `avatar_url` continua em "Meus dados" / API.
+    avatar_url: null,
     bio: null,
     age: null,
     full_address: null,
