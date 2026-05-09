@@ -3,10 +3,10 @@ import { initReactI18next } from "react-i18next"
 
 import {
   type UiLanguageCode,
+  htmlLangToUiLanguage,
   normalizeUiLanguage,
   preferredLanguageToHtmlLang,
 } from "~/lib/i18n/preferred-language"
-import { parseUiLangFromCookieHeader } from "~/lib/i18n/cookie"
 import {
   UI_LANG_COOKIE_NAME,
   UI_LANG_COOKIE_MAX_AGE_SECONDS,
@@ -22,9 +22,13 @@ import pagesEs from "~/locales/es/pages.json"
 export const defaultI18nNs = "common" as const
 export const pagesI18nNs = "pages" as const
 
-function initialLngFromDocument(): UiLanguageCode {
+/**
+ * No SSR o bundle não tem idioma até `entry.server` chamar `changeLanguage`.
+ * No cliente usa `<html lang>` (mesmo valor do loader da raiz) para bater com o HTML enviado.
+ */
+function computeInitialHydrationLng(): UiLanguageCode {
   if (typeof document === "undefined") return "en"
-  return parseUiLangFromCookieHeader(document.cookie) ?? "en"
+  return htmlLangToUiLanguage(document.documentElement.getAttribute("lang"))
 }
 
 const resources = {
@@ -33,9 +37,9 @@ const resources = {
   es: { common: commonEs, pages: pagesEs },
 } as const
 
-void i18n.use(initReactI18next).init({
+const i18nInitPromise = i18n.use(initReactI18next).init({
   resources,
-  lng: initialLngFromDocument(),
+  lng: computeInitialHydrationLng(),
   fallbackLng: "en",
   supportedLngs: ["en", "pt_br", "es"],
   defaultNS: defaultI18nNs,
@@ -48,6 +52,10 @@ void i18n.use(initReactI18next).init({
   },
 })
 
+export function awaitI18nReady(): Promise<typeof i18n> {
+  return i18nInitPromise.then(() => i18n)
+}
+
 export function syncDocumentHtmlLangAndCookie(code: UiLanguageCode): void {
   if (typeof document === "undefined") return
   document.documentElement.lang = preferredLanguageToHtmlLang(code)
@@ -59,6 +67,7 @@ export function syncDocumentHtmlLangAndCookie(code: UiLanguageCode): void {
  * Troca idioma da UI + `lang`/`cookie` quando rodando no navegador.
  */
 export async function syncAppLanguageTo(code: UiLanguageCode): Promise<void> {
+  await awaitI18nReady()
   const next = normalizeUiLanguage(code)
   if (typeof document !== "undefined") {
     syncDocumentHtmlLangAndCookie(next)

@@ -14,6 +14,15 @@ export function preferredLanguageToHtmlLang(code: UiLanguageCode): string {
   return code
 }
 
+/** Inverso de `preferredLanguageToHtmlLang` para alinhar o cliente ao `<html lang>`. */
+export function htmlLangToUiLanguage(htmlLang: string | null | undefined): UiLanguageCode {
+  if (!htmlLang?.trim()) return "en"
+  const lang = htmlLang.trim().toLowerCase()
+  if (lang.startsWith("pt")) return "pt_br"
+  if (lang.startsWith("es")) return "es"
+  return "en"
+}
+
 export function acceptLanguageToUi(header: string | null): UiLanguageCode {
   if (!header || !header.trim()) return "en"
   const first = header.split(",")[0]?.trim().split(";")[0]?.trim()

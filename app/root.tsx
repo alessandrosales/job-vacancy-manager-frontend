@@ -11,19 +11,14 @@ import {
 import type { Route } from "./+types/root"
 import { AppDataProvider } from "~/components/providers/app-data-provider"
 import { SessionUserProvider } from "~/components/providers/session-user-provider"
-import { parseUiLangFromCookieHeader } from "~/lib/i18n/cookie"
-import {
-  acceptLanguageToUi,
-  preferredLanguageToHtmlLang,
-} from "~/lib/i18n/preferred-language"
+import { preferredLanguageToHtmlLang } from "~/lib/i18n/preferred-language"
+import { resolveRequestUiLanguage } from "~/lib/i18n/resolve-request-ui-language"
 import { themeBootstrapInlineScript } from "~/lib/theme"
 import { TooltipProvider } from "~/components/ui/tooltip"
 import "./app.css"
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const cookieLang = parseUiLangFromCookieHeader(request.headers.get("Cookie"))
-  const lng =
-    cookieLang ?? acceptLanguageToUi(request.headers.get("Accept-Language"))
+  const lng = resolveRequestUiLanguage(request)
   return { htmlLang: preferredLanguageToHtmlLang(lng) }
 }
 
