@@ -26,9 +26,16 @@ import {
   FieldSeparator,
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
-import { firebaseAuthErrorMessage } from "~/lib/firebase-auth"
+import { ApiError } from "~/lib/api/errors"
+import { loginWithEmail } from "~/lib/api/resources/auth"
+import { setAuthToken } from "~/lib/auth-token"
+import {
+  firebaseAuthErrorMessage,
+  firebaseCredentialErrorMayRetryWithApi,
+} from "~/lib/firebase-auth"
 import { syncFirebaseUserToApiSession } from "~/lib/firebase-auth-session"
 import { firebaseAuth } from "~/lib/firebase.client"
+import { useSessionUserStore } from "~/stores/session-user-store"
 
 export function LoginForm({
   className,
@@ -60,14 +67,49 @@ export function LoginForm({
 
     setPending(true)
     try {
-      const credential = await signInWithEmailAndPassword(
-        firebaseAuth,
-        email.trim(),
-        password
-      )
-      await completeAuthSession(credential.user)
-    } catch (error) {
-      setFormError(firebaseAuthErrorMessage(error))
+      try {
+        const credential = await signInWithEmailAndPassword(
+          firebaseAuth,
+          email.trim(),
+          password
+        )
+        await completeAuthSession(credential.user)
+      } catch (firebaseErr) {
+        if (!firebaseCredentialErrorMayRetryWithApi(firebaseErr)) {
+          setFormError(firebaseAuthErrorMessage(firebaseErr))
+          return
+        }
+        try {
+          const session = await loginWithEmail({
+            email: email.trim(),
+            password,
+          })
+          setAuthToken(session.token)
+          useSessionUserStore
+            .getState()
+            .hydrateFromAuthMeResponse(session.token, session.user)
+          navigate("/dashboard", { replace: true })
+        } catch (apiErr) {
+          if (apiErr instanceof ApiError) {
+            const parts = Object.values(apiErr.fieldErrors)
+              .flat()
+              .filter(Boolean)
+            setFormError(
+              parts.length > 0
+                ? parts.join(" ")
+                : "Invalid email or password."
+            )
+            return
+          }
+          if (apiErr instanceof TypeError) {
+            setFormError(
+              "Could not reach the API. Check your network and VITE_API_BASE_URL."
+            )
+            return
+          }
+          setFormError(firebaseAuthErrorMessage(firebaseErr))
+        }
+      }
     } finally {
       setPending(false)
     }

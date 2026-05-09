@@ -2,10 +2,8 @@
 
 import * as React from "react"
 import {
-  createUserWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
-  updateProfile,
   type User,
 } from "firebase/auth"
 import { Link, useNavigate } from "react-router"
@@ -27,9 +25,13 @@ import {
   FieldSeparator,
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
+import { ApiError } from "~/lib/api/errors"
+import { registerWithEmail } from "~/lib/api/resources/auth"
+import { setAuthToken } from "~/lib/auth-token"
 import { firebaseAuthErrorMessage } from "~/lib/firebase-auth"
 import { syncFirebaseUserToApiSession } from "~/lib/firebase-auth-session"
 import { firebaseAuth } from "~/lib/firebase.client"
+import { useSessionUserStore } from "~/stores/session-user-store"
 
 function messagesFor(
   errors: Record<string, string[]>,
@@ -82,17 +84,31 @@ export function RegisterForm({
 
     setPending(true)
     try {
-      const credential = await createUserWithEmailAndPassword(
-        firebaseAuth,
-        email.trim(),
-        password
-      )
-      if (name.trim()) {
-        await updateProfile(credential.user, { displayName: name.trim() })
+      const session = await registerWithEmail({
+        name: name.trim(),
+        email: email.trim(),
+        password,
+        password_confirmation: passwordConfirmation,
+      })
+      setAuthToken(session.token)
+      useSessionUserStore
+        .getState()
+        .hydrateFromAuthMeResponse(session.token, session.user)
+      navigate("/dashboard", { replace: true })
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setFieldErrors(err.fieldErrors)
+        const baseMsg = err.fieldErrors.base?.join(". ")
+        setFormError(baseMsg ?? null)
+        return
       }
-      await completeAuthSession(credential.user)
-    } catch (error) {
-      setFormError(firebaseAuthErrorMessage(error))
+      if (err instanceof TypeError) {
+        setFormError(
+          "Could not reach the API. Check your network and VITE_API_BASE_URL."
+        )
+        return
+      }
+      setFormError("Could not create your account. Please try again.")
     } finally {
       setPending(false)
     }

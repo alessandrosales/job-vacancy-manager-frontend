@@ -75,6 +75,32 @@ export function firebaseAuthErrorMessage(error: unknown): string {
     case "auth/popup-blocked":
       return "Your browser blocked the sign-in popup."
     default:
-      return "Could not sign in with Firebase. Please try again."
+      return "Could not complete authentication. Please try again."
   }
+}
+
+/** Código Firebase Auth quando `error` vem da SDK (`auth/...`). */
+export function firebaseAuthErrorCode(error: unknown): string | null {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: unknown }).code !== undefined
+  ) {
+    return String((error as { code: unknown }).code)
+  }
+  return null
+}
+
+/**
+ * Credenciais rejeitadas ou usuário ausente no Firebase — vale tentar login por senha na API
+ * (contas criadas só no Rails não existem no Firebase).
+ */
+export function firebaseCredentialErrorMayRetryWithApi(error: unknown): boolean {
+  const code = firebaseAuthErrorCode(error)
+  return (
+    code === "auth/user-not-found" ||
+    code === "auth/wrong-password" ||
+    code === "auth/invalid-credential"
+  )
 }
