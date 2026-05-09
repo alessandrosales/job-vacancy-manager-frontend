@@ -1,4 +1,4 @@
-# Vacancy Manager — UI Layout
+# Hireest — UI Layout
 
 Front-end reference application for tracking job opportunities, resumes, and supporting profile data. It ships as a **React Router v7** SPA with **shadcn/ui**, **Tailwind CSS v4**, and **client-side mock state** (ready to map to a server-driven stack such as Rails + Inertia — see [`docs/rails-integration/README.md`](docs/rails-integration/README.md)).
 
