@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useTranslation } from "react-i18next"
-import { Link, useLocation } from "react-router"
+import { Link } from "react-router"
 
 import { Button } from "~/components/ui/button"
 import {
@@ -16,13 +16,16 @@ import {
 } from "~/components/ui/dialog"
 import { getAuthToken } from "~/lib/auth-token"
 import { pagesI18nNs } from "~/lib/i18n/config"
+import {
+  markOpenAiOnboardingHandledThisSession,
+  shouldAutoOpenOpenAiOnboardingThisSession,
+} from "~/lib/openai-key-onboarding-session"
 import { useSessionUserStore } from "~/stores/session-user-store"
 
 const OPENAI_API_KEYS_URL = "https://platform.openai.com/api-keys"
 
 export function OpenAiKeyOnboardingDialog() {
   const { t } = useTranslation(pagesI18nNs)
-  const location = useLocation()
   const [open, setOpen] = React.useState(false)
 
   const userId = useSessionUserStore((s) => s.user.id)
@@ -31,6 +34,7 @@ export function OpenAiKeyOnboardingDialog() {
 
   React.useEffect(() => {
     if (ai_token_configured) {
+      markOpenAiOnboardingHandledThisSession()
       setOpen(false)
       return
     }
@@ -40,16 +44,20 @@ export function OpenAiKeyOnboardingDialog() {
     const needsKey = Boolean(userId)
     if (!synced || !needsKey) return
 
-    if (location.pathname === "/my-data") {
-      setOpen(false)
-      return
-    }
+    if (!shouldAutoOpenOpenAiOnboardingThisSession()) return
 
     setOpen(true)
-  }, [userId, ai_token_configured, me_synced_for_token, location.pathname])
+  }, [userId, ai_token_configured, me_synced_for_token])
+
+  function handleOpenChange(next: boolean) {
+    setOpen(next)
+    if (!next) {
+      markOpenAiOnboardingHandledThisSession()
+    }
+  }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       {/*
         Render só com open=true evita overlay preso: Presence do Radix espera animationend na saída;
         se a animação CSS não completar, o layer pode ficar invisível mas ainda com pointer-events.
@@ -62,14 +70,6 @@ export function OpenAiKeyOnboardingDialog() {
           </DialogHeader>
 
           <div className="flex flex-col gap-4">
-            <div
-              className="flex flex-col gap-2 rounded-lg border border-border bg-muted/40 p-3"
-              role="note"
-            >
-              <p className="font-medium text-foreground">{t("openai_onboarding.importance_title")}</p>
-              <p className="text-muted-foreground">{t("openai_onboarding.importance_body")}</p>
-            </div>
-
             <div className="flex flex-col gap-2">
               <p className="font-medium text-foreground">{t("openai_onboarding.steps_heading")}</p>
               <ol className="flex flex-col gap-3 ps-5 text-muted-foreground [list-style-type:decimal]">
