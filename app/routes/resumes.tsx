@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { Link, useNavigate } from "react-router"
 
 import { ListingPageHeader } from "~/components/listing/listing-page-header"
@@ -30,6 +33,7 @@ import {
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog"
 import { ApiError } from "~/lib/api/errors"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import {
   apiResumeToResumeDocument,
   deleteResume as deleteResumeApi,
@@ -85,6 +89,7 @@ function formatUpdated(isoDate: string): string {
 }
 
 export default function ResumesPage() {
+  const { t } = useTranslation(pagesI18nNs)
   const navigate = useNavigate()
   const [resumes, setResumes] = React.useState<ResumeDocument[]>([])
   const [roles, setRoles] = React.useState<Role[]>([])
@@ -116,9 +121,9 @@ export default function ResumesPage() {
       setLoadState("idle")
     } catch (e) {
       setLoadState("error")
-      setListError(apiErrorText(e, "Could not load resumes."))
+      setListError(apiErrorText(e, t("resumes.load_error")))
     }
-  }, [])
+  }, [t])
 
   React.useEffect(() => {
     void fetchAll()
@@ -146,7 +151,7 @@ export default function ResumesPage() {
       setResumes((prev) => prev.filter((r) => r.id !== deleteId))
       setDeleteId(null)
     } catch (e) {
-      setDeleteError(apiErrorText(e, "Could not delete resume."))
+      setDeleteError(apiErrorText(e, t("resumes.delete_error")))
     } finally {
       setDeleteSubmitting(false)
     }
@@ -160,18 +165,18 @@ export default function ResumesPage() {
       const doc = apiResumeToResumeDocument(api)
       setResumes((prev) => [doc, ...prev])
     } catch (e) {
-      setListError(apiErrorText(e, "Could not duplicate resume."))
+      setListError(apiErrorText(e, t("resumes.duplicate_error")))
     } finally {
       setDuplicatingId(null)
     }
   }
 
   return (
-    <AppLayout title="Resumes">
+    <AppLayout title={t("resumes.title")}>
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
         <ListingPageHeader
-          title="Resumes"
-          description="Saved CV versions — browse as cards and open one to edit."
+          title={t("resumes.title")}
+          description={t("resumes.description")}
           action={
             <div className="flex flex-wrap items-center justify-end gap-2">
               <Button
@@ -180,12 +185,12 @@ export default function ResumesPage() {
                 onClick={() => setImportPdfOpen(true)}
               >
                 <FileUpIcon data-icon="inline-start" />
-                Import PDF
+                {t("resumes.import_pdf")}
               </Button>
               <Button asChild>
                 <Link to="/resumes/resume">
                   <PlusIcon data-icon="inline-start" />
-                  Add resume
+                  {t("resumes.add")}
                 </Link>
               </Button>
             </div>
@@ -194,14 +199,14 @@ export default function ResumesPage() {
 
         {loadState === "error" ? (
           <p className="text-destructive px-1 text-sm" role="alert">
-            {listError ?? "Could not load data."}{" "}
+            {listError ?? t("shared.could_not_load_data")}{" "}
             <Button
               type="button"
               variant="link"
               className="text-destructive h-auto p-0 align-baseline underline"
               onClick={() => void fetchAll()}
             >
-              Retry
+              {t("shared.retry")}
             </Button>
           </p>
         ) : null}
@@ -210,33 +215,42 @@ export default function ResumesPage() {
           stats={
             loadState === "idle" && totalCount > 0
               ? searchNeedle
-                ? `Showing ${shownCount} of ${totalCount}`
-                : `${totalCount} saved`
+                ? t("shared.showing_loaded_of_total", {
+                    loaded: shownCount,
+                    total: totalCount,
+                  })
+                : t("resumes.saved_stats", { count: totalCount })
               : undefined
           }
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
-          searchPlaceholder="Search resumes…"
+          searchPlaceholder={t("resumes.search_placeholder")}
         >
           {loadState === "loading" ? (
             <p className="text-muted-foreground py-8 text-center text-sm">
-              Loading resumes…
+              {t("resumes.loading")}
             </p>
           ) : resumes.length === 0 ? (
             <div className="text-muted-foreground flex flex-1 flex-col items-center justify-center gap-2 py-16 text-center text-sm">
-              <p>No resumes yet.</p>
+              <p>{t("resumes.empty")}</p>
               <Button asChild variant="outline" size="sm">
-                <Link to="/resumes/resume">Add your first resume</Link>
+                <Link to="/resumes/resume">{t("resumes.add_first")}</Link>
               </Button>
             </div>
           ) : filtered.length === 0 ? (
             <p className="text-muted-foreground py-12 text-center text-sm">
-              No matches for your search.
+              {t("shared.no_matches_search")}
             </p>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {filtered.map((r) => {
                 const roleLabel = r.role_id ? roleNameById.get(r.role_id) : undefined
+                const summaryParts = [
+                  t("resumes.work_exp_count", { count: r.work_experience_ids.length }),
+                  t("resumes.cert_count", { count: r.certification_ids.length }),
+                  t("resumes.edu_count_singular", { count: r.education_ids.length }),
+                  t("resumes.skill_count_label", { count: r.skill_ids.length }),
+                ]
                 return (
                   <Card key={r.id} className="flex flex-col">
                     <CardHeader className="flex flex-col gap-2">
@@ -244,15 +258,13 @@ export default function ResumesPage() {
                         {r.title}
                       </CardTitle>
                       <CardDescription>
-                        Updated {formatUpdated(r.updated_at)}
+                        {t("resumes.updated_prefix")} {formatUpdated(r.updated_at)}
                         {roleLabel ? ` · ${roleLabel}` : null}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="flex flex-1 flex-col gap-2">
                       <p className="text-muted-foreground text-xs leading-relaxed">
-                        {r.work_experience_ids.length} work experiences ·{" "}
-                        {r.certification_ids.length} certifications · {r.education_ids.length}{" "}
-                        education · {r.skill_ids.length} skills
+                        {summaryParts.join(" · ")}
                       </p>
                       <p className="text-muted-foreground line-clamp-4 text-sm leading-relaxed">
                         {r.description}
@@ -263,17 +275,17 @@ export default function ResumesPage() {
                         variant="outline"
                         size="sm"
                         className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive max-sm:size-9 max-sm:min-h-9 max-sm:min-w-9 max-sm:justify-center max-sm:gap-0 max-sm:!px-0 max-sm:!ps-0 max-sm:!pe-0"
-                        aria-label={`Delete ${r.title}`}
+                        aria-label={t("resumes.delete_aria", { title: r.title })}
                         onClick={() => setDeleteId(r.id)}
                       >
                         <Trash2Icon className="size-4 shrink-0" aria-hidden />
-                        <span className="max-sm:sr-only">Delete</span>
+                        <span className="max-sm:sr-only">{t("shared.delete")}</span>
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         className="max-sm:size-9 max-sm:min-h-9 max-sm:min-w-9 max-sm:justify-center max-sm:gap-0 max-sm:!px-0 max-sm:!ps-0 max-sm:!pe-0"
-                        aria-label={`Duplicate ${r.title}`}
+                        aria-label={t("resumes.duplicate_aria", { title: r.title })}
                         disabled={duplicatingId !== null}
                         onClick={() => void duplicateResume(r.id)}
                       >
@@ -282,7 +294,7 @@ export default function ResumesPage() {
                         ) : (
                           <CopyIcon className="size-4 shrink-0" aria-hidden />
                         )}
-                        <span className="max-sm:sr-only">Duplicate</span>
+                        <span className="max-sm:sr-only">{t("resumes.duplicate_label")}</span>
                       </Button>
                       <ResumeCompiledDownloadMenu
                         resumeId={r.id}
@@ -297,10 +309,10 @@ export default function ResumesPage() {
                       >
                         <Link
                           to={`/resumes/resume/${encodeURIComponent(r.id)}`}
-                          aria-label={`Edit ${r.title}`}
+                          aria-label={t("resumes.edit_aria", { title: r.title })}
                         >
                           <PencilIcon className="size-4 shrink-0" aria-hidden />
-                          <span className="max-sm:sr-only">Edit</span>
+                          <span className="max-sm:sr-only">{t("shared.crumb_edit")}</span>
                         </Link>
                       </Button>
                     </CardFooter>
@@ -339,9 +351,9 @@ export default function ResumesPage() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete resume?</AlertDialogTitle>
+              <AlertDialogTitle>{t("resumes.delete_title")}</AlertDialogTitle>
               <AlertDialogDescription>
-                This removes the saved resume from your list.
+                {t("resumes.delete_desc")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             {deleteError ? (
@@ -350,13 +362,15 @@ export default function ResumesPage() {
               </p>
             ) : null}
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={deleteSubmitting}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={deleteSubmitting}>
+                {t("shared.cancel")}
+              </AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
                 disabled={deleteSubmitting}
                 onClick={() => void confirmDelete()}
               >
-                {deleteSubmitting ? "Deleting…" : "Delete"}
+                {deleteSubmitting ? t("shared.deleting") : t("shared.delete")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

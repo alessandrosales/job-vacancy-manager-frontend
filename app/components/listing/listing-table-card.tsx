@@ -1,8 +1,12 @@
+"use client"
+
+import { useTranslation } from "react-i18next"
 import { SearchIcon } from "lucide-react"
 
 import { Card, CardContent } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
 import { cn } from "~/lib/utils"
+import { pagesI18nNs } from "~/lib/i18n/config"
 
 type ListingTableCardProps = {
   children: React.ReactNode
@@ -24,8 +28,10 @@ export function ListingTableCard({
   stats,
   searchValue,
   onSearchChange,
-  searchPlaceholder = "Search…",
+  searchPlaceholder,
 }: ListingTableCardProps) {
+  const { t } = useTranslation(pagesI18nNs)
+  const resolvedPlaceholder = searchPlaceholder ?? t("shared.search_short")
   const hasStats = stats != null && stats !== ""
   const showToolbar = hasStats || onSearchChange != null
 
@@ -52,8 +58,8 @@ export function ListingTableCard({
                   type="search"
                   value={searchValue ?? ""}
                   onChange={(e) => onSearchChange(e.target.value)}
-                  placeholder={searchPlaceholder}
-                  aria-label={searchPlaceholder}
+                  placeholder={resolvedPlaceholder}
+                  aria-label={resolvedPlaceholder}
                   className="ps-9"
                 />
               </div>

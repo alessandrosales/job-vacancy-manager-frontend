@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router"
 
 import { AppLayout } from "~/components/layout/app-layout"
@@ -19,6 +22,7 @@ import {
 import { Input } from "~/components/ui/input"
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 import { ApiError } from "~/lib/api/errors"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import {
   createEducation,
   getEducation,
@@ -26,11 +30,11 @@ import {
 } from "~/lib/api/resources/educations"
 
 function emptyToNull(s: string): string | null {
-  const t = s.trim()
-  return t === "" ? null : t
+  const trimmed = s.trim()
+  return trimmed === "" ? null : trimmed
 }
 
-function formErrorMessage(err: unknown): string {
+function formErrorMessage(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
     const parts = [
       ...(err.fieldErrors.institution_name ?? []),
@@ -40,12 +44,14 @@ function formErrorMessage(err: unknown): string {
       ...(err.fieldErrors.date_to ?? []),
       ...(err.fieldErrors.base ?? []),
     ]
-    if (parts.length > 0) return parts[0] ?? "Could not save education."
+    if (parts.length > 0) return parts[0] ?? fallback
   }
-  return "Could not save education."
+  return fallback
 }
 
 export default function EducationPage() {
+  const { t } = useTranslation(pagesI18nNs)
+  const { t: tc } = useTranslation("common")
   const navigate = useNavigate()
   const { id } = useParams()
   const isEdit = Boolean(id)
@@ -121,47 +127,36 @@ export default function EducationPage() {
         setPostSaveOpen(true)
       }
     } catch (err) {
-      setFormError(formErrorMessage(err))
+      setFormError(formErrorMessage(err, t("education.form_error")))
     } finally {
       setSubmitting(false)
     }
   }
 
+  const pageTitle = isEdit ? t("education.edit_title") : t("education.new_title")
+  const crumbAction = isEdit ? t("shared.crumb_edit") : t("shared.crumb_new")
+  const breadcrumbs = [
+    { label: tc("breadcrumb_dashboard"), to: "/dashboard" },
+    { label: tc("nav_education"), to: "/educations" },
+    { label: crumbAction },
+  ]
+
   if (isEdit && loadState === "loading") {
     return (
-      <AppLayout
-        title="Edit education"
-        breadcrumbs={[
-          { label: "Dashboard", to: "/dashboard" },
-          { label: "Education", to: "/educations" },
-          { label: "Edit" },
-        ]}
-      >
-        <p className="text-muted-foreground">Loading education…</p>
+      <AppLayout title={t("education.edit_title")} breadcrumbs={breadcrumbs}>
+        <p className="text-muted-foreground">{t("education.load_loading")}</p>
       </AppLayout>
     )
   }
 
-  const pageTitle = isEdit ? "Edit education" : "New education"
-  const crumbAction = isEdit ? "Edit" : "New"
-
   return (
-    <AppLayout
-      title={pageTitle}
-      breadcrumbs={[
-        { label: "Dashboard", to: "/dashboard" },
-        { label: "Education", to: "/educations" },
-        { label: crumbAction },
-      ]}
-    >
+    <AppLayout title={pageTitle} breadcrumbs={breadcrumbs}>
       <div className="min-h-0 flex-1 overflow-y-auto">
         <Card className="max-w-xl">
           <CardHeader>
             <CardTitle>{pageTitle}</CardTitle>
             <CardDescription>
-              {isEdit
-                ? "Update this academic entry."
-                : "Add a degree or program you completed."}
+              {isEdit ? t("education.card_desc_edit") : t("education.card_desc_new")}
             </CardDescription>
           </CardHeader>
           <form
@@ -176,7 +171,7 @@ export default function EducationPage() {
                   </p>
                 ) : null}
                 <Field>
-                  <FieldLabel htmlFor="edu-inst">Institution name</FieldLabel>
+                  <FieldLabel htmlFor="edu-inst">{t("education.institution_name")}</FieldLabel>
                   <Input
                     id="edu-inst"
                     value={institutionName}
@@ -186,27 +181,27 @@ export default function EducationPage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="edu-degree">Degree</FieldLabel>
+                  <FieldLabel htmlFor="edu-degree">{t("shared.degree")}</FieldLabel>
                   <Input
                     id="edu-degree"
                     value={degree}
                     onChange={(e) => setDegree(e.target.value)}
                     disabled={submitting}
-                    placeholder="Optional"
+                    placeholder={t("shared.optional")}
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="edu-field">Field of study</FieldLabel>
+                  <FieldLabel htmlFor="edu-field">{t("shared.field_of_study")}</FieldLabel>
                   <Input
                     id="edu-field"
                     value={fieldOfStudy}
                     onChange={(e) => setFieldOfStudy(e.target.value)}
                     disabled={submitting}
-                    placeholder="Optional"
+                    placeholder={t("shared.optional")}
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="edu-from">Date from</FieldLabel>
+                  <FieldLabel htmlFor="edu-from">{t("shared.from")}</FieldLabel>
                   <Input
                     id="edu-from"
                     type="date"
@@ -216,7 +211,7 @@ export default function EducationPage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="edu-to">Date to</FieldLabel>
+                  <FieldLabel htmlFor="edu-to">{t("shared.to")}</FieldLabel>
                   <Input
                     id="edu-to"
                     type="date"
@@ -234,14 +229,10 @@ export default function EducationPage() {
                 disabled={submitting}
                 onClick={() => navigate(-1)}
               >
-                Cancel
+                {t("shared.cancel")}
               </Button>
               <Button type="submit" disabled={submitting}>
-                {submitting
-                  ? "Saving…"
-                  : isEdit
-                    ? "Save changes"
-                    : "Save"}
+                {submitting ? t("shared.saving") : isEdit ? t("shared.save_changes") : t("shared.save")}
               </Button>
             </CardFooter>
           </form>
@@ -249,7 +240,7 @@ export default function EducationPage() {
       </div>
       <PostSaveDialog
         open={postSaveOpen}
-        entityLabel="Education"
+        entityLabel={t("entity.education")}
         onGoToList={() => navigate("/educations")}
         onAddAnother={() => {
           setPostSaveOpen(false)

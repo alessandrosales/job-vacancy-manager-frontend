@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { Link } from "react-router"
 
 import {
@@ -26,6 +27,7 @@ import {
 import { applyTheme, getStoredTheme, type ThemeMode } from "~/lib/theme"
 import { clearAuthSession } from "~/stores/clear-auth-session"
 import { ChevronsUpDownIcon, LogOutIcon, MoonIcon, UserRoundIcon } from "lucide-react"
+import { defaultI18nNs } from "~/lib/i18n/config"
 
 function initialsFromName(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean)
@@ -48,6 +50,7 @@ export function NavUser({
     avatar_url: string
   }
 }) {
+  const { t } = useTranslation(defaultI18nNs)
   const { isMobile } = useSidebar()
   const [isDark, setIsDark] = React.useState(false)
 
@@ -114,7 +117,7 @@ export function NavUser({
             <DropdownMenuItem asChild>
               <Link to="/my-data">
                 <UserRoundIcon />
-                My data
+                {t("my_data_title")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuCheckboxItem
@@ -122,13 +125,13 @@ export function NavUser({
               onCheckedChange={(c) => setDarkMode(c === true)}
             >
               <MoonIcon />
-              Modo escuro
+              {t("nav_dark_mode")}
             </DropdownMenuCheckboxItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link to="/" onClick={() => clearAuthSession()}>
                 <LogOutIcon />
-                Sair
+                {t("nav_logout")}
               </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>

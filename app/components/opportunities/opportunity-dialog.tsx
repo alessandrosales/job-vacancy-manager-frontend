@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 
 import {
   OpportunityFormFields,
@@ -27,6 +28,7 @@ import {
   updateOpportunity as updateOpportunityApi,
 } from "~/lib/api/resources/opportunities"
 import type { InterestLevel, OpportunityStatus } from "~/lib/labels"
+import { pagesI18nNs } from "~/lib/i18n/config"
 
 const DIALOG_ID_EDIT = "opp-dialog"
 const DIALOG_ID_CREATE = "opp-dialog-new"
@@ -111,6 +113,7 @@ export function OpportunityDialog({
   onSaved,
   onReferenceListsRefresh,
 }: OpportunityDialogProps) {
+  const { t } = useTranslation(pagesI18nNs)
   const isCreate = mode === "create"
   const useApi = Boolean(referenceLists)
   const { opportunities, addOpportunity, updateOpportunity } = useAppData()
@@ -223,7 +226,7 @@ export function OpportunityDialog({
         onSaved?.()
         onOpenChange(false)
       } catch (err) {
-        setFormError(formErrorText(err, "Não foi possível salvar."))
+        setFormError(formErrorText(err, t("opportunities.form_save_error")))
       } finally {
         setSubmitting(false)
       }
@@ -285,7 +288,9 @@ export function OpportunityDialog({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         {showEditLoading ? (
-          <div className="text-muted-foreground p-6 text-sm">Carregando…</div>
+          <div className="text-muted-foreground p-6 text-sm">
+            {t("opportunities.loading_record")}
+          </div>
         ) : null}
 
         {showEditForm || showCreateForm ? (
@@ -295,12 +300,12 @@ export function OpportunityDialog({
           >
             <DialogHeader className="shrink-0 px-4 pt-4 pb-2">
               <DialogTitle>
-                {showCreateForm ? "New opportunity" : "Edit opportunity"}
+                {showCreateForm ? t("opportunities.new_title") : t("opportunities.edit_title")}
               </DialogTitle>
               <DialogDescription>
                 {showCreateForm
-                  ? "Adicione uma vaga rapidamente. Os mesmos campos da página de oportunidade."
-                  : "Atualize os dados desta vaga. Mesmos campos da página de oportunidade."}
+                  ? t("opportunities.dialog_desc_create")
+                  : t("opportunities.dialog_desc_edit")}
               </DialogDescription>
             </DialogHeader>
             <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-2 pb-6">
@@ -341,13 +346,13 @@ export function OpportunityDialog({
                 onClick={() => onOpenChange(false)}
                 disabled={submitting}
               >
-                Cancel
+                {t("shared.cancel")}
               </Button>
               <Button
                 type="submit"
                 disabled={!companyId || !roleId || !status || submitting}
               >
-                {submitting ? "Saving…" : "Save"}
+                {submitting ? t("shared.saving") : t("shared.save")}
               </Button>
             </DialogFooter>
           </form>
@@ -356,14 +361,12 @@ export function OpportunityDialog({
         {showNotFound ? (
           <div className="p-4">
             <DialogHeader>
-              <DialogTitle>Oportunidade não encontrada</DialogTitle>
-              <DialogDescription>
-                O registro pode ter sido removido. Feche e tente de novo.
-              </DialogDescription>
+              <DialogTitle>{t("opportunities.dialog_not_found_title")}</DialogTitle>
+              <DialogDescription>{t("opportunities.dialog_not_found_desc")}</DialogDescription>
             </DialogHeader>
             <DialogFooter className="mx-0 mb-0 rounded-none bg-transparent px-0 pt-4 pb-0">
               <Button type="button" onClick={() => onOpenChange(false)}>
-                Fechar
+                {t("shared.close")}
               </Button>
             </DialogFooter>
           </div>

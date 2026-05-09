@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 
 import { InterestLevelStarPicker } from "~/components/shared/interest-level-star-picker"
 import { apiFormErrorFromUnknown } from "~/components/opportunities/quick-add/api-form-error"
@@ -24,6 +25,7 @@ import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
 import { createRole } from "~/lib/api/resources/roles"
 import type { InterestLevel } from "~/lib/labels"
+import { pagesI18nNs } from "~/lib/i18n/config"
 
 export function QuickAddRoleDialog({
   open,
@@ -32,6 +34,7 @@ export function QuickAddRoleDialog({
   persistViaApi = false,
   onPersistedViaApi,
 }: QuickAddRelationDialogProps) {
+  const { t } = useTranslation(pagesI18nNs)
   const { addRole } = useAppData()
   const [name, setName] = React.useState("")
   const [description, setDescription] = React.useState("")
@@ -49,15 +52,15 @@ export function QuickAddRoleDialog({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const t = name.trim()
-    if (!t) return
+    const trimmedName = name.trim()
+    if (!trimmedName) return
 
     if (persistViaApi) {
       setFormError(null)
       setSubmitting(true)
       try {
         const created = await createRole({
-          name: t,
+          name: trimmedName,
           description: description.trim() === "" ? null : description.trim(),
           interest_level: interestLevel,
         })
@@ -65,7 +68,9 @@ export function QuickAddRoleDialog({
         await onPersistedViaApi?.()
         onOpenChange(false)
       } catch (err) {
-        setFormError(apiFormErrorFromUnknown(err, "Could not create role."))
+        setFormError(
+          apiFormErrorFromUnknown(err, t("opportunities.quick_add_create_role_error"))
+        )
       } finally {
         setSubmitting(false)
       }
@@ -73,7 +78,7 @@ export function QuickAddRoleDialog({
     }
 
     const id = addRole({
-      name: t,
+      name: trimmedName,
       description: description.trim(),
       interest_level: interestLevel,
     })
@@ -86,10 +91,8 @@ export function QuickAddRoleDialog({
       <DialogContent className="max-w-md overflow-hidden p-0 sm:max-w-md" showCloseButton>
         <form onSubmit={(ev) => void handleSubmit(ev)} className="flex flex-col">
           <DialogHeader className="shrink-0 px-4 pt-4 pb-2">
-            <DialogTitle>New role</DialogTitle>
-            <DialogDescription>
-              Cria o cargo para poder selecioná-lo no formulário.
-            </DialogDescription>
+            <DialogTitle>{t("role.new_title")}</DialogTitle>
+            <DialogDescription>{t("opportunities.quick_add_role_desc")}</DialogDescription>
           </DialogHeader>
           <div className="max-h-[min(70vh,420px)] overflow-y-auto px-4 pt-2 pb-6">
             <FieldGroup>
@@ -99,7 +102,7 @@ export function QuickAddRoleDialog({
                 </p>
               ) : null}
               <Field>
-                <FieldLabel htmlFor="qar-name">Name</FieldLabel>
+                <FieldLabel htmlFor="qar-name">{t("shared.name")}</FieldLabel>
                 <Input
                   id="qar-name"
                   value={name}
@@ -109,7 +112,7 @@ export function QuickAddRoleDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qar-desc">Description</FieldLabel>
+                <FieldLabel htmlFor="qar-desc">{t("shared.description")}</FieldLabel>
                 <Textarea
                   id="qar-desc"
                   value={description}
@@ -118,7 +121,7 @@ export function QuickAddRoleDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel>Interest level</FieldLabel>
+                <FieldLabel>{t("shared.interest_level")}</FieldLabel>
                 <InterestLevelStarPicker
                   value={interestLevel}
                   onChange={setInterestLevel}
@@ -133,10 +136,10 @@ export function QuickAddRoleDialog({
               onClick={() => onOpenChange(false)}
               disabled={submitting}
             >
-              Cancel
+              {t("shared.cancel")}
             </Button>
             <Button type="submit" disabled={submitting}>
-              {submitting ? "Saving…" : "Save"}
+              {submitting ? t("shared.saving") : t("shared.save")}
             </Button>
           </DialogFooter>
         </form>

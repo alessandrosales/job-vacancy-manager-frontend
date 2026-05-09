@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { Link } from "react-router"
 
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
@@ -27,6 +30,7 @@ import {
 } from "~/components/ui/alert-dialog"
 import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
 import { ApiError } from "~/lib/api/errors"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import {
   deleteCompany as deleteCompanyRequest,
   listCompanies,
@@ -60,6 +64,7 @@ function apiErrorText(err: unknown, fallback: string): string {
 }
 
 export default function CompaniesPage() {
+  const { t } = useTranslation(pagesI18nNs)
   const [companies, setCompanies] = React.useState<ApiCompany[]>([])
   const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
     "loading"
@@ -84,9 +89,9 @@ export default function CompaniesPage() {
       setLoadState("idle")
     } catch (e) {
       setLoadState("error")
-      setListError(apiErrorText(e, "Could not load companies."))
+      setListError(apiErrorText(e, t("companies.load_error")))
     }
-  }, [])
+  }, [t])
 
   React.useEffect(() => {
     void fetchCompanies()
@@ -115,7 +120,7 @@ export default function CompaniesPage() {
       setCompanies((prev) => prev.filter((c) => c.id !== deleteId))
       setDeleteId(null)
     } catch (e) {
-      setDeleteError(apiErrorText(e, "Could not delete company."))
+      setDeleteError(apiErrorText(e, t("companies.delete_error")))
     } finally {
       setDeleteSubmitting(false)
     }
@@ -130,23 +135,23 @@ export default function CompaniesPage() {
       })
       setCompanies((prev) => prev.map((c) => (c.id === updated.id ? updated : c)))
     } catch (e) {
-      setInterestPatchError(apiErrorText(e, "Could not update interest level."))
+      setInterestPatchError(apiErrorText(e, t("companies.interest_error")))
     } finally {
       setInterestPatchId(null)
     }
   }
 
   return (
-    <AppLayout title="Companies">
+    <AppLayout title={t("companies.title")}>
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
         <ListingPageHeader
-          title="Companies"
-          description="Companies you are tracking for opportunities"
+          title={t("companies.title")}
+          description={t("companies.description")}
           action={
             <Button asChild>
               <Link to="/companies/company">
                 <PlusIcon data-icon="inline-start" />
-                Add company
+                {t("companies.add")}
               </Link>
             </Button>
           }
@@ -159,28 +164,31 @@ export default function CompaniesPage() {
         <ListingTableCard
           stats={
             loadState === "idle" && totalCount > 0
-              ? `Showing ${loadedCount} of ${totalCount}`
+              ? t("shared.showing_loaded_of_total", {
+                  loaded: loadedCount,
+                  total: totalCount,
+                })
               : undefined
           }
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
-          searchPlaceholder="Search companies…"
+          searchPlaceholder={t("companies.search_placeholder")}
         >
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-28">Actions</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>URL</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Interest Level</TableHead>
+                <TableHead className="w-28">{t("shared.actions")}</TableHead>
+                <TableHead>{t("shared.name")}</TableHead>
+                <TableHead>{t("shared.url")}</TableHead>
+                <TableHead>{t("shared.description")}</TableHead>
+                <TableHead>{t("shared.interest_level")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loadState === "loading" ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-muted-foreground">
-                    Loading companies…
+                    {t("companies.loading")}
                   </TableCell>
                 </TableRow>
               ) : loadState === "error" ? (
@@ -194,7 +202,7 @@ export default function CompaniesPage() {
                         size="sm"
                         onClick={() => void fetchCompanies()}
                       >
-                        Try again
+                        {t("shared.try_again")}
                       </Button>
                     </div>
                   </TableCell>
@@ -202,13 +210,13 @@ export default function CompaniesPage() {
               ) : companies.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-muted-foreground">
-                    No companies yet. Add one to get started.
+                    {t("companies.empty")}
                   </TableCell>
                 </TableRow>
               ) : filteredCompanies.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-muted-foreground">
-                    No matches for your search.
+                    {t("shared.no_matches_search")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -221,7 +229,7 @@ export default function CompaniesPage() {
                           <Button variant="ghost" size="icon" asChild>
                             <Link
                               to={`/companies/company/${encodeURIComponent(company.id)}`}
-                              aria-label="Edit company"
+                              aria-label={t("companies.aria_edit")}
                             >
                               <PencilIcon />
                             </Link>
@@ -229,7 +237,7 @@ export default function CompaniesPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            aria-label="Delete company"
+                            aria-label={t("companies.aria_delete")}
                             onClick={() => {
                               setDeleteError(null)
                               setDeleteId(company.id)
@@ -300,9 +308,9 @@ export default function CompaniesPage() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete company?</AlertDialogTitle>
+              <AlertDialogTitle>{t("companies.delete_title")}</AlertDialogTitle>
               <AlertDialogDescription>
-                This removes the company from your list.
+                {t("companies.delete_desc")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             {deleteError ? (
@@ -311,7 +319,9 @@ export default function CompaniesPage() {
               </p>
             ) : null}
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={deleteSubmitting}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={deleteSubmitting}>
+                {t("shared.cancel")}
+              </AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
                 disabled={deleteSubmitting}
@@ -320,7 +330,7 @@ export default function CompaniesPage() {
                   void confirmDelete()
                 }}
               >
-                {deleteSubmitting ? "Deleting…" : "Delete"}
+                {deleteSubmitting ? t("shared.deleting") : t("shared.delete")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

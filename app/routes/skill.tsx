@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router"
 
 import { AppLayout } from "~/components/layout/app-layout"
@@ -20,25 +23,28 @@ import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 import { ApiError } from "~/lib/api/errors"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import {
   createSkill,
   getSkill,
   updateSkill,
 } from "~/lib/api/resources/skills"
 
-function formErrorMessage(err: unknown): string {
+function formErrorMessage(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
     const parts = [
       ...(err.fieldErrors.name ?? []),
       ...(err.fieldErrors.description ?? []),
       ...(err.fieldErrors.base ?? []),
     ]
-    if (parts.length > 0) return parts[0] ?? "Could not save skill."
+    if (parts.length > 0) return parts[0] ?? fallback
   }
-  return "Could not save skill."
+  return fallback
 }
 
 export default function SkillPage() {
+  const { t } = useTranslation(pagesI18nNs)
+  const { t: tc } = useTranslation("common")
   const navigate = useNavigate()
   const { id } = useParams()
   const isEdit = Boolean(id)
@@ -105,47 +111,36 @@ export default function SkillPage() {
         setPostSaveOpen(true)
       }
     } catch (err) {
-      setFormError(formErrorMessage(err))
+      setFormError(formErrorMessage(err, t("skill.form_error")))
     } finally {
       setSubmitting(false)
     }
   }
 
+  const title = isEdit ? t("skill.edit_title") : t("skill.new_title")
+  const crumbAction = isEdit ? t("shared.crumb_edit") : t("shared.crumb_new")
+  const breadcrumbs = [
+    { label: tc("breadcrumb_dashboard"), to: "/dashboard" },
+    { label: tc("nav_skills"), to: "/skills" },
+    { label: crumbAction },
+  ]
+
   if (isEdit && loadState === "loading") {
     return (
-      <AppLayout
-        title="Edit skill"
-        breadcrumbs={[
-          { label: "Dashboard", to: "/dashboard" },
-          { label: "Skills", to: "/skills" },
-          { label: "Edit" },
-        ]}
-      >
-        <p className="text-muted-foreground">Loading skill…</p>
+      <AppLayout title={t("skill.edit_title")} breadcrumbs={breadcrumbs}>
+        <p className="text-muted-foreground">{t("skill.load_loading")}</p>
       </AppLayout>
     )
   }
 
-  const title = isEdit ? "Edit skill" : "New skill"
-  const crumbAction = isEdit ? "Edit" : "New"
-
   return (
-    <AppLayout
-      title={title}
-      breadcrumbs={[
-        { label: "Dashboard", to: "/dashboard" },
-        { label: "Skills", to: "/skills" },
-        { label: crumbAction },
-      ]}
-    >
+    <AppLayout title={title} breadcrumbs={breadcrumbs}>
       <div className="min-h-0 flex-1 overflow-y-auto">
         <Card className="max-w-xl">
           <CardHeader>
             <CardTitle>{title}</CardTitle>
             <CardDescription>
-              {isEdit
-                ? "Update this skill."
-                : "Add a skill to your profile list."}
+              {isEdit ? t("skill.card_desc_edit") : t("skill.card_desc_new")}
             </CardDescription>
           </CardHeader>
           <form
@@ -160,7 +155,7 @@ export default function SkillPage() {
                   </p>
                 ) : null}
                 <Field>
-                  <FieldLabel htmlFor="skill-name">Name</FieldLabel>
+                  <FieldLabel htmlFor="skill-name">{t("shared.name")}</FieldLabel>
                   <Input
                     id="skill-name"
                     value={name}
@@ -170,14 +165,14 @@ export default function SkillPage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="skill-desc">Description</FieldLabel>
+                  <FieldLabel htmlFor="skill-desc">{t("shared.description")}</FieldLabel>
                   <Textarea
                     id="skill-desc"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={4}
                     disabled={submitting}
-                    placeholder="Optional"
+                    placeholder={t("shared.optional")}
                   />
                 </Field>
               </FieldGroup>
@@ -189,14 +184,14 @@ export default function SkillPage() {
                 disabled={submitting}
                 onClick={() => navigate(-1)}
               >
-                Cancel
+                {t("shared.cancel")}
               </Button>
               <Button type="submit" disabled={submitting}>
                 {submitting
-                  ? "Saving…"
+                  ? t("shared.saving")
                   : isEdit
-                    ? "Save changes"
-                    : "Save"}
+                    ? t("shared.save_changes")
+                    : t("shared.save")}
               </Button>
             </CardFooter>
           </form>
@@ -204,7 +199,7 @@ export default function SkillPage() {
       </div>
       <PostSaveDialog
         open={postSaveOpen}
-        entityLabel="Skill"
+        entityLabel={t("entity.skill")}
         onGoToList={() => navigate("/skills")}
         onAddAnother={() => {
           setPostSaveOpen(false)

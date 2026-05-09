@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router"
 
 import { AppLayout } from "~/components/layout/app-layout"
@@ -21,6 +24,7 @@ import { Textarea } from "~/components/ui/textarea"
 import { InterestLevelStarPicker } from "~/components/shared/interest-level-star-picker"
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 import { ApiError } from "~/lib/api/errors"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import {
   createCompany,
   getCompany,
@@ -28,7 +32,7 @@ import {
 } from "~/lib/api/resources/companies"
 import type { InterestLevel } from "~/lib/labels"
 
-function formErrorMessage(err: unknown): string {
+function formErrorMessage(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
     const parts = [
       ...(err.fieldErrors.name ?? []),
@@ -37,12 +41,14 @@ function formErrorMessage(err: unknown): string {
       ...(err.fieldErrors.interest_level ?? []),
       ...(err.fieldErrors.base ?? []),
     ]
-    if (parts.length > 0) return parts[0] ?? "Could not save company."
+    if (parts.length > 0) return parts[0] ?? fallback
   }
-  return "Could not save company."
+  return fallback
 }
 
 export default function CompanyPage() {
+  const { t } = useTranslation(pagesI18nNs)
+  const { t: tc } = useTranslation("common")
   const navigate = useNavigate()
   const { id } = useParams()
   const isEdit = Boolean(id)
@@ -120,47 +126,36 @@ export default function CompanyPage() {
         setPostSaveOpen(true)
       }
     } catch (err) {
-      setFormError(formErrorMessage(err))
+      setFormError(formErrorMessage(err, t("company.form_error")))
     } finally {
       setSubmitting(false)
     }
   }
 
+  const title = isEdit ? t("company.edit_title") : t("company.new_title")
+  const crumbAction = isEdit ? t("shared.crumb_edit") : t("shared.crumb_new")
+  const breadcrumbs = [
+    { label: tc("breadcrumb_dashboard"), to: "/dashboard" },
+    { label: tc("nav_companies"), to: "/companies" },
+    { label: crumbAction },
+  ]
+
   if (isEdit && loadState === "loading") {
     return (
-      <AppLayout
-        title="Edit company"
-        breadcrumbs={[
-          { label: "Dashboard", to: "/dashboard" },
-          { label: "Companies", to: "/companies" },
-          { label: "Edit" },
-        ]}
-      >
-        <p className="text-muted-foreground">Loading company…</p>
+      <AppLayout title={t("company.edit_title")} breadcrumbs={breadcrumbs}>
+        <p className="text-muted-foreground">{t("company.load_loading")}</p>
       </AppLayout>
     )
   }
 
-  const title = isEdit ? "Edit company" : "New company"
-  const crumbAction = isEdit ? "Edit" : "New"
-
   return (
-    <AppLayout
-      title={title}
-      breadcrumbs={[
-        { label: "Dashboard", to: "/dashboard" },
-        { label: "Companies", to: "/companies" },
-        { label: crumbAction },
-      ]}
-    >
+    <AppLayout title={title} breadcrumbs={breadcrumbs}>
       <div className="min-h-0 flex-1 overflow-y-auto">
         <Card className="max-w-xl">
           <CardHeader>
             <CardTitle>{title}</CardTitle>
             <CardDescription>
-              {isEdit
-                ? "Update this company."
-                : "Add a company you want to track."}
+              {isEdit ? t("company.card_desc_edit") : t("company.card_desc_new")}
             </CardDescription>
           </CardHeader>
           <form
@@ -175,7 +170,7 @@ export default function CompanyPage() {
                   </p>
                 ) : null}
                 <Field>
-                  <FieldLabel htmlFor="co-name">Name</FieldLabel>
+                  <FieldLabel htmlFor="co-name">{t("shared.name")}</FieldLabel>
                   <Input
                     id="co-name"
                     value={name}
@@ -185,29 +180,29 @@ export default function CompanyPage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="co-url">URL</FieldLabel>
+                  <FieldLabel htmlFor="co-url">{t("shared.url")}</FieldLabel>
                   <Input
                     id="co-url"
                     type="url"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
-                    placeholder="https://"
+                    placeholder={t("company.url_placeholder")}
                     disabled={submitting}
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="co-desc">Description</FieldLabel>
+                  <FieldLabel htmlFor="co-desc">{t("shared.description")}</FieldLabel>
                   <Textarea
                     id="co-desc"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={4}
                     disabled={submitting}
-                    placeholder="Optional"
+                    placeholder={t("shared.optional")}
                   />
                 </Field>
                 <Field>
-                  <FieldLabel>Interest level</FieldLabel>
+                  <FieldLabel>{t("shared.interest_level")}</FieldLabel>
                   <div
                     className={
                       submitting ? "pointer-events-none opacity-60" : undefined
@@ -228,14 +223,14 @@ export default function CompanyPage() {
                 disabled={submitting}
                 onClick={() => navigate(-1)}
               >
-                Cancel
+                {t("shared.cancel")}
               </Button>
               <Button type="submit" disabled={submitting}>
                 {submitting
-                  ? "Saving…"
+                  ? t("shared.saving")
                   : isEdit
-                    ? "Save changes"
-                    : "Save"}
+                    ? t("shared.save_changes")
+                    : t("shared.save")}
               </Button>
             </CardFooter>
           </form>
@@ -243,7 +238,7 @@ export default function CompanyPage() {
       </div>
       <PostSaveDialog
         open={postSaveOpen}
-        entityLabel="Company"
+        entityLabel={t("entity.company")}
         onGoToList={() => navigate("/companies")}
         onAddAnother={() => {
           setPostSaveOpen(false)

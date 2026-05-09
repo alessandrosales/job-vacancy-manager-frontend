@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import {
   Bar,
   BarChart,
@@ -57,16 +60,17 @@ import {
   formatOpportunityAnnualSalary,
   formatOpportunityHourlyRate,
 } from "~/lib/opportunity-display"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import type { StatusBadgeVariant } from "~/lib/labels"
 import { cn } from "~/lib/utils"
 
 const DASHBOARD_TABLE_LIMIT = 10
 
-function dashboardListsErrorText(err: unknown): string {
+function dashboardListsErrorText(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
-    return err.fieldErrors.base?.[0] ?? "Could not load dashboard."
+    return err.fieldErrors.base?.[0] ?? fallback
   }
-  return "Could not load dashboard."
+  return fallback
 }
 
 function mapReferenceLists(raw: {
@@ -84,10 +88,11 @@ function mapReferenceLists(raw: {
 }
 
 function InterestStars({ level }: { level: number }) {
+  const { t } = useTranslation(pagesI18nNs)
   return (
     <div
       className="inline-flex items-center gap-0.5"
-      aria-label={`Interest level ${level} of 5`}
+      aria-label={t("dashboard.interest_aria", { level })}
     >
       {Array.from({ length: 5 }).map((_, i) => (
         <StarIcon
@@ -113,10 +118,7 @@ function DashboardOpportunityRow({
   const variant = row.status_variant as StatusBadgeVariant
 
   return (
-    <TableRow
-      className="cursor-pointer"
-      onClick={() => onOpen(row.id)}
-    >
+    <TableRow className="cursor-pointer" onClick={() => onOpen(row.id)}>
       <TableCell className="font-medium">{row.company_name}</TableCell>
       <TableCell>{row.role_name}</TableCell>
       <TableCell>
@@ -136,6 +138,7 @@ function DashboardOpportunityRow({
 }
 
 export default function DashboardPage() {
+  const { t } = useTranslation(pagesI18nNs)
   const [loadState, setLoadState] = React.useState<"loading" | "idle" | "error">(
     "loading"
   )
@@ -158,10 +161,10 @@ export default function DashboardPage() {
       setPayload(data)
       setLoadState("idle")
     } catch (e) {
-      setLoadError(dashboardListsErrorText(e))
+      setLoadError(dashboardListsErrorText(e, t("dashboard.load_error")))
       setLoadState("error")
     }
-  }, [])
+  }, [t])
 
   React.useEffect(() => {
     void fetchDashboard()
@@ -176,9 +179,11 @@ export default function DashboardPage() {
     }))
   }, [payload])
 
+  const opportunitiesLabel = t("dashboard.chart_opportunities_label")
+
   const pieConfig = React.useMemo<ChartConfig>(() => {
     const cfg: ChartConfig = {
-      count: { label: "Opportunities" },
+      count: { label: opportunitiesLabel },
     }
     pieData.forEach((row, i) => {
       cfg[row.status] = {
@@ -187,7 +192,7 @@ export default function DashboardPage() {
       }
     })
     return cfg
-  }, [pieData])
+  }, [pieData, opportunitiesLabel])
 
   const barData = React.useMemo(
     () => payload?.created_by_weekday ?? [],
@@ -196,9 +201,9 @@ export default function DashboardPage() {
 
   const barConfig = React.useMemo<ChartConfig>(
     () => ({
-      count: { label: "Opportunities", color: "var(--chart-1)" },
+      count: { label: opportunitiesLabel, color: "var(--chart-1)" },
     }),
-    []
+    [opportunitiesLabel]
   )
 
   const lineData = React.useMemo(() => {
@@ -230,7 +235,7 @@ export default function DashboardPage() {
   const recent = payload?.recent_opportunities ?? []
 
   return (
-    <AppLayout title="Dashboard">
+    <AppLayout title={t("dashboard.title")}>
       <OpportunityDialog
         open={dialogOppId !== null}
         onOpenChange={(open) => {
@@ -246,14 +251,14 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-3 py-6" role="alert">
           <p className="text-destructive text-sm">{loadError}</p>
           <Button type="button" variant="outline" onClick={() => void fetchDashboard()}>
-            Retry
+            {t("dashboard.retry")}
           </Button>
         </div>
       ) : null}
 
       {loadState === "loading" && !payload ? (
         <p className="text-muted-foreground py-8 text-center text-sm">
-          Loading dashboard…
+          {t("dashboard.loading")}
         </p>
       ) : null}
 
@@ -262,13 +267,15 @@ export default function DashboardPage() {
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
               <CardHeader>
-                <CardTitle>By Status</CardTitle>
-                <CardDescription>Opportunities distribution</CardDescription>
+                <CardTitle>{t("dashboard.chart_by_status_title")}</CardTitle>
+                <CardDescription>
+                  {t("dashboard.chart_by_status_desc")}
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 {pieData.length === 0 ? (
                   <p className="text-muted-foreground py-8 text-center text-sm">
-                    No opportunities yet.
+                    {t("dashboard.no_opportunities_chart")}
                   </p>
                 ) : (
                   <ChartContainer config={pieConfig} className="mx-auto max-h-52">
@@ -288,10 +295,8 @@ export default function DashboardPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>By Day</CardTitle>
-                <CardDescription>
-                  New opportunities created this week (Mon–Sun)
-                </CardDescription>
+                <CardTitle>{t("dashboard.chart_by_day_title")}</CardTitle>
+                <CardDescription>{t("dashboard.chart_by_day_desc")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ChartContainer config={barConfig} className="max-h-52 w-full">
@@ -308,15 +313,13 @@ export default function DashboardPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Trend by Status</CardTitle>
-                <CardDescription>
-                  Opportunities created per week (last 4 weeks), by status
-                </CardDescription>
+                <CardTitle>{t("dashboard.chart_trend_title")}</CardTitle>
+                <CardDescription>{t("dashboard.chart_trend_desc")}</CardDescription>
               </CardHeader>
               <CardContent>
                 {lineData.length === 0 || !payload.status_series.length ? (
                   <p className="text-muted-foreground py-8 text-center text-sm">
-                    No trend data yet.
+                    {t("dashboard.no_trend")}
                   </p>
                 ) : (
                   <ChartContainer config={lineConfig} className="max-h-52 w-full">
@@ -344,29 +347,28 @@ export default function DashboardPage() {
 
           <Card className="overflow-visible">
             <CardHeader>
-              <CardTitle>Top jobs</CardTitle>
+              <CardTitle>{t("dashboard.top_jobs_title")}</CardTitle>
               <CardDescription>
-                Up to {DASHBOARD_TABLE_LIMIT} roles: highest interest first; ties by
-                most recently updated.
+                {t("dashboard.top_jobs_desc", { limit: DASHBOARD_TABLE_LIMIT })}
               </CardDescription>
             </CardHeader>
             <CardContent className="overflow-visible">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Company</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead className="w-36">Interesse</TableHead>
-                    <TableHead>Hourly rate</TableHead>
-                    <TableHead>Annual salary</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>{t("shared.company")}</TableHead>
+                    <TableHead>{t("shared.role")}</TableHead>
+                    <TableHead className="w-36">{t("shared.interest")}</TableHead>
+                    <TableHead>{t("shared.hourly_rate")}</TableHead>
+                    <TableHead>{t("shared.annual_salary")}</TableHead>
+                    <TableHead>{t("shared.status")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {topJobs.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-muted-foreground">
-                        No opportunities yet. Add some under Opportunities.
+                        {t("dashboard.empty_table")}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -385,28 +387,28 @@ export default function DashboardPage() {
 
           <Card className="overflow-visible">
             <CardHeader>
-              <CardTitle>Recent opportunities</CardTitle>
+              <CardTitle>{t("dashboard.recent_title")}</CardTitle>
               <CardDescription>
-                Last {DASHBOARD_TABLE_LIMIT} by last update (`updated_at`)
+                {t("dashboard.recent_desc", { limit: DASHBOARD_TABLE_LIMIT })}
               </CardDescription>
             </CardHeader>
             <CardContent className="overflow-visible">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Company</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead className="w-36">Interesse</TableHead>
-                    <TableHead>Hourly rate</TableHead>
-                    <TableHead>Annual salary</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>{t("shared.company")}</TableHead>
+                    <TableHead>{t("shared.role")}</TableHead>
+                    <TableHead className="w-36">{t("shared.interest")}</TableHead>
+                    <TableHead>{t("shared.hourly_rate")}</TableHead>
+                    <TableHead>{t("shared.annual_salary")}</TableHead>
+                    <TableHead>{t("shared.status")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {recent.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-muted-foreground">
-                        No opportunities yet. Add some under Opportunities.
+                        {t("dashboard.empty_table")}
                       </TableCell>
                     </TableRow>
                   ) : (

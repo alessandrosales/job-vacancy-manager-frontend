@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { Link } from "react-router"
 import type { LucideIcon } from "lucide-react"
 import {
@@ -49,22 +50,9 @@ import {
   type ResumePreferredLanguage,
 } from "~/lib/resume-preferred-language"
 import { cn } from "~/lib/utils"
+import { pagesI18nNs } from "~/lib/i18n/config"
 
 const PDF_ACCEPT = ".pdf,application/pdf"
-
-/** Estágios exibidos em ciclo durante o import (somente UX; não reflete timestamps reais da API). */
-const PDF_IMPORT_STAGES: ReadonlyArray<{ label: string; Icon: LucideIcon }> = [
-  { label: "Sending your PDF…", Icon: UploadCloud },
-  { label: "Reading document text…", Icon: FileText },
-  { label: "Extracting companies…", Icon: Building2 },
-  { label: "Extracting roles…", Icon: BadgeCheck },
-  { label: "Extracting skills…", Icon: Sparkles },
-  { label: "Extracting languages…", Icon: Languages },
-  { label: "Extracting work experience…", Icon: History },
-  { label: "Extracting education…", Icon: GraduationCap },
-  { label: "Extracting certifications…", Icon: Award },
-  { label: "Extracting profile links…", Icon: Link2 },
-]
 
 const PDF_IMPORT_STAGE_INTERVAL_MS = 1900
 
@@ -243,6 +231,25 @@ export function ResumeImportPdfDialog({
   roles: readonly Role[]
   onImported: (resume: ApiResume) => void | Promise<void>
 }) {
+  const { t } = useTranslation(pagesI18nNs)
+  const pdfImportStages = React.useMemo<
+    ReadonlyArray<{ label: string; Icon: LucideIcon }>
+  >(
+    () => [
+      { label: t("resume.pdf_import.stage_sending"), Icon: UploadCloud },
+      { label: t("resume.pdf_import.stage_reading"), Icon: FileText },
+      { label: t("resume.pdf_import.stage_companies"), Icon: Building2 },
+      { label: t("resume.pdf_import.stage_roles"), Icon: BadgeCheck },
+      { label: t("resume.pdf_import.stage_skills"), Icon: Sparkles },
+      { label: t("resume.pdf_import.stage_languages"), Icon: Languages },
+      { label: t("resume.pdf_import.stage_work"), Icon: History },
+      { label: t("resume.pdf_import.stage_education"), Icon: GraduationCap },
+      { label: t("resume.pdf_import.stage_certifications"), Icon: Award },
+      { label: t("resume.pdf_import.stage_links"), Icon: Link2 },
+    ],
+    [t]
+  )
+
   const inputRef = React.useRef<HTMLInputElement>(null)
   const [roleId, setRoleId] = React.useState("")
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null)
@@ -272,10 +279,10 @@ export function ResumeImportPdfDialog({
     if (!submitting) return
     setPdfImportStageIndex(0)
     const id = window.setInterval(() => {
-      setPdfImportStageIndex((i) => (i + 1) % PDF_IMPORT_STAGES.length)
+      setPdfImportStageIndex((i) => (i + 1) % pdfImportStages.length)
     }, PDF_IMPORT_STAGE_INTERVAL_MS)
     return () => clearInterval(id)
-  }, [submitting])
+  }, [submitting, pdfImportStages.length])
 
   React.useEffect(() => {
     if (!open) return
@@ -284,7 +291,7 @@ export function ResumeImportPdfDialog({
 
   function applyFile(file: File) {
     if (!isPdfFile(file)) {
-      setRejectMessage("Please use a PDF file.")
+      setRejectMessage(t("resume.pdf_import.reject_not_pdf"))
       return
     }
     setRejectMessage(null)
@@ -341,7 +348,9 @@ export function ResumeImportPdfDialog({
       await onImported(resume)
       onOpenChange(false)
     } catch (err) {
-      setSubmitError(pdfImportErrorText(err, "Could not import the PDF."))
+      setSubmitError(
+        pdfImportErrorText(err, t("resume.pdf_import.error_fallback"))
+      )
     } finally {
       setSubmitting(false)
     }
@@ -354,7 +363,7 @@ export function ResumeImportPdfDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Import resume from PDF</DialogTitle>
+          <DialogTitle>{t("resume.pdf_import.title")}</DialogTitle>
         </DialogHeader>
         <input
           ref={inputRef}
@@ -366,14 +375,16 @@ export function ResumeImportPdfDialog({
         />
         <FieldGroup className="gap-4">
           <Field>
-            <FieldLabel htmlFor="resume-import-preferred-lang">Resume language</FieldLabel>
+            <FieldLabel htmlFor="resume-import-preferred-lang">
+              {t("resume.field_preferred_language")}
+            </FieldLabel>
             <Select
               value={preferredLanguage}
               onValueChange={(v) => setPreferredLanguage(v as ResumePreferredLanguage)}
               disabled={submitting}
             >
               <SelectTrigger id="resume-import-preferred-lang" className="w-full">
-                <SelectValue placeholder="Language for generated resume" />
+                <SelectValue placeholder={t("resume.placeholder_preferred_language")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
@@ -385,13 +396,11 @@ export function ResumeImportPdfDialog({
                 </SelectGroup>
               </SelectContent>
             </Select>
-            <FieldDescription>
-              Choose this first: it sets the locale for the resume we create from your PDF.
-            </FieldDescription>
+            <FieldDescription>{t("resume.pdf_import.preferred_lang_hint")}</FieldDescription>
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="resume-import-role">Role</FieldLabel>
+            <FieldLabel htmlFor="resume-import-role">{t("shared.role")}</FieldLabel>
             {hasRoles ? (
               <Select
                 value={roleId === "" ? undefined : roleId}
@@ -399,7 +408,7 @@ export function ResumeImportPdfDialog({
                 disabled={submitting}
               >
                 <SelectTrigger id="resume-import-role" className="w-full">
-                  <SelectValue placeholder="Select a role" />
+                  <SelectValue placeholder={t("resume.pdf_import.role_placeholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -413,24 +422,22 @@ export function ResumeImportPdfDialog({
               </Select>
             ) : (
               <p className="text-muted-foreground text-sm">
-                No roles yet.{" "}
+                {t("resume.pdf_import.no_roles_before")}{" "}
                 <Link to="/roles/role" className="text-primary underline-offset-4 hover:underline">
-                  Create a role
+                  {t("resume.pdf_import.no_roles_link")}
                 </Link>{" "}
-                first, then try importing again.
+                {t("resume.pdf_import.no_roles_after")}
               </p>
             )}
-            <FieldDescription>
-              Imported content is attached to this role, like a manually created resume.
-            </FieldDescription>
+            <FieldDescription>{t("resume.pdf_import.role_attached_hint")}</FieldDescription>
           </Field>
 
           <div className="flex flex-col gap-2">
-            <FieldLabel className="text-foreground">PDF file</FieldLabel>
+            <FieldLabel className="text-foreground">{t("resume.pdf_import.pdf_file_label")}</FieldLabel>
             <div
               role="button"
               tabIndex={submitting ? -1 : 0}
-              aria-label="Choose PDF file or drop a PDF here"
+              aria-label={t("resume.pdf_import.drop_zone_aria")}
               aria-disabled={submitting}
               className={cn(
                 "border-muted-foreground/35 bg-muted/25 text-muted-foreground flex min-h-[11rem] flex-col items-center justify-center gap-3 rounded-lg border border-dashed px-4 py-8 text-center outline-none transition-colors",
@@ -458,7 +465,7 @@ export function ResumeImportPdfDialog({
             >
               {submitting ? (
                 <PdfImportNeonUploadRing
-                  stage={PDF_IMPORT_STAGES[pdfImportStageIndex]!}
+                  stage={pdfImportStages[pdfImportStageIndex]!}
                   fileName={selectedFile?.name}
                 />
               ) : (
@@ -466,9 +473,9 @@ export function ResumeImportPdfDialog({
                   <FileUpIcon className="size-10 shrink-0 opacity-70" />
                   <div className="flex max-w-xs flex-col gap-1">
                     <p className="text-sm font-medium text-foreground">
-                      Drag and drop a PDF here
+                      {t("resume.pdf_import.drop_main")}
                     </p>
-                    <p className="text-xs leading-relaxed">Or click to browse your files.</p>
+                    <p className="text-xs leading-relaxed">{t("resume.pdf_import.drop_sub")}</p>
                   </div>
                 </>
               )}
@@ -480,7 +487,7 @@ export function ResumeImportPdfDialog({
             ) : null}
             {!submitting && selectedFile ? (
               <p className="text-muted-foreground text-sm">
-                Selected:{" "}
+                {t("resume.pdf_import.selected_prefix")}{" "}
                 <span className="text-foreground font-medium">{selectedFile.name}</span>
               </p>
             ) : null}
@@ -499,16 +506,16 @@ export function ResumeImportPdfDialog({
             onClick={() => onOpenChange(false)}
             disabled={submitting}
           >
-            Close
+            {t("shared.close")}
           </Button>
           <Button type="button" disabled={!canImport} onClick={() => void handleImport()}>
             {submitting ? (
               <>
                 <Loader2Icon className="size-4 animate-spin" data-icon="inline-start" />
-                Importing…
+                {t("resume.pdf_import.importing")}
               </>
             ) : (
-              "Import"
+              t("resume.pdf_import.import")
             )}
           </Button>
         </DialogFooter>

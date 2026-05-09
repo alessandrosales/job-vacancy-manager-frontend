@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import type { DraggableAttributes } from "@dnd-kit/core"
 import { useDroppable } from "@dnd-kit/core"
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
@@ -17,6 +18,7 @@ import type { OpportunityStatusDefinition } from "~/lib/labels"
 import { Badge } from "~/components/ui/badge"
 import { columnDroppableId } from "~/lib/kanban-columns"
 import { cn } from "~/lib/utils"
+import { pagesI18nNs } from "~/lib/i18n/config"
 
 export type KanbanColumnProps = {
   columnId: string
@@ -60,6 +62,7 @@ export function KanbanColumn({
   dragHandleListeners,
   isDraggingColumn = false,
 }: KanbanColumnProps) {
+  const { t } = useTranslation(pagesI18nNs)
   const { setNodeRef, isOver } = useDroppable({
     id: columnDroppableId(columnId),
     data: { type: "column" as const, columnId },
@@ -98,7 +101,7 @@ export function KanbanColumn({
         <div className="flex items-center gap-1">
           <button
             type="button"
-            aria-label={`Reorder column ${title}`}
+            aria-label={t("opportunities.kanban_reorder_column_aria", { title })}
             className={cn(
               "text-muted-foreground hover:text-foreground inline-flex size-6 cursor-grab items-center justify-center rounded-sm active:cursor-grabbing",
               isDraggingColumn && "cursor-grabbing"
@@ -151,7 +154,10 @@ export function KanbanColumn({
               {hasMore ? (
                 <span className="text-muted-foreground inline-flex items-center gap-1.5 text-[11px]">
                   <Loader2Icon className="size-3 animate-spin" />
-                  Loading more ({ids.length}/{totalCount})
+                  {t("opportunities.kanban_loading_more", {
+                    loaded: ids.length,
+                    total: totalCount,
+                  })}
                 </span>
               ) : null}
             </div>

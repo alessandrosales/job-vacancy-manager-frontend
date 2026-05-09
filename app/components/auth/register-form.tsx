@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import {
   GoogleAuthProvider,
   signInWithPopup,
@@ -32,6 +33,7 @@ import { firebaseAuthErrorMessage } from "~/lib/firebase-auth"
 import { syncFirebaseUserToApiSession } from "~/lib/firebase-auth-session"
 import { firebaseAuth } from "~/lib/firebase.client"
 import { useSessionUserStore } from "~/stores/session-user-store"
+import { pagesI18nNs } from "~/lib/i18n/config"
 
 function messagesFor(
   errors: Record<string, string[]>,
@@ -45,6 +47,7 @@ export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { t } = useTranslation(pagesI18nNs)
   const navigate = useNavigate()
 
   const [name, setName] = React.useState("")
@@ -77,7 +80,7 @@ export function RegisterForm({
 
     if (password !== passwordConfirmation) {
       setFieldErrors({
-        password_confirmation: ["doesn't match Password"],
+        password_confirmation: [t("auth.password_mismatch")],
       })
       return
     }
@@ -103,12 +106,10 @@ export function RegisterForm({
         return
       }
       if (err instanceof TypeError) {
-        setFormError(
-          "Could not reach the API. Check your network and VITE_API_BASE_URL."
-        )
+        setFormError(t("auth.network_error"))
         return
       }
-      setFormError("Could not create your account. Please try again.")
+      setFormError(t("auth.account_create_failed"))
     } finally {
       setPending(false)
     }
@@ -134,10 +135,8 @@ export function RegisterForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Create account</CardTitle>
-          <CardDescription>
-            Sign up with Google or email
-          </CardDescription>
+          <CardTitle className="text-xl">{t("auth.register_title")}</CardTitle>
+          <CardDescription>{t("auth.register_subtitle")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form method="post" onSubmit={handleSubmit}>
@@ -165,18 +164,18 @@ export function RegisterForm({
                       fill="currentColor"
                     />
                   </svg>
-                  Continue with Google
+                  {t("auth.register_google")}
                 </Button>
               </Field>
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
-                Or continue with
+                {t("auth.separator_or_email")}
               </FieldSeparator>
               <Field>
-                <FieldLabel htmlFor="register-name">Name</FieldLabel>
+                <FieldLabel htmlFor="register-name">{t("shared.name")}</FieldLabel>
                 <Input
                   id="register-name"
                   type="text"
-                  placeholder="Your name"
+                  placeholder={t("auth.name_placeholder")}
                   autoComplete="name"
                   required
                   value={name}
@@ -191,7 +190,7 @@ export function RegisterForm({
                 ) : null}
               </Field>
               <Field>
-                <FieldLabel htmlFor="register-email">Email</FieldLabel>
+                <FieldLabel htmlFor="register-email">{t("shared.email")}</FieldLabel>
                 <Input
                   id="register-email"
                   type="email"
@@ -210,7 +209,7 @@ export function RegisterForm({
                 ) : null}
               </Field>
               <Field>
-                <FieldLabel htmlFor="register-password">Password</FieldLabel>
+                <FieldLabel htmlFor="register-password">{t("shared.password")}</FieldLabel>
                 <Input
                   id="register-password"
                   type="password"
@@ -229,7 +228,7 @@ export function RegisterForm({
               </Field>
               <Field>
                 <FieldLabel htmlFor="register-password-confirm">
-                  Confirm password
+                  {t("shared.confirm_password")}
                 </FieldLabel>
                 <Input
                   id="register-password-confirm"
@@ -251,15 +250,15 @@ export function RegisterForm({
               </Field>
               <Field>
                 <Button type="submit" disabled={pending}>
-                  {pending ? "Creating account…" : "Create account"}
+                  {pending ? t("auth.creating_account") : t("auth.create_account")}
                 </Button>
                 <FieldDescription className="text-center">
-                  Already have an account?{" "}
+                  {t("auth.has_account")}{" "}
                   <Link
                     to="/"
                     className="underline-offset-4 hover:underline"
                   >
-                    Sign in
+                    {t("auth.sign_in")}
                   </Link>
                 </FieldDescription>
               </Field>
@@ -268,13 +267,13 @@ export function RegisterForm({
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center">
-        By continuing, you agree to our{" "}
+        {t("auth.legal_prefix")}{" "}
         <a href="#" className="underline-offset-4 hover:underline">
-          Terms of use
+          {t("auth.terms")}
         </a>{" "}
-        and{" "}
+        {t("auth.legal_and")}{" "}
         <a href="#" className="underline-offset-4 hover:underline">
-          Privacy policy
+          {t("auth.privacy")}
         </a>
         .
       </FieldDescription>

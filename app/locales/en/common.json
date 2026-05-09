@@ -16,5 +16,10 @@
   "nav_links": "Links",
   "nav_work_experience": "Work experience",
   "nav_certifications": "Certifications",
-  "nav_education": "Education"
+  "nav_education": "Education",
+  "nav_dark_mode": "Dark mode",
+  "nav_logout": "Log out",
+  "teams_heading": "Teams",
+  "teams_add": "Add team",
+  "nav_platform": "Platform"
 }

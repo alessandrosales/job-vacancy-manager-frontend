@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 
 import {
   generateResumeDescriptionWithAi,
@@ -23,6 +24,7 @@ import {
 } from "~/components/ui/field"
 import { Textarea } from "~/components/ui/textarea"
 import { Loader2Icon, SparklesIcon } from "lucide-react"
+import { pagesI18nNs } from "~/lib/i18n/config"
 
 export function ResumeDescriptionAiDialog({
   open,
@@ -37,6 +39,7 @@ export function ResumeDescriptionAiDialog({
   context: ResumeDescriptionAiContext
   onApply: (text: string) => void
 }) {
+  const { t } = useTranslation(pagesI18nNs)
   const [draft, setDraft] = React.useState(initialDescription)
   const [isGenerating, setIsGenerating] = React.useState(false)
   const [generateError, setGenerateError] = React.useState<string | null>(null)
@@ -60,7 +63,9 @@ export function ResumeDescriptionAiDialog({
       })
       setDraft(next)
     } catch (e) {
-      setGenerateError(e instanceof Error ? e.message : "Could not generate a description.")
+      setGenerateError(
+        e instanceof Error ? e.message : t("resume.ai_description.error_fallback")
+      )
     } finally {
       setIsGenerating(false)
     }
@@ -79,12 +84,8 @@ export function ResumeDescriptionAiDialog({
       >
         <div className="flex flex-col gap-4 p-4 pb-0">
           <DialogHeader>
-            <DialogTitle>AI description assistant</DialogTitle>
-            <DialogDescription>
-              Generate improves the preview text using your resume language, linked role, and linked
-              profile data as context—keep editing the preview, then Apply to copy it into your resume
-              description.
-            </DialogDescription>
+            <DialogTitle>{t("resume.ai_description.title")}</DialogTitle>
+            <DialogDescription>{t("resume.ai_description.description")}</DialogDescription>
           </DialogHeader>
           {generateError ? (
             <p className="text-destructive text-sm" role="alert">
@@ -93,24 +94,26 @@ export function ResumeDescriptionAiDialog({
           ) : null}
           <FieldGroup>
             <Field>
-              <FieldLabel htmlFor="resume-ai-draft">Preview</FieldLabel>
+              <FieldLabel htmlFor="resume-ai-draft">
+                {t("resume.ai_description.preview_label")}
+              </FieldLabel>
               <Textarea
                 id="resume-ai-draft"
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 className="min-h-48 resize-y"
-                placeholder="Current description loads here. Generate replaces this text."
+                placeholder={t("resume.ai_description.draft_placeholder")}
                 disabled={isGenerating}
               />
               <FieldDescription className="pb-4">
-                You can edit the preview before applying.
+                {t("resume.ai_description.preview_hint")}
               </FieldDescription>
             </Field>
           </FieldGroup>
         </div>
         <DialogFooter className="mx-0 mb-0 mt-0 shrink-0 gap-2 rounded-b-xl border-t bg-muted/30 px-4 py-3 sm:justify-end">
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t("shared.cancel")}
           </Button>
           <Button
             type="button"
@@ -123,10 +126,12 @@ export function ResumeDescriptionAiDialog({
             ) : (
               <SparklesIcon data-icon="inline-start" aria-hidden />
             )}
-            Generate
+            {isGenerating
+              ? t("resume.ai_description.generating")
+              : t("resume.ai_description.generate")}
           </Button>
           <Button type="button" onClick={handleApply} disabled={isGenerating}>
-            Apply
+            {t("resume.ai_description.apply")}
           </Button>
         </DialogFooter>
       </DialogContent>

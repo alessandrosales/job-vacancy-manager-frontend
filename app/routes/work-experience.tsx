@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router"
 
 import { WorkExperienceSkillFieldset } from "~/components/work-experience/work-experience-skill-fieldset"
@@ -22,6 +25,7 @@ import { Switch } from "~/components/ui/switch"
 import { Textarea } from "~/components/ui/textarea"
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 import { ApiError } from "~/lib/api/errors"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import { listSkills, type ApiSkill } from "~/lib/api/resources/skills"
 import {
   createWorkExperience,
@@ -31,11 +35,11 @@ import {
 } from "~/lib/api/resources/work-experiences"
 
 function emptyToNull(s: string): string | null {
-  const t = s.trim()
-  return t === "" ? null : t
+  const trimmed = s.trim()
+  return trimmed === "" ? null : trimmed
 }
 
-function formErrorMessage(err: unknown): string {
+function formErrorMessage(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
     const parts = [
       ...(err.fieldErrors.title ?? []),
@@ -47,12 +51,14 @@ function formErrorMessage(err: unknown): string {
       ...(err.fieldErrors.skill_ids ?? []),
       ...(err.fieldErrors.base ?? []),
     ]
-    if (parts.length > 0) return parts[0] ?? "Could not save work experience."
+    if (parts.length > 0) return parts[0] ?? fallback
   }
-  return "Could not save work experience."
+  return fallback
 }
 
 export default function WorkExperiencePage() {
+  const { t } = useTranslation(pagesI18nNs)
+  const { t: tc } = useTranslation("common")
   const navigate = useNavigate()
   const { id } = useParams()
   const isEdit = Boolean(id)
@@ -165,47 +171,36 @@ export default function WorkExperiencePage() {
         setPostSaveOpen(true)
       }
     } catch (err) {
-      setFormError(formErrorMessage(err))
+      setFormError(formErrorMessage(err, t("work_experience.form_error")))
     } finally {
       setSubmitting(false)
     }
   }
 
+  const pageTitle = isEdit ? t("work_experience.edit_title") : t("work_experience.new_title")
+  const crumbAction = isEdit ? t("shared.crumb_edit") : t("shared.crumb_new")
+  const breadcrumbs = [
+    { label: tc("breadcrumb_dashboard"), to: "/dashboard" },
+    { label: tc("nav_work_experience"), to: "/work-experiences" },
+    { label: crumbAction },
+  ]
+
   if (isEdit && loadState === "loading") {
     return (
-      <AppLayout
-        title="Edit work experience"
-        breadcrumbs={[
-          { label: "Dashboard", to: "/dashboard" },
-          { label: "Work experience", to: "/work-experiences" },
-          { label: "Edit" },
-        ]}
-      >
-        <p className="text-muted-foreground">Loading work experience…</p>
+      <AppLayout title={t("work_experience.edit_title")} breadcrumbs={breadcrumbs}>
+        <p className="text-muted-foreground">{t("work_experience.load_loading")}</p>
       </AppLayout>
     )
   }
 
-  const pageTitle = isEdit ? "Edit work experience" : "New work experience"
-  const crumbAction = isEdit ? "Edit" : "New"
-
   return (
-    <AppLayout
-      title={pageTitle}
-      breadcrumbs={[
-        { label: "Dashboard", to: "/dashboard" },
-        { label: "Work experience", to: "/work-experiences" },
-        { label: crumbAction },
-      ]}
-    >
+    <AppLayout title={pageTitle} breadcrumbs={breadcrumbs}>
       <div className="min-h-0 flex-1 overflow-y-auto">
         <Card className="max-w-xl">
           <CardHeader>
             <CardTitle>{pageTitle}</CardTitle>
             <CardDescription>
-              {isEdit
-                ? "Update this position in your history."
-                : "Add a role or employer you want on your CV."}
+              {isEdit ? t("work_experience.card_desc_edit") : t("work_experience.card_desc_new")}
             </CardDescription>
           </CardHeader>
           <form
@@ -220,7 +215,7 @@ export default function WorkExperiencePage() {
                   </p>
                 ) : null}
                 <Field>
-                  <FieldLabel htmlFor="we-title">Title</FieldLabel>
+                  <FieldLabel htmlFor="we-title">{t("work_experience.field_title")}</FieldLabel>
                   <Input
                     id="we-title"
                     value={title}
@@ -230,7 +225,7 @@ export default function WorkExperiencePage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="we-company">Company name</FieldLabel>
+                  <FieldLabel htmlFor="we-company">{t("work_experience.company_name")}</FieldLabel>
                   <Input
                     id="we-company"
                     value={companyName}
@@ -240,19 +235,19 @@ export default function WorkExperiencePage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="we-description">Description</FieldLabel>
+                  <FieldLabel htmlFor="we-description">{t("shared.description")}</FieldLabel>
                   <Textarea
                     id="we-description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Responsibilities, scope, or achievements for this role…"
+                    placeholder={t("work_experience.responsibilities_placeholder")}
                     disabled={submitting}
                     rows={5}
                     className="min-h-[120px] resize-y"
                   />
                 </Field>
                 <Field orientation="horizontal">
-                  <FieldLabel htmlFor="we-remote">Remote</FieldLabel>
+                  <FieldLabel htmlFor="we-remote">{t("shared.remote")}</FieldLabel>
                   <Switch
                     id="we-remote"
                     checked={isRemote}
@@ -261,7 +256,7 @@ export default function WorkExperiencePage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="we-from">Date from</FieldLabel>
+                  <FieldLabel htmlFor="we-from">{t("shared.from")}</FieldLabel>
                   <Input
                     id="we-from"
                     type="date"
@@ -271,7 +266,7 @@ export default function WorkExperiencePage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="we-to">Date to</FieldLabel>
+                  <FieldLabel htmlFor="we-to">{t("shared.to")}</FieldLabel>
                   <Input
                     id="we-to"
                     type="date"
@@ -281,7 +276,7 @@ export default function WorkExperiencePage() {
                   />
                 </Field>
                 {skillsLoading ? (
-                  <p className="text-sm text-muted-foreground">Loading skills…</p>
+                  <p className="text-sm text-muted-foreground">{t("work_experience.loading_skills")}</p>
                 ) : (
                   <WorkExperienceSkillFieldset
                     idPrefix="we-page"
@@ -299,14 +294,10 @@ export default function WorkExperiencePage() {
                 disabled={submitting}
                 onClick={() => navigate(-1)}
               >
-                Cancel
+                {t("shared.cancel")}
               </Button>
               <Button type="submit" disabled={submitting || skillsLoading}>
-                {submitting
-                  ? "Saving…"
-                  : isEdit
-                    ? "Save changes"
-                    : "Save"}
+                {submitting ? t("shared.saving") : isEdit ? t("shared.save_changes") : t("shared.save")}
               </Button>
             </CardFooter>
           </form>
@@ -314,7 +305,7 @@ export default function WorkExperiencePage() {
       </div>
       <PostSaveDialog
         open={postSaveOpen}
-        entityLabel="Work experience"
+        entityLabel={t("entity.work_experience")}
         onGoToList={() => navigate("/work-experiences")}
         onAddAnother={() => {
           setPostSaveOpen(false)

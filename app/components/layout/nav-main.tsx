@@ -1,3 +1,6 @@
+"use client"
+
+import { useTranslation } from "react-i18next"
 import {
   Collapsible,
   CollapsibleContent,
@@ -14,6 +17,7 @@ import {
   SidebarMenuSubItem,
 } from "~/components/ui/sidebar"
 import { ChevronRightIcon } from "lucide-react"
+import { defaultI18nNs } from "~/lib/i18n/config"
 
 export function NavMain({
   items,
@@ -29,9 +33,10 @@ export function NavMain({
     }[]
   }[]
 }) {
+  const { t } = useTranslation(defaultI18nNs)
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <SidebarGroupLabel>{t("nav_platform")}</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <Collapsible

@@ -1,8 +1,12 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { Loader2Icon } from "lucide-react"
 
 import { Button } from "~/components/ui/button"
 import { TableCell, TableRow } from "~/components/ui/table"
+import { pagesI18nNs } from "~/lib/i18n/config"
 
 type InfiniteScrollSentinelRowProps = {
   colSpan: number
@@ -24,6 +28,8 @@ export function InfiniteScrollSentinelRow({
   loadedCount,
   loadNextWindow,
 }: InfiniteScrollSentinelRowProps) {
+  const { t } = useTranslation(pagesI18nNs)
+
   if (totalCount === 0) return null
 
   return (
@@ -33,7 +39,12 @@ export function InfiniteScrollSentinelRow({
           <span className="inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-muted-foreground text-xs">
             <span className="inline-flex items-center gap-2">
               <Loader2Icon className="size-4 shrink-0 animate-spin" aria-hidden />
-              <span>Scroll to load more ({loadedCount} / {totalCount})</span>
+              <span>
+                {t("infinite_scroll.scroll_hint", {
+                  loaded: loadedCount,
+                  total: totalCount,
+                })}
+              </span>
             </span>
             <Button
               type="button"
@@ -42,12 +53,14 @@ export function InfiniteScrollSentinelRow({
               className="h-auto p-0 text-xs"
               onClick={loadNextWindow}
             >
-              Load more
+              {t("infinite_scroll.load_more")}
             </Button>
           </span>
         ) : (
           <span className="text-muted-foreground text-xs">
-            End of list · {totalCount} record{totalCount === 1 ? "" : "s"}
+            {totalCount === 1
+              ? t("infinite_scroll.end_of_list_one", { count: totalCount })
+              : t("infinite_scroll.end_of_list_other", { count: totalCount })}
           </span>
         )}
       </TableCell>

@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router"
 
 import { AppLayout } from "~/components/layout/app-layout"
@@ -19,6 +22,7 @@ import {
 import { Input } from "~/components/ui/input"
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 import { ApiError } from "~/lib/api/errors"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import {
   createReferenceLink,
   getReferenceLink,
@@ -26,25 +30,27 @@ import {
 } from "~/lib/api/resources/reference-links"
 
 function normalizeUrlForApi(raw: string): string {
-  const t = raw.trim()
-  if (!t) return t
-  if (/^https?:\/\//i.test(t)) return t
-  return `https://${t}`
+  const trimmed = raw.trim()
+  if (!trimmed) return trimmed
+  if (/^https?:\/\//i.test(trimmed)) return trimmed
+  return `https://${trimmed}`
 }
 
-function formErrorMessage(err: unknown): string {
+function formErrorMessage(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
     const parts = [
       ...(err.fieldErrors.title ?? []),
       ...(err.fieldErrors.url ?? []),
       ...(err.fieldErrors.base ?? []),
     ]
-    if (parts.length > 0) return parts[0] ?? "Could not save link."
+    if (parts.length > 0) return parts[0] ?? fallback
   }
-  return "Could not save link."
+  return fallback
 }
 
 export default function ReferenceLinkPage() {
+  const { t } = useTranslation(pagesI18nNs)
+  const { t: tc } = useTranslation("common")
   const navigate = useNavigate()
   const { id } = useParams()
   const isEdit = Boolean(id)
@@ -111,47 +117,36 @@ export default function ReferenceLinkPage() {
         setPostSaveOpen(true)
       }
     } catch (err) {
-      setFormError(formErrorMessage(err))
+      setFormError(formErrorMessage(err, t("reference_link.form_error")))
     } finally {
       setSubmitting(false)
     }
   }
 
+  const pageTitle = isEdit ? t("reference_link.edit_title") : t("reference_link.new_title")
+  const crumbAction = isEdit ? t("shared.crumb_edit") : t("shared.crumb_new")
+  const breadcrumbs = [
+    { label: tc("breadcrumb_dashboard"), to: "/dashboard" },
+    { label: tc("nav_links"), to: "/links" },
+    { label: crumbAction },
+  ]
+
   if (isEdit && loadState === "loading") {
     return (
-      <AppLayout
-        title="Edit link"
-        breadcrumbs={[
-          { label: "Dashboard", to: "/dashboard" },
-          { label: "Links", to: "/links" },
-          { label: "Edit" },
-        ]}
-      >
-        <p className="text-muted-foreground">Loading link…</p>
+      <AppLayout title={t("reference_link.edit_title")} breadcrumbs={breadcrumbs}>
+        <p className="text-muted-foreground">{t("reference_link.load_loading")}</p>
       </AppLayout>
     )
   }
 
-  const pageTitle = isEdit ? "Edit link" : "New link"
-  const crumbAction = isEdit ? "Edit" : "New"
-
   return (
-    <AppLayout
-      title={pageTitle}
-      breadcrumbs={[
-        { label: "Dashboard", to: "/dashboard" },
-        { label: "Links", to: "/links" },
-        { label: crumbAction },
-      ]}
-    >
+    <AppLayout title={pageTitle} breadcrumbs={breadcrumbs}>
       <div className="min-h-0 flex-1 overflow-y-auto">
         <Card className="max-w-xl">
           <CardHeader>
             <CardTitle>{pageTitle}</CardTitle>
             <CardDescription>
-              {isEdit
-                ? "Update this reference link."
-                : "Save a title and URL for quick access from your sidebar area."}
+              {isEdit ? t("reference_link.card_desc_edit") : t("reference_link.card_desc_new")}
             </CardDescription>
           </CardHeader>
           <form
@@ -166,7 +161,7 @@ export default function ReferenceLinkPage() {
                   </p>
                 ) : null}
                 <Field>
-                  <FieldLabel htmlFor="ref-link-title">Title</FieldLabel>
+                  <FieldLabel htmlFor="ref-link-title">{t("reference_link.field_title")}</FieldLabel>
                   <Input
                     id="ref-link-title"
                     value={title}
@@ -176,7 +171,7 @@ export default function ReferenceLinkPage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="ref-link-url">URL</FieldLabel>
+                  <FieldLabel htmlFor="ref-link-url">{t("shared.url")}</FieldLabel>
                   <Input
                     id="ref-link-url"
                     type="text"
@@ -184,7 +179,7 @@ export default function ReferenceLinkPage() {
                     autoComplete="url"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
-                    placeholder="https:// or domain.com"
+                    placeholder={t("reference_link.url_placeholder")}
                     required
                     disabled={submitting}
                   />
@@ -198,14 +193,10 @@ export default function ReferenceLinkPage() {
                 disabled={submitting}
                 onClick={() => navigate(-1)}
               >
-                Cancel
+                {t("shared.cancel")}
               </Button>
               <Button type="submit" disabled={submitting}>
-                {submitting
-                  ? "Saving…"
-                  : isEdit
-                    ? "Save changes"
-                    : "Save"}
+                {submitting ? t("shared.saving") : isEdit ? t("shared.save_changes") : t("shared.save")}
               </Button>
             </CardFooter>
           </form>
@@ -213,7 +204,7 @@ export default function ReferenceLinkPage() {
       </div>
       <PostSaveDialog
         open={postSaveOpen}
-        entityLabel="Link"
+        entityLabel={t("entity.link")}
         onGoToList={() => navigate("/links")}
         onAddAnother={() => {
           setPostSaveOpen(false)

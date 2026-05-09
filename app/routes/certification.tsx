@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router"
 
 import { AppLayout } from "~/components/layout/app-layout"
@@ -19,6 +22,7 @@ import {
 import { Input } from "~/components/ui/input"
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 import { ApiError } from "~/lib/api/errors"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import {
   createCertification,
   getCertification,
@@ -26,11 +30,11 @@ import {
 } from "~/lib/api/resources/certifications"
 
 function emptyToNull(s: string): string | null {
-  const t = s.trim()
-  return t === "" ? null : t
+  const trimmed = s.trim()
+  return trimmed === "" ? null : trimmed
 }
 
-function formErrorMessage(err: unknown): string {
+function formErrorMessage(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
     const parts = [
       ...(err.fieldErrors.name ?? []),
@@ -38,12 +42,14 @@ function formErrorMessage(err: unknown): string {
       ...(err.fieldErrors.date_to ?? []),
       ...(err.fieldErrors.base ?? []),
     ]
-    if (parts.length > 0) return parts[0] ?? "Could not save certification."
+    if (parts.length > 0) return parts[0] ?? fallback
   }
-  return "Could not save certification."
+  return fallback
 }
 
 export default function CertificationPage() {
+  const { t } = useTranslation(pagesI18nNs)
+  const { t: tc } = useTranslation("common")
   const navigate = useNavigate()
   const { id } = useParams()
   const isEdit = Boolean(id)
@@ -111,47 +117,36 @@ export default function CertificationPage() {
         setPostSaveOpen(true)
       }
     } catch (err) {
-      setFormError(formErrorMessage(err))
+      setFormError(formErrorMessage(err, t("certification.form_error")))
     } finally {
       setSubmitting(false)
     }
   }
 
+  const pageTitle = isEdit ? t("certification.edit_title") : t("certification.new_title")
+  const crumbAction = isEdit ? t("shared.crumb_edit") : t("shared.crumb_new")
+  const breadcrumbs = [
+    { label: tc("breadcrumb_dashboard"), to: "/dashboard" },
+    { label: tc("nav_certifications"), to: "/certifications" },
+    { label: crumbAction },
+  ]
+
   if (isEdit && loadState === "loading") {
     return (
-      <AppLayout
-        title="Edit certification"
-        breadcrumbs={[
-          { label: "Dashboard", to: "/dashboard" },
-          { label: "Certifications", to: "/certifications" },
-          { label: "Edit" },
-        ]}
-      >
-        <p className="text-muted-foreground">Loading certification…</p>
+      <AppLayout title={t("certification.edit_title")} breadcrumbs={breadcrumbs}>
+        <p className="text-muted-foreground">{t("certification.load_loading")}</p>
       </AppLayout>
     )
   }
 
-  const pageTitle = isEdit ? "Edit certification" : "New certification"
-  const crumbAction = isEdit ? "Edit" : "New"
-
   return (
-    <AppLayout
-      title={pageTitle}
-      breadcrumbs={[
-        { label: "Dashboard", to: "/dashboard" },
-        { label: "Certifications", to: "/certifications" },
-        { label: crumbAction },
-      ]}
-    >
+    <AppLayout title={pageTitle} breadcrumbs={breadcrumbs}>
       <div className="min-h-0 flex-1 overflow-y-auto">
         <Card className="max-w-xl">
           <CardHeader>
             <CardTitle>{pageTitle}</CardTitle>
             <CardDescription>
-              {isEdit
-                ? "Update this certification."
-                : "Add a certification or license you hold."}
+              {isEdit ? t("certification.card_desc_edit") : t("certification.card_desc_new")}
             </CardDescription>
           </CardHeader>
           <form
@@ -166,7 +161,7 @@ export default function CertificationPage() {
                   </p>
                 ) : null}
                 <Field>
-                  <FieldLabel htmlFor="cert-name">Name</FieldLabel>
+                  <FieldLabel htmlFor="cert-name">{t("shared.name")}</FieldLabel>
                   <Input
                     id="cert-name"
                     value={name}
@@ -176,7 +171,7 @@ export default function CertificationPage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="cert-from">Date from</FieldLabel>
+                  <FieldLabel htmlFor="cert-from">{t("certification.date_from")}</FieldLabel>
                   <Input
                     id="cert-from"
                     type="date"
@@ -186,7 +181,7 @@ export default function CertificationPage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="cert-to">Date to</FieldLabel>
+                  <FieldLabel htmlFor="cert-to">{t("certification.date_to")}</FieldLabel>
                   <Input
                     id="cert-to"
                     type="date"
@@ -204,14 +199,10 @@ export default function CertificationPage() {
                 disabled={submitting}
                 onClick={() => navigate(-1)}
               >
-                Cancel
+                {t("shared.cancel")}
               </Button>
               <Button type="submit" disabled={submitting}>
-                {submitting
-                  ? "Saving…"
-                  : isEdit
-                    ? "Save changes"
-                    : "Save"}
+                {submitting ? t("shared.saving") : isEdit ? t("shared.save_changes") : t("shared.save")}
               </Button>
             </CardFooter>
           </form>
@@ -219,7 +210,7 @@ export default function CertificationPage() {
       </div>
       <PostSaveDialog
         open={postSaveOpen}
-        entityLabel="Certification"
+        entityLabel={t("entity.certification")}
         onGoToList={() => navigate("/certifications")}
         onAddAnother={() => {
           setPostSaveOpen(false)

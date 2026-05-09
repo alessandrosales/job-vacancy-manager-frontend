@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { PlusIcon } from "lucide-react"
 
 /** Linha mínima para o checklist (compatível com `ApiSkill` da API). */
@@ -19,6 +20,7 @@ import {
   FieldSet,
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
+import { pagesI18nNs } from "~/lib/i18n/config"
 
 export function WorkExperienceSkillFieldset({
   idPrefix,
@@ -39,6 +41,7 @@ export function WorkExperienceSkillFieldset({
   onAddNew?: () => void
   addNewAriaLabel?: string
 }) {
+  const { t } = useTranslation(pagesI18nNs)
   const [needle, setNeedle] = React.useState("")
   const q = needle.trim().toLowerCase()
   const filtered = React.useMemo(() => {
@@ -59,24 +62,24 @@ export function WorkExperienceSkillFieldset({
     onSkillIdsChange(skillIds.filter((x) => x !== id))
   }
 
-  const emptyBody = emptyMessage ?? "No skills defined yet."
+  const emptyBody = emptyMessage ?? t("work_experience.no_skills_defined")
 
   return (
     <FieldSet className="gap-3" data-slot="checkbox-group">
-      <FieldLegend variant="label">Skills</FieldLegend>
+      <FieldLegend variant="label">{t("work_experience.skills_fieldset_legend")}</FieldLegend>
       <FieldDescription>
-        Filter and select skills for this experience. Selected: {skillIds.length}.
+        {t("work_experience.skills_fieldset_desc", { count: skillIds.length })}
       </FieldDescription>
       {skills.length > 0 ? (
         <div className="flex flex-col gap-1">
           <div className="flex flex-row items-end gap-2">
             <Field className="min-w-0 flex-1">
-              <FieldLabel htmlFor={`${idPrefix}-skill-filter`}>Filter skills</FieldLabel>
+              <FieldLabel htmlFor={`${idPrefix}-skill-filter`}>{t("work_experience.filter_skills")}</FieldLabel>
               <Input
                 id={`${idPrefix}-skill-filter`}
                 value={needle}
                 onChange={(e) => setNeedle(e.target.value)}
-                placeholder="Search by name or description…"
+                placeholder={t("work_experience.search_skills_placeholder")}
                 autoComplete="off"
               />
             </Field>
@@ -86,7 +89,7 @@ export function WorkExperienceSkillFieldset({
                 variant="outline"
                 size="icon"
                 className="mb-0.5 shrink-0"
-                aria-label={addNewAriaLabel ?? "Add skill"}
+                aria-label={addNewAriaLabel ?? t("work_experience.aria_add_skill_inline")}
                 onClick={onAddNew}
               >
                 <PlusIcon />
@@ -102,7 +105,7 @@ export function WorkExperienceSkillFieldset({
               onClick={() => onSkillIdsChange(skills.map((s) => s.id))}
               disabled={skills.every((s) => selectedSet.has(s.id))}
             >
-              Select all
+              {t("work_experience.select_all_skills")}
             </Button>
             <Button
               type="button"
@@ -112,7 +115,7 @@ export function WorkExperienceSkillFieldset({
               onClick={() => onSkillIdsChange([])}
               disabled={skillIds.length === 0}
             >
-              Clear selection
+              {t("work_experience.clear_skill_selection")}
             </Button>
           </div>
         </div>
@@ -127,7 +130,7 @@ export function WorkExperienceSkillFieldset({
                 variant="outline"
                 size="icon"
                 className="shrink-0"
-                aria-label={addNewAriaLabel ?? "Add skill"}
+                aria-label={addNewAriaLabel ?? t("work_experience.aria_add_skill_inline")}
                 onClick={onAddNew}
               >
                 <PlusIcon />
@@ -137,7 +140,7 @@ export function WorkExperienceSkillFieldset({
             <p className="text-muted-foreground text-sm">{emptyBody}</p>
           )
         ) : filtered.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No matches.</p>
+          <p className="text-muted-foreground text-sm">{t("work_experience.no_skill_matches")}</p>
         ) : (
           <FieldGroup className="gap-2">
             {filtered.map((s) => {

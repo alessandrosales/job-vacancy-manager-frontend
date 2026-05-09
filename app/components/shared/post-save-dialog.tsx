@@ -1,3 +1,7 @@
+"use client"
+
+import { useTranslation } from "react-i18next"
+
 import { Button } from "~/components/ui/button"
 import {
   Dialog,
@@ -7,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog"
+import { pagesI18nNs } from "~/lib/i18n/config"
 
 interface PostSaveDialogProps {
   open: boolean
@@ -21,21 +26,25 @@ export function PostSaveDialog({
   onGoToList,
   onAddAnother,
 }: PostSaveDialogProps) {
+  const { t } = useTranslation(pagesI18nNs)
+
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onGoToList() }}>
       <DialogContent showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle>{entityLabel} saved</DialogTitle>
+          <DialogTitle>
+            {t("post_save.title", { entity: entityLabel })}
+          </DialogTitle>
           <DialogDescription>
-            What would you like to do next?
+            {t("post_save.description")}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" onClick={onGoToList}>
-            Back to list
+          <Button type="button" variant="outline" onClick={onGoToList}>
+            {t("post_save.back_to_list")}
           </Button>
-          <Button onClick={onAddAnother}>
-            Add another
+          <Button type="button" onClick={onAddAnother}>
+            {t("post_save.add_another")}
           </Button>
         </DialogFooter>
       </DialogContent>

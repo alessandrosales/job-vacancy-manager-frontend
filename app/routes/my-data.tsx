@@ -34,11 +34,11 @@ import { Textarea } from "~/components/ui/textarea"
 import { ApiError } from "~/lib/api/errors"
 import type { ApiUserUpdate } from "~/lib/api/resources/users"
 import { updateUser as patchUserApi } from "~/lib/api/resources/users"
-import { defaultI18nNs } from "~/lib/i18n/config"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import { getAuthToken } from "~/lib/auth-token"
 import { useSessionUserStore } from "~/stores/session-user-store"
 
-function formErrorMessage(err: unknown): string {
+function formErrorMessage(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
     const fe = err.fieldErrors
     const parts = [
@@ -57,19 +57,20 @@ function formErrorMessage(err: unknown): string {
     ]
     if (parts.length > 0) return parts.join(" ")
   }
-  return "Could not save your profile. Try again."
+  return fallback
 }
 
 function parseAgeInput(raw: string): { ok: true; value: number | null } | { ok: false } {
-  const t = raw.trim()
-  if (!t) return { ok: true, value: null }
-  const n = Number(t)
+  const trimmed = raw.trim()
+  if (!trimmed) return { ok: true, value: null }
+  const n = Number(trimmed)
   if (!Number.isInteger(n) || n < 0 || n > 150) return { ok: false }
   return { ok: true, value: n }
 }
 
 export default function MyDataPage() {
-  const { t } = useTranslation(defaultI18nNs)
+  const { t: tp } = useTranslation(pagesI18nNs)
+  const { t: tc } = useTranslation("common")
   const navigate = useNavigate()
   const { user } = useSessionUser()
 
@@ -108,8 +109,8 @@ export default function MyDataPage() {
     setRemoveOpenAiToken(false)
   }, [user])
 
-  const token = getAuthToken()
-  const loadingProfile = Boolean(token) && user.id === ""
+  const authTokenStored = getAuthToken()
+  const loadingProfile = Boolean(authTokenStored) && user.id === ""
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -117,12 +118,12 @@ export default function MyDataPage() {
 
     const ageResult = parseAgeInput(age)
     if (!ageResult.ok) {
-      setFormError("Age must be a whole number between 0 and 150, or leave blank.")
+      setFormError(tp("my_data.age_invalid"))
       return
     }
 
     if (!user.id) {
-      setFormError("Profile not loaded yet.")
+      setFormError(tp("my_data.profile_not_loaded"))
       return
     }
 
@@ -146,12 +147,12 @@ export default function MyDataPage() {
         patch.ai_token = openAiToken.trim()
       }
       const updated = await patchUserApi(user.id, patch)
-      const t = getAuthToken()
-      if (t) {
-        useSessionUserStore.getState().hydrateFromAuthMeResponse(t, updated)
+      const tok = getAuthToken()
+      if (tok) {
+        useSessionUserStore.getState().hydrateFromAuthMeResponse(tok, updated)
       }
     } catch (err) {
-      setFormError(formErrorMessage(err))
+      setFormError(formErrorMessage(err, tp("my_data.form_error_fallback")))
     } finally {
       setSubmitting(false)
     }
@@ -159,24 +160,23 @@ export default function MyDataPage() {
 
   return (
     <AppLayout
-      title={t("my_data_title")}
+      title={tc("my_data_title")}
       breadcrumbs={[
-        { label: t("breadcrumb_dashboard"), to: "/dashboard" },
-        { label: t("my_data_title") },
+        { label: tc("breadcrumb_dashboard"), to: "/dashboard" },
+        { label: tc("my_data_title") },
       ]}
     >
       <div className="min-h-0 flex-1 overflow-y-auto">
         <Card className="max-w-xl">
           <CardHeader>
-            <CardTitle>{t("my_data_title")}</CardTitle>
+            <CardTitle>{tc("my_data_title")}</CardTitle>
             <CardDescription>
-              View and update the information shown in the account menu in the
-              sidebar. Data is loaded from your account and saved to the server.
+              {tp("my_data.card_description")}
             </CardDescription>
           </CardHeader>
           {loadingProfile ? (
             <CardContent>
-              <p className="text-muted-foreground text-sm">Loading profile…</p>
+              <p className="text-muted-foreground text-sm">{tp("my_data.loading_profile")}</p>
             </CardContent>
           ) : (
             <form
@@ -196,7 +196,7 @@ export default function MyDataPage() {
                     </Field>
                   ) : null}
                   <Field>
-                    <FieldLabel htmlFor="profile-name">Full name</FieldLabel>
+                    <FieldLabel htmlFor="profile-name">{tp("my_data.full_name")}</FieldLabel>
                     <Input
                       id="profile-name"
                       value={name}
@@ -207,7 +207,7 @@ export default function MyDataPage() {
                     />
                   </Field>
                   <Field>
-                    <FieldLabel htmlFor="profile-email">Email</FieldLabel>
+                    <FieldLabel htmlFor="profile-email">{tp("my_data.email")}</FieldLabel>
                     <Input
                       id="profile-email"
                       type="email"
@@ -219,30 +219,30 @@ export default function MyDataPage() {
                     />
                   </Field>
                   <Field>
-                    <FieldLabel htmlFor="profile-preferred-language">Preferred language</FieldLabel>
+                    <FieldLabel htmlFor="profile-preferred-language">{tp("my_data.preferred_language")}</FieldLabel>
                     <Select
                       value={preferredLanguage}
                       onValueChange={setPreferredLanguage}
                       disabled={submitting}
                     >
                       <SelectTrigger id="profile-preferred-language" className="w-full">
-                        <SelectValue placeholder="Language" />
+                        <SelectValue placeholder={tp("my_data.language_placeholder")} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          <SelectItem value="en">English</SelectItem>
-                          <SelectItem value="pt_br">Português (BR)</SelectItem>
-                          <SelectItem value="es">Español</SelectItem>
+                          <SelectItem value="en">{tp("my_data.lang_en")}</SelectItem>
+                          <SelectItem value="pt_br">{tp("my_data.lang_pt_br")}</SelectItem>
+                          <SelectItem value="es">{tp("my_data.lang_es")}</SelectItem>
                         </SelectGroup>
                       </SelectContent>
                     </Select>
                     <FieldDescription>
-                      Used for UI copy and defaults in the app (not the spoken languages list).
+                      {tp("my_data.preferred_language_hint")}
                     </FieldDescription>
                   </Field>
                   <Field>
                     <FieldLabel htmlFor="profile-openai-token">
-                      OpenAI API key (optional)
+                      {tp("my_data.openai_key")}
                     </FieldLabel>
                     <Input
                       id="profile-openai-token"
@@ -255,15 +255,14 @@ export default function MyDataPage() {
                       }}
                       placeholder={
                         user.ai_token_configured
-                          ? "New key to replace the saved one"
-                          : "sk-…"
+                          ? tp("my_data.placeholder_new_key")
+                          : tp("my_data.placeholder_sk")
                       }
                       disabled={submitting || removeOpenAiToken}
                     />
                     <FieldDescription>
-                      Stored on your account for AI resume features (import PDF, generate text,
-                      compile markdown). The key is never shown again after saving.
-                      {user.ai_token_configured ? " A key is already saved." : ""}
+                      {tp("my_data.openai_desc")}
+                      {user.ai_token_configured ? tp("my_data.key_saved_suffix") : ""}
                     </FieldDescription>
                     {user.ai_token_configured ? (
                       <label className="flex cursor-pointer items-center gap-2 text-sm">
@@ -277,12 +276,12 @@ export default function MyDataPage() {
                           }}
                           disabled={submitting}
                         />
-                        Remove saved API key
+                        {tp("my_data.remove_key")}
                       </label>
                     ) : null}
                   </Field>
                   <Field>
-                    <FieldLabel htmlFor="profile-phone">Phone</FieldLabel>
+                    <FieldLabel htmlFor="profile-phone">{tp("my_data.phone")}</FieldLabel>
                     <Input
                       id="profile-phone"
                       type="tel"
@@ -293,7 +292,7 @@ export default function MyDataPage() {
                     />
                   </Field>
                   <Field>
-                    <FieldLabel htmlFor="profile-avatar">Avatar URL</FieldLabel>
+                    <FieldLabel htmlFor="profile-avatar">{tp("my_data.avatar_url")}</FieldLabel>
                     <Input
                       id="profile-avatar"
                       type="url"
@@ -303,47 +302,47 @@ export default function MyDataPage() {
                       disabled={submitting}
                     />
                     <FieldDescription>
-                      Optional. If empty, initials from your name are used.
+                      {tp("my_data.avatar_hint")}
                     </FieldDescription>
                   </Field>
                   <Field>
-                    <FieldLabel htmlFor="profile-bio">Bio</FieldLabel>
+                    <FieldLabel htmlFor="profile-bio">{tp("my_data.bio")}</FieldLabel>
                     <Textarea
                       id="profile-bio"
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
                       rows={4}
-                      placeholder="Short description about you"
+                      placeholder={tp("my_data.bio_placeholder")}
                       disabled={submitting}
                     />
                   </Field>
                   <Field>
-                    <FieldLabel htmlFor="profile-age">Age</FieldLabel>
+                    <FieldLabel htmlFor="profile-age">{tp("my_data.age")}</FieldLabel>
                     <Input
                       id="profile-age"
                       inputMode="numeric"
                       value={age}
                       onChange={(e) => setAge(e.target.value)}
                       autoComplete="off"
-                      placeholder="e.g. 32"
+                      placeholder={tp("my_data.age_placeholder")}
                       disabled={submitting}
                     />
                   </Field>
                   <Field>
-                    <FieldLabel htmlFor="profile-address">Full address</FieldLabel>
+                    <FieldLabel htmlFor="profile-address">{tp("my_data.full_address")}</FieldLabel>
                     <Textarea
                       id="profile-address"
                       value={fullAddress}
                       onChange={(e) => setFullAddress(e.target.value)}
                       rows={3}
                       autoComplete="street-address"
-                      placeholder="Street, number, city, postal code"
+                      placeholder={tp("my_data.address_placeholder")}
                       disabled={submitting}
                     />
                   </Field>
                   <Field>
                     <FieldLabel htmlFor="profile-relationship">
-                      Relationship status
+                      {tp("my_data.relationship_status")}
                     </FieldLabel>
                     <Input
                       id="profile-relationship"
@@ -354,7 +353,7 @@ export default function MyDataPage() {
                     />
                   </Field>
                   <Field>
-                    <FieldLabel htmlFor="profile-gender">Gender</FieldLabel>
+                    <FieldLabel htmlFor="profile-gender">{tp("my_data.gender")}</FieldLabel>
                     <Input
                       id="profile-gender"
                       value={gender}
@@ -372,10 +371,10 @@ export default function MyDataPage() {
                   onClick={() => navigate(-1)}
                   disabled={submitting}
                 >
-                  Cancel
+                  {tp("shared.cancel")}
                 </Button>
                 <Button type="submit" disabled={submitting || loadingProfile}>
-                  {submitting ? "Saving…" : "Save changes"}
+                  {submitting ? tp("shared.saving") : tp("shared.save_changes")}
                 </Button>
               </CardFooter>
             </form>

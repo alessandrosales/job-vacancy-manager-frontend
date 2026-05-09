@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { Link } from "react-router"
 
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
@@ -27,6 +30,7 @@ import {
 } from "~/components/ui/alert-dialog"
 import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
 import { ApiError } from "~/lib/api/errors"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import {
   deleteOpportunityStatus as deleteOpportunityStatusRequest,
   listOpportunityStatuses,
@@ -59,6 +63,7 @@ function apiErrorText(err: unknown, fallback: string): string {
 }
 
 export default function OpportunityStatusesPage() {
+  const { t } = useTranslation(pagesI18nNs)
   const [statuses, setStatuses] = React.useState<ApiOpportunityStatus[]>([])
   const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
     "loading"
@@ -89,9 +94,9 @@ export default function OpportunityStatusesPage() {
       setLoadState("idle")
     } catch (e) {
       setLoadState("error")
-      setListError(apiErrorText(e, "Could not load statuses."))
+      setListError(apiErrorText(e, t("opportunity_statuses.load_error")))
     }
-  }, [])
+  }, [t])
 
   React.useEffect(() => {
     void fetchStatuses()
@@ -131,7 +136,7 @@ export default function OpportunityStatusesPage() {
       ])
       await fetchStatuses()
     } catch (e) {
-      setReorderError(apiErrorText(e, "Could not reorder statuses."))
+      setReorderError(apiErrorText(e, t("opportunity_statuses.reorder_error")))
     } finally {
       setReorderBusy(false)
     }
@@ -146,23 +151,23 @@ export default function OpportunityStatusesPage() {
       setStatuses((prev) => prev.filter((s) => s.id !== deleteId))
       setDeleteId(null)
     } catch (e) {
-      setDeleteError(apiErrorText(e, "Could not delete status."))
+      setDeleteError(apiErrorText(e, t("opportunity_statuses.delete_error")))
     } finally {
       setDeleteSubmitting(false)
     }
   }
 
   return (
-    <AppLayout title="Opportunity statuses">
+    <AppLayout title={t("opportunity_statuses.title")}>
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
         <ListingPageHeader
-          title="Opportunity statuses"
-          description="Configure pipeline stages — each status appears as a column on the Kanban board"
+          title={t("opportunity_statuses.title")}
+          description={t("opportunity_statuses.description")}
           action={
             <Button asChild>
               <Link to="/opportunities/status">
                 <PlusIcon data-icon="inline-start" />
-                Add status
+                {t("opportunity_statuses.add")}
               </Link>
             </Button>
           }
@@ -175,28 +180,31 @@ export default function OpportunityStatusesPage() {
         <ListingTableCard
           stats={
             loadState === "idle" && totalCount > 0
-              ? `Showing ${loadedCount} of ${totalCount}`
+              ? t("shared.showing_loaded_of_total", {
+                  loaded: loadedCount,
+                  total: totalCount,
+                })
               : undefined
           }
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
-          searchPlaceholder="Search statuses…"
+          searchPlaceholder={t("opportunity_statuses.search_placeholder")}
         >
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-28">Actions</TableHead>
-                <TableHead className="w-24">Order</TableHead>
-                <TableHead>Label</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead className="w-40">Style</TableHead>
+                <TableHead className="w-28">{t("shared.actions")}</TableHead>
+                <TableHead className="w-24">{t("shared.order")}</TableHead>
+                <TableHead>{t("shared.label")}</TableHead>
+                <TableHead>{t("shared.description")}</TableHead>
+                <TableHead className="w-40">{t("shared.style")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loadState === "loading" ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-muted-foreground">
-                    Loading statuses…
+                    {t("opportunity_statuses.loading")}
                   </TableCell>
                 </TableRow>
               ) : loadState === "error" ? (
@@ -210,7 +218,7 @@ export default function OpportunityStatusesPage() {
                         size="sm"
                         onClick={() => void fetchStatuses()}
                       >
-                        Try again
+                        {t("shared.try_again")}
                       </Button>
                     </div>
                   </TableCell>
@@ -218,13 +226,13 @@ export default function OpportunityStatusesPage() {
               ) : statuses.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-muted-foreground">
-                    No statuses. Add your first stage.
+                    {t("opportunity_statuses.empty")}
                   </TableCell>
                 </TableRow>
               ) : filtered.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-muted-foreground">
-                    No matches for your search.
+                    {t("shared.no_matches_search")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -239,7 +247,7 @@ export default function OpportunityStatusesPage() {
                           <Button variant="ghost" size="icon" asChild>
                             <Link
                               to={`/opportunities/status/${encodeURIComponent(st.id)}`}
-                              aria-label="Edit status"
+                              aria-label={t("opportunity_statuses.aria_edit")}
                             >
                               <PencilIcon />
                             </Link>
@@ -247,7 +255,7 @@ export default function OpportunityStatusesPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            aria-label="Delete status"
+                            aria-label={t("opportunity_statuses.aria_delete")}
                             onClick={() => {
                               setDeleteError(null)
                               setDeleteId(st.id)
@@ -265,7 +273,7 @@ export default function OpportunityStatusesPage() {
                             variant="ghost"
                             size="icon"
                             className="size-8"
-                            aria-label="Move up"
+                            aria-label={t("opportunity_statuses.move_up")}
                             disabled={isFirst || reorderBusy}
                             onClick={() => void moveId(st.id, "up")}
                           >
@@ -276,7 +284,7 @@ export default function OpportunityStatusesPage() {
                             variant="ghost"
                             size="icon"
                             className="size-8"
-                            aria-label="Move down"
+                            aria-label={t("opportunity_statuses.move_down")}
                             disabled={isLast || reorderBusy}
                             onClick={() => void moveId(st.id, "down")}
                           >
@@ -322,10 +330,9 @@ export default function OpportunityStatusesPage() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete this status?</AlertDialogTitle>
+              <AlertDialogTitle>{t("opportunity_statuses.delete_title")}</AlertDialogTitle>
               <AlertDialogDescription>
-                Opportunities in this column move to another status. Custom Kanban
-                columns are not removed.
+                {t("opportunity_statuses.delete_desc")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             {deleteError ? (
@@ -334,7 +341,9 @@ export default function OpportunityStatusesPage() {
               </p>
             ) : null}
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={deleteSubmitting}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={deleteSubmitting}>
+                {t("shared.cancel")}
+              </AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
                 disabled={deleteSubmitting}
@@ -343,7 +352,7 @@ export default function OpportunityStatusesPage() {
                   void confirmDelete()
                 }}
               >
-                {deleteSubmitting ? "Deleting…" : "Delete"}
+                {deleteSubmitting ? t("shared.deleting") : t("shared.delete")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import type { LucideIcon } from "lucide-react"
 import {
   Award,
@@ -24,16 +25,7 @@ import {
 } from "~/components/ui/dialog"
 import { ApiError } from "~/lib/api/errors"
 import { compileResumeMarkdown, type ApiResume } from "~/lib/api/resources/resumes"
-
-const COMPILE_STAGES: ReadonlyArray<{ label: string; Icon: LucideIcon }> = [
-  { label: "Preparing your resume data…", Icon: FileText },
-  { label: "Applying ATS template…", Icon: FileCode2 },
-  { label: "Writing professional summary…", Icon: BrainCircuit },
-  { label: "Formatting work experiences…", Icon: History },
-  { label: "Compiling education & certifications…", Icon: GraduationCap },
-  { label: "Adding certifications…", Icon: Award },
-  { label: "Finalizing markdown…", Icon: Sparkles },
-]
+import { pagesI18nNs } from "~/lib/i18n/config"
 
 const COMPILE_STAGE_INTERVAL_MS = 1800
 
@@ -191,6 +183,43 @@ export function ResumeCompileMarkdownDialog({
   /** When true, opening the dialog immediately runs compile (no manual Generate click). */
   autoStart?: boolean
 }) {
+  const { t } = useTranslation(pagesI18nNs)
+  const compileStages = React.useMemo<
+    ReadonlyArray<{ label: string; Icon: LucideIcon }>
+  >(
+    () => [
+      {
+        label: t("resume.compile_markdown.stage_preparing"),
+        Icon: FileText,
+      },
+      {
+        label: t("resume.compile_markdown.stage_template"),
+        Icon: FileCode2,
+      },
+      {
+        label: t("resume.compile_markdown.stage_summary"),
+        Icon: BrainCircuit,
+      },
+      {
+        label: t("resume.compile_markdown.stage_work"),
+        Icon: History,
+      },
+      {
+        label: t("resume.compile_markdown.stage_edu_certs"),
+        Icon: GraduationCap,
+      },
+      {
+        label: t("resume.compile_markdown.stage_certs"),
+        Icon: Award,
+      },
+      {
+        label: t("resume.compile_markdown.stage_finalize"),
+        Icon: Sparkles,
+      },
+    ],
+    [t]
+  )
+
   const [compiling, setCompiling] = React.useState(false)
   const [stageIndex, setStageIndex] = React.useState(0)
   const [error, setError] = React.useState<string | null>(null)
@@ -209,10 +238,10 @@ export function ResumeCompileMarkdownDialog({
     if (!compiling) return
     setStageIndex(0)
     const id = window.setInterval(() => {
-      setStageIndex((i) => (i + 1) % COMPILE_STAGES.length)
+      setStageIndex((i) => (i + 1) % compileStages.length)
     }, COMPILE_STAGE_INTERVAL_MS)
     return () => clearInterval(id)
-  }, [compiling])
+  }, [compiling, compileStages.length])
 
   const handleCompile = React.useCallback(async () => {
     setError(null)
@@ -222,11 +251,13 @@ export function ResumeCompileMarkdownDialog({
       await onCompiled(resume)
       onOpenChange(false)
     } catch (err) {
-      setError(compileErrorText(err, "Could not generate the resume. Please try again."))
+      setError(
+        compileErrorText(err, t("resume.compile_markdown.error_fallback"))
+      )
     } finally {
       setCompiling(false)
     }
-  }, [resumeId, onCompiled, onOpenChange])
+  }, [resumeId, onCompiled, onOpenChange, t])
 
   React.useLayoutEffect(() => {
     if (!open || !autoStart || autoStartRanRef.current) return
@@ -238,18 +269,19 @@ export function ResumeCompileMarkdownDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Generate ATS Resume</DialogTitle>
+          <DialogTitle>{t("resume.compile_markdown.title")}</DialogTitle>
           <DialogDescription>
             {autoStart ? (
               <>
-                Generating an ATS-optimised markdown resume for{" "}
-                <span className="text-foreground font-medium">{resumeTitle}</span> from your saved
-                profile data.
+                {t("resume.compile_markdown.desc_auto_before")}
+                <span className="text-foreground font-medium">{resumeTitle}</span>
+                {t("resume.compile_markdown.desc_auto_after")}
               </>
             ) : (
               <>
-                Generate an ATS-optimised markdown resume from the data linked to{" "}
-                <span className="text-foreground font-medium">{resumeTitle}</span>.
+                {t("resume.compile_markdown.desc_manual_before")}
+                <span className="text-foreground font-medium">{resumeTitle}</span>
+                {t("resume.compile_markdown.desc_manual_after")}
               </>
             )}
           </DialogDescription>
@@ -264,17 +296,16 @@ export function ResumeCompileMarkdownDialog({
           ].join(" ")}
         >
           {compiling ? (
-            <CompileNeonRing stage={COMPILE_STAGES[stageIndex]!} />
+            <CompileNeonRing stage={compileStages[stageIndex]!} />
           ) : (
             <div className="flex flex-col items-center gap-3 text-center text-muted-foreground">
               <FileCode2 className="size-10 opacity-60" />
               <div className="flex flex-col gap-1">
                 <p className="text-sm font-medium text-foreground">
-                  Ready to generate your resume
+                  {t("resume.compile_markdown.ready_title")}
                 </p>
                 <p className="text-xs leading-relaxed">
-                  The AI will compile all linked work experiences, education, certifications,
-                  and skills into an ATS-optimised markdown document.
+                  {t("resume.compile_markdown.ready_body")}
                 </p>
               </div>
             </div>
@@ -294,7 +325,7 @@ export function ResumeCompileMarkdownDialog({
             onClick={() => onOpenChange(false)}
             disabled={compiling}
           >
-            Cancel
+            {t("shared.cancel")}
           </Button>
           {autoStart ? null : (
             <Button
@@ -305,12 +336,12 @@ export function ResumeCompileMarkdownDialog({
               {compiling ? (
                 <>
                   <Loader2Icon className="size-4 animate-spin" data-icon="inline-start" />
-                  Generating…
+                  {t("resume.compile_markdown.generating")}
                 </>
               ) : (
                 <>
                   <Sparkles className="size-4" data-icon="inline-start" />
-                  Generate
+                  {t("resume.compile_markdown.generate")}
                 </>
               )}
             </Button>

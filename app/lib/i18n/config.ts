@@ -15,8 +15,12 @@ import {
 import commonEn from "~/locales/en/common.json"
 import commonPtBr from "~/locales/pt_br/common.json"
 import commonEs from "~/locales/es/common.json"
+import pagesEn from "~/locales/en/pages.json"
+import pagesPtBr from "~/locales/pt_br/pages.json"
+import pagesEs from "~/locales/es/pages.json"
 
 export const defaultI18nNs = "common" as const
+export const pagesI18nNs = "pages" as const
 
 function initialLngFromDocument(): UiLanguageCode {
   if (typeof document === "undefined") return "en"
@@ -24,9 +28,9 @@ function initialLngFromDocument(): UiLanguageCode {
 }
 
 const resources = {
-  en: { common: commonEn },
-  pt_br: { common: commonPtBr },
-  es: { common: commonEs },
+  en: { common: commonEn, pages: pagesEn },
+  pt_br: { common: commonPtBr, pages: pagesPtBr },
+  es: { common: commonEs, pages: pagesEs },
 } as const
 
 void i18n.use(initReactI18next).init({
@@ -35,7 +39,7 @@ void i18n.use(initReactI18next).init({
   fallbackLng: "en",
   supportedLngs: ["en", "pt_br", "es"],
   defaultNS: defaultI18nNs,
-  ns: [defaultI18nNs],
+  ns: [defaultI18nNs, pagesI18nNs],
   interpolation: {
     escapeValue: false,
   },

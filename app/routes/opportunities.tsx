@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { Link } from "react-router"
 
 import { OpportunityDialog } from "~/components/opportunities/opportunity-dialog"
@@ -71,6 +74,7 @@ import {
 } from "~/lib/api/resources/opportunities"
 import { listOpportunityStatuses } from "~/lib/api/resources/opportunity-statuses"
 import { listRoles } from "~/lib/api/resources/roles"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import type { InterestLevel, OpportunityStatusDefinition } from "~/lib/labels"
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
@@ -119,6 +123,7 @@ function apiErrorText(err: unknown, fallback: string): string {
 }
 
 export default function OpportunitiesPage() {
+  const { t } = useTranslation(pagesI18nNs)
   const {
     kanban_custom_columns: kanbanCustomColumns,
     kanban_column_order: kanbanColumnOrder,
@@ -179,9 +184,9 @@ export default function OpportunitiesPage() {
       setLoadState("idle")
     } catch (e) {
       setLoadState("error")
-      setListError(apiErrorText(e, "Could not load opportunities."))
+      setListError(apiErrorText(e, t("opportunities.load_error")))
     }
-  }, [])
+  }, [t])
 
   React.useEffect(() => {
     void fetchAll()
@@ -310,7 +315,7 @@ export default function OpportunitiesPage() {
       setOpportunities((prev) => prev.filter((o) => o.id !== deleteId))
       setDeleteId(null)
     } catch (e) {
-      setDeleteError(apiErrorText(e, "Could not delete opportunity."))
+      setDeleteError(apiErrorText(e, t("opportunities.delete_error")))
     } finally {
       setDeleteSubmitting(false)
     }
@@ -321,12 +326,12 @@ export default function OpportunitiesPage() {
     try {
       await patchOpportunityOnServer(opp.id, { interest_level: nextLevel })
     } catch (e) {
-      setInterestPatchError(apiErrorText(e, "Could not update interest."))
+      setInterestPatchError(apiErrorText(e, t("opportunities.interest_error")))
     }
   }
 
   return (
-    <AppLayout title="Opportunities">
+    <AppLayout title={t("opportunities.title")}>
       <OpportunityDialog
         key={dialogOppId ?? "closed"}
         open={dialogOppId !== null}
@@ -347,22 +352,22 @@ export default function OpportunitiesPage() {
       />
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
         <ListingPageHeader
-          title="Opportunities"
-          description="All tracked job opportunities"
+          title={t("opportunities.title")}
+          description={t("opportunities.description")}
           titleAccessory={
             <ListingViewModeToggle
               value={viewMode}
               onValueChange={handleViewModeChange}
-              groupLabel="Opportunity view"
-              listLabel="List view"
-              kanbanLabel="Kanban board"
+              groupLabel={t("opportunities.view_group_label")}
+              listLabel={t("opportunities.view_list")}
+              kanbanLabel={t("opportunities.view_kanban")}
             />
           }
           action={
             <Button asChild>
               <Link to="/opportunities/opportunity">
                 <PlusIcon data-icon="inline-start" />
-                Add opportunity
+                {t("opportunities.add")}
               </Link>
             </Button>
           }
@@ -370,14 +375,14 @@ export default function OpportunitiesPage() {
 
         {loadState === "error" ? (
           <p className="text-destructive px-1 text-sm" role="alert">
-            {listError ?? "Could not load data."}{" "}
+            {listError ?? t("shared.could_not_load_data")}{" "}
             <Button
               type="button"
               variant="link"
               className="text-destructive h-auto p-0 align-baseline underline"
               onClick={() => void fetchAll()}
             >
-              Retry
+              {t("shared.retry")}
             </Button>
           </p>
         ) : null}
@@ -385,44 +390,51 @@ export default function OpportunitiesPage() {
         <ListingTableCard
           stats={
             loadState === "idle" && viewMode === "list" && totalCount > 0
-              ? `Showing ${loadedCount} of ${totalCount}`
+              ? t("shared.showing_loaded_of_total", {
+                  loaded: loadedCount,
+                  total: totalCount,
+                })
               : loadState === "idle" &&
                   viewMode === "kanban" &&
                   filteredOpportunities.length > 0
-                ? `${filteredOpportunities.length} opportunit${filteredOpportunities.length === 1 ? "y" : "ies"}`
+                ? filteredOpportunities.length === 1
+                  ? t("opportunities.kanban_one", {
+                      count: filteredOpportunities.length,
+                    })
+                  : t("opportunities.kanban_other", {
+                      count: filteredOpportunities.length,
+                    })
                 : undefined
           }
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
-          searchPlaceholder="Search opportunities…"
+          searchPlaceholder={t("opportunities.search_placeholder")}
         >
           {loadState === "loading" ? (
             <p className="text-muted-foreground py-8 text-center text-sm">
-              Loading opportunities…
+              {t("opportunities.loading_list")}
             </p>
           ) : viewMode === "kanban" ? (
             opportunityStatuses.length === 0 ? (
               <div className="flex flex-col items-center gap-4 py-10 text-center">
                 <p className="text-muted-foreground max-w-md text-sm">
-                  No opportunity statuses yet. Create a status to add Kanban columns
-                  (pipeline stages). You can also add one from an opportunity form
-                  (Opportunity status → +).
+                  {t("opportunities.kanban_empty_statuses_intro")}
                 </p>
                 <Button
                   type="button"
                   onClick={() => setStatusQuickAddOpen(true)}
                 >
                   <PlusIcon data-icon="inline-start" />
-                  New opportunity status
+                  {t("opportunities.new_status")}
                 </Button>
               </div>
             ) : opportunities.length === 0 ? (
               <p className="text-muted-foreground py-8 text-center text-sm">
-                No opportunities yet. Add one to get started.
+                {t("opportunities.empty_list")}
               </p>
             ) : filteredOpportunities.length === 0 ? (
               <p className="text-muted-foreground py-8 text-center text-sm">
-                No matches for your search.
+                {t("shared.no_matches_search")}
               </p>
             ) : (
               <div className="flex min-h-0 flex-1 flex-col">
@@ -447,15 +459,15 @@ export default function OpportunitiesPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-28">Actions</TableHead>
-                  <TableHead>Company</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>URL</TableHead>
-                  <TableHead>Hourly rate</TableHead>
-                  <TableHead>Annual salary</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Interest</TableHead>
+                  <TableHead className="w-28">{t("shared.actions")}</TableHead>
+                  <TableHead>{t("shared.company")}</TableHead>
+                  <TableHead>{t("shared.role")}</TableHead>
+                  <TableHead>{t("opportunities.table_description")}</TableHead>
+                  <TableHead>{t("shared.url")}</TableHead>
+                  <TableHead>{t("shared.hourly_rate")}</TableHead>
+                  <TableHead>{t("shared.annual_salary")}</TableHead>
+                  <TableHead>{t("shared.status")}</TableHead>
+                  <TableHead>{t("shared.interest")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -469,13 +481,13 @@ export default function OpportunitiesPage() {
                 {opportunities.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={9} className="text-muted-foreground">
-                      No opportunities yet. Add one to get started.
+                      {t("opportunities.empty_list")}
                     </TableCell>
                   </TableRow>
                 ) : filteredOpportunities.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={9} className="text-muted-foreground">
-                      No matches for your search.
+                      {t("shared.no_matches_search")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -496,7 +508,7 @@ export default function OpportunitiesPage() {
                             <Button variant="ghost" size="icon" asChild>
                               <Link
                                 to={`/opportunities/opportunity/${encodeURIComponent(opp.id)}`}
-                                aria-label="Edit opportunity"
+                                aria-label={t("opportunities.aria_edit")}
                               >
                                 <PencilIcon />
                               </Link>
@@ -504,7 +516,7 @@ export default function OpportunitiesPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              aria-label="Delete opportunity"
+                              aria-label={t("opportunities.aria_delete")}
                               onClick={() => setDeleteId(opp.id)}
                             >
                               <Trash2Icon />
@@ -526,7 +538,7 @@ export default function OpportunitiesPage() {
                               rel="noopener noreferrer"
                               className="text-primary underline-offset-4 hover:underline"
                             >
-                              Link
+                              {t("opportunities.url_link")}
                             </a>
                           ) : (
                             <span className="text-muted-foreground">—</span>
@@ -579,10 +591,9 @@ export default function OpportunitiesPage() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete opportunity?</AlertDialogTitle>
+              <AlertDialogTitle>{t("opportunities.delete_title")}</AlertDialogTitle>
               <AlertDialogDescription>
-                This removes the opportunity from your list. You can add it again
-                later.
+                {t("opportunities.delete_desc")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             {deleteError ? (
@@ -591,7 +602,9 @@ export default function OpportunitiesPage() {
               </p>
             ) : null}
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={deleteSubmitting}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={deleteSubmitting}>
+                {t("shared.cancel")}
+              </AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
                 disabled={deleteSubmitting}
@@ -600,7 +613,7 @@ export default function OpportunitiesPage() {
                   void confirmDelete()
                 }}
               >
-                {deleteSubmitting ? "Deleting…" : "Delete"}
+                {deleteSubmitting ? t("shared.deleting") : t("shared.delete")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

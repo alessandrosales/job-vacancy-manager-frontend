@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { ChevronDownIcon, DownloadIcon, FileTextIcon, Loader2Icon } from "lucide-react"
 
 import { Button } from "~/components/ui/button"
@@ -16,8 +17,9 @@ import {
   downloadResumeCompiledExport,
   type ResumeCompiledExportFormat,
 } from "~/lib/api/resources/resumes"
+import { pagesI18nNs } from "~/lib/i18n/config"
 
-function exportErrorMessage(err: unknown): string {
+function exportErrorMessage(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
     const base = err.fieldErrors.base?.[0]
     if (base) return base
@@ -25,7 +27,7 @@ function exportErrorMessage(err: unknown): string {
     if (first) return first
   }
   if (err instanceof Error && err.message) return err.message
-  return "Could not download export."
+  return fallback
 }
 
 export interface ResumeCompiledDownloadMenuProps {
@@ -39,6 +41,7 @@ export function ResumeCompiledDownloadMenu({
   resumeTitle,
   compiledMarkdown,
 }: ResumeCompiledDownloadMenuProps) {
+  const { t } = useTranslation(pagesI18nNs)
   const [busy, setBusy] = React.useState<ResumeCompiledExportFormat | null>(null)
   const [error, setError] = React.useState<string | null>(null)
 
@@ -52,13 +55,15 @@ export function ResumeCompiledDownloadMenu({
     try {
       await downloadResumeCompiledExport(resumeId, format)
     } catch (e) {
-      setError(exportErrorMessage(e))
+      setError(exportErrorMessage(e, t("resume.export_menu.error_fallback")))
     } finally {
       setBusy(null)
     }
   }
 
-  const triggerLabel = busy ? "Downloading…" : "Download"
+  const triggerLabel = busy
+    ? t("resume.export_menu.downloading")
+    : t("resume.export_menu.download")
 
   return (
     <div className="inline-flex shrink-0 flex-col items-stretch gap-1">
@@ -70,7 +75,9 @@ export function ResumeCompiledDownloadMenu({
             size="sm"
             className="max-sm:size-9 max-sm:min-h-9 max-sm:min-w-9 max-sm:justify-center max-sm:gap-0 max-sm:!px-0 max-sm:!ps-0 max-sm:!pe-0"
             disabled={busy !== null}
-            aria-label={`Download compiled CV for ${resumeTitle}`}
+            aria-label={t("resume.export_menu.aria_download", {
+              title: resumeTitle,
+            })}
           >
             {busy !== null ? (
               <Loader2Icon className="size-4 shrink-0 animate-spin" aria-hidden />
@@ -82,7 +89,7 @@ export function ResumeCompiledDownloadMenu({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-[12rem]">
-          <DropdownMenuGroup aria-label="Export formats">
+          <DropdownMenuGroup aria-label={t("resume.export_menu.formats_group_aria")}>
             <DropdownMenuItem
               disabled={busy !== null}
               onSelect={(ev) => {
@@ -91,7 +98,7 @@ export function ResumeCompiledDownloadMenu({
               }}
             >
               <FileTextIcon data-icon="inline-start" />
-              Markdown (.md)
+              {t("resume.export_menu.format_md")}
               {busy === "md" ? (
                 <Loader2Icon className="ml-auto animate-spin" aria-hidden />
               ) : null}
@@ -104,7 +111,7 @@ export function ResumeCompiledDownloadMenu({
               }}
             >
               <FileTextIcon data-icon="inline-start" />
-              Word (.docx)
+              {t("resume.export_menu.format_docx")}
               {busy === "docx" ? (
                 <Loader2Icon className="ml-auto animate-spin" aria-hidden />
               ) : null}
@@ -117,7 +124,7 @@ export function ResumeCompiledDownloadMenu({
               }}
             >
               <FileTextIcon data-icon="inline-start" />
-              PDF (.pdf)
+              {t("resume.export_menu.format_pdf")}
               {busy === "pdf" ? (
                 <Loader2Icon className="ml-auto animate-spin" aria-hidden />
               ) : null}

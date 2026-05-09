@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import {
   DndContext,
   DragOverlay,
@@ -42,6 +43,7 @@ import type {
 import type { OpportunityStatusDefinition } from "~/lib/labels"
 import { createOpportunityStatus } from "~/lib/api/resources/opportunity-statuses"
 import { Input } from "~/components/ui/input"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import {
   applyPersistedColumnOrder,
   columnSortableId,
@@ -186,6 +188,7 @@ export function OpportunitiesKanbanBoard({
   roles,
   onOpportunityStatusesRefresh,
 }: OpportunitiesKanbanBoardProps) {
+  const { t } = useTranslation(pagesI18nNs)
   const columnsForTitles = statusColumnsOnly ? [] : customColumns
 
   const canonicalColumnIds = React.useMemo(
@@ -475,7 +478,10 @@ export function OpportunitiesKanbanBoard({
   function handleAddColumn() {
     const trimmed = newColumnName.trim()
     const nextNumber = customColumns.length + 1
-    onAddColumn(trimmed || `New column ${nextNumber}`)
+    onAddColumn(
+      trimmed ||
+        t("opportunities.kanban_default_column_name", { number: nextNumber })
+    )
     setNewColumnName("")
   }
 
@@ -493,7 +499,9 @@ export function OpportunitiesKanbanBoard({
       setNewOpportunityStatusLabel("")
       await onOpportunityStatusesRefresh()
     } catch (e) {
-      setStatusCreateError(apiFormErrorFromUnknown(e, "Could not create status."))
+      setStatusCreateError(
+        apiFormErrorFromUnknown(e, t("opportunities.quick_add_create_status_error"))
+      )
     } finally {
       setStatusCreateSubmitting(false)
     }
@@ -570,7 +578,7 @@ export function OpportunitiesKanbanBoard({
                         setNewOpportunityStatusLabel(event.target.value)
                         if (statusCreateError) setStatusCreateError(null)
                       }}
-                      placeholder="New column name..."
+                      placeholder={t("opportunities.kanban_placeholder_new_column")}
                       disabled={statusCreateSubmitting}
                       className="h-8 focus-visible:ring-1 focus-visible:ring-inset"
                       onKeyDown={(event) => {
@@ -597,7 +605,7 @@ export function OpportunitiesKanbanBoard({
                   <Input
                     value={newColumnName}
                     onChange={(event) => setNewColumnName(event.target.value)}
-                    placeholder="New column name..."
+                    placeholder={t("opportunities.kanban_placeholder_new_column")}
                     className="h-8 focus-visible:ring-1 focus-visible:ring-inset"
                     onKeyDown={(event) => {
                       if (event.key !== "Enter") return

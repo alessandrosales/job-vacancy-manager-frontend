@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { Link } from "react-router"
 
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
@@ -27,6 +30,7 @@ import {
 } from "~/components/ui/alert-dialog"
 import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
 import { ApiError } from "~/lib/api/errors"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import {
   deleteRole as deleteRoleRequest,
   listRoles,
@@ -57,6 +61,7 @@ function apiErrorText(err: unknown, fallback: string): string {
 }
 
 export default function RolesPage() {
+  const { t } = useTranslation(pagesI18nNs)
   const [roles, setRoles] = React.useState<ApiRole[]>([])
   const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
     "loading"
@@ -81,9 +86,9 @@ export default function RolesPage() {
       setLoadState("idle")
     } catch (e) {
       setLoadState("error")
-      setListError(apiErrorText(e, "Could not load roles."))
+      setListError(apiErrorText(e, t("roles.load_error")))
     }
-  }, [])
+  }, [t])
 
   React.useEffect(() => {
     void fetchRoles()
@@ -112,7 +117,7 @@ export default function RolesPage() {
       setRoles((prev) => prev.filter((r) => r.id !== deleteId))
       setDeleteId(null)
     } catch (e) {
-      setDeleteError(apiErrorText(e, "Could not delete role."))
+      setDeleteError(apiErrorText(e, t("roles.delete_error")))
     } finally {
       setDeleteSubmitting(false)
     }
@@ -127,23 +132,23 @@ export default function RolesPage() {
       })
       setRoles((prev) => prev.map((r) => (r.id === updated.id ? updated : r)))
     } catch (e) {
-      setInterestPatchError(apiErrorText(e, "Could not update interest level."))
+      setInterestPatchError(apiErrorText(e, t("roles.interest_error")))
     } finally {
       setInterestPatchId(null)
     }
   }
 
   return (
-    <AppLayout title="Roles">
+    <AppLayout title={t("roles.title")}>
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
         <ListingPageHeader
-          title="Roles"
-          description="Job roles you are interested in"
+          title={t("roles.title")}
+          description={t("roles.description")}
           action={
             <Button asChild>
               <Link to="/roles/role">
                 <PlusIcon data-icon="inline-start" />
-                Add role
+                {t("roles.add")}
               </Link>
             </Button>
           }
@@ -156,27 +161,30 @@ export default function RolesPage() {
         <ListingTableCard
           stats={
             loadState === "idle" && totalCount > 0
-              ? `Showing ${loadedCount} of ${totalCount}`
+              ? t("shared.showing_loaded_of_total", {
+                  loaded: loadedCount,
+                  total: totalCount,
+                })
               : undefined
           }
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
-          searchPlaceholder="Search roles…"
+          searchPlaceholder={t("roles.search_placeholder")}
         >
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-28">Actions</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Interest Level</TableHead>
+                <TableHead className="w-28">{t("shared.actions")}</TableHead>
+                <TableHead>{t("shared.name")}</TableHead>
+                <TableHead>{t("shared.description")}</TableHead>
+                <TableHead>{t("shared.interest_level")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loadState === "loading" ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-muted-foreground">
-                    Loading roles…
+                    {t("roles.loading")}
                   </TableCell>
                 </TableRow>
               ) : loadState === "error" ? (
@@ -190,7 +198,7 @@ export default function RolesPage() {
                         size="sm"
                         onClick={() => void fetchRoles()}
                       >
-                        Try again
+                        {t("shared.try_again")}
                       </Button>
                     </div>
                   </TableCell>
@@ -198,13 +206,13 @@ export default function RolesPage() {
               ) : roles.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-muted-foreground">
-                    No roles yet. Add one to get started.
+                    {t("roles.empty")}
                   </TableCell>
                 </TableRow>
               ) : filteredRoles.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-muted-foreground">
-                    No matches for your search.
+                    {t("shared.no_matches_search")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -217,7 +225,7 @@ export default function RolesPage() {
                           <Button variant="ghost" size="icon" asChild>
                             <Link
                               to={`/roles/role/${encodeURIComponent(role.id)}`}
-                              aria-label="Edit role"
+                              aria-label={t("roles.aria_edit")}
                             >
                               <PencilIcon />
                             </Link>
@@ -225,7 +233,7 @@ export default function RolesPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            aria-label="Delete role"
+                            aria-label={t("roles.aria_delete")}
                             onClick={() => {
                               setDeleteError(null)
                               setDeleteId(role.id)
@@ -280,9 +288,9 @@ export default function RolesPage() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete role?</AlertDialogTitle>
+              <AlertDialogTitle>{t("roles.delete_title")}</AlertDialogTitle>
               <AlertDialogDescription>
-                This removes the role from your list.
+                {t("roles.delete_desc")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             {deleteError ? (
@@ -291,7 +299,9 @@ export default function RolesPage() {
               </p>
             ) : null}
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={deleteSubmitting}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={deleteSubmitting}>
+                {t("shared.cancel")}
+              </AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
                 disabled={deleteSubmitting}
@@ -300,7 +310,7 @@ export default function RolesPage() {
                   void confirmDelete()
                 }}
               >
-                {deleteSubmitting ? "Deleting…" : "Delete"}
+                {deleteSubmitting ? t("shared.deleting") : t("shared.delete")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 
 import { replyFromFloatingAgent } from "~/lib/floating-agent-reply"
 import { Button } from "~/components/ui/button"
@@ -19,6 +20,7 @@ import {
 } from "~/components/ui/tooltip"
 import { BotIcon, Loader2Icon, SendIcon } from "lucide-react"
 import { cn } from "~/lib/utils"
+import { pagesI18nNs } from "~/lib/i18n/config"
 
 type ChatRole = "user" | "assistant"
 
@@ -36,6 +38,7 @@ function createId(): string {
 }
 
 export function FloatingAgentAssistant() {
+  const { t } = useTranslation(pagesI18nNs)
   const [open, setOpen] = React.useState(false)
   const [messages, setMessages] = React.useState<ChatMessage[]>([])
   const [draft, setDraft] = React.useState("")
@@ -76,7 +79,7 @@ export function FloatingAgentAssistant() {
             size="icon-lg"
             aria-haspopup="dialog"
             aria-expanded={open}
-            aria-label="Open agent assistant"
+            aria-label={t("agent.fab_aria")}
             className={cn(
               "fixed bottom-20 end-4 z-40 size-11 rounded-full shadow-lg sm:bottom-6 sm:end-6 sm:size-14",
               "ring-2 ring-background/80 hover:shadow-md"
@@ -87,7 +90,7 @@ export function FloatingAgentAssistant() {
           </Button>
         </TooltipTrigger>
         <TooltipContent side="left" className="max-w-[12rem]">
-          Agent assistant
+          {t("agent.tooltip")}
         </TooltipContent>
       </Tooltip>
 
@@ -98,11 +101,8 @@ export function FloatingAgentAssistant() {
         >
           <div className="flex flex-col gap-3 border-b border-border p-4 pb-3">
             <DialogHeader className="gap-1">
-              <DialogTitle>Assistant</DialogTitle>
-              <DialogDescription>
-                Send a prompt to interact with the agent. In this prototype, replies are simulated in
-                the browser.
-              </DialogDescription>
+              <DialogTitle>{t("agent.title")}</DialogTitle>
+              <DialogDescription>{t("agent.description")}</DialogDescription>
             </DialogHeader>
           </div>
 
@@ -115,7 +115,7 @@ export function FloatingAgentAssistant() {
           >
             {messages.length === 0 ? (
               <p className="text-muted-foreground text-sm leading-relaxed">
-                No messages yet. Type below and send to start.
+                {t("agent.empty_thread")}
               </p>
             ) : (
               messages.map((msg) => (
@@ -136,7 +136,7 @@ export function FloatingAgentAssistant() {
                   >
                     {msg.role === "assistant" ? (
                       <span className="text-xs font-medium text-muted-foreground block pb-1">
-                        Agent
+                        {t("agent.reply_label")}
                       </span>
                     ) : null}
                     {msg.content}
@@ -147,7 +147,7 @@ export function FloatingAgentAssistant() {
             {pending ? (
               <div className="text-muted-foreground flex items-center gap-2 text-xs">
                 <Loader2Icon className="size-3.5 shrink-0 animate-spin" aria-hidden />
-                Agent is replying…
+                {t("agent.replying")}
               </div>
             ) : null}
           </div>
@@ -156,7 +156,7 @@ export function FloatingAgentAssistant() {
             <Textarea
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder="Write your prompt…"
+              placeholder={t("agent.placeholder")}
               rows={3}
               disabled={pending}
               className="min-h-0 resize-none"
@@ -173,7 +173,7 @@ export function FloatingAgentAssistant() {
                 size="sm"
                 onClick={() => setOpen(false)}
               >
-                Close
+                {t("agent.close")}
               </Button>
               <Button
                 type="button"
@@ -186,7 +186,7 @@ export function FloatingAgentAssistant() {
                 ) : (
                   <SendIcon data-icon="inline-start" aria-hidden />
                 )}
-                Send
+                {t("agent.send")}
               </Button>
             </div>
           </div>

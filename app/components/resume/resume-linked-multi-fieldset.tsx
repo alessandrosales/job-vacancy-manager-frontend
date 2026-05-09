@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { PlusIcon } from "lucide-react"
 
 import { Button } from "~/components/ui/button"
@@ -13,6 +14,7 @@ import {
   FieldSet,
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
+import { pagesI18nNs } from "~/lib/i18n/config"
 
 export type ResumePickRow = {
   id: string
@@ -44,6 +46,7 @@ export function ResumeLinkedMultiFieldset({
   onAddNew?: () => void
   addNewAriaLabel?: string
 }) {
+  const { t } = useTranslation(pagesI18nNs)
   const [needle, setNeedle] = React.useState("")
   const q = needle.trim().toLowerCase()
   const filtered = React.useMemo(() => {
@@ -65,8 +68,7 @@ export function ResumeLinkedMultiFieldset({
     onSelectedIdsChange(selectedIds.filter((x) => x !== id))
   }
 
-  const emptyBody =
-    emptyMessage ?? "No records yet."
+  const emptyBody = emptyMessage ?? t("resume.linked_fieldset.empty_default")
 
   return (
     <FieldSet className="gap-3" data-slot="checkbox-group">
@@ -76,12 +78,14 @@ export function ResumeLinkedMultiFieldset({
         <div className="flex flex-col gap-1">
           <div className="flex flex-row items-end gap-2">
             <Field className="min-w-0 flex-1">
-              <FieldLabel htmlFor={`${idPrefix}-filter`}>Filter</FieldLabel>
+              <FieldLabel htmlFor={`${idPrefix}-filter`}>
+                {t("resume.linked_fieldset.filter_label")}
+              </FieldLabel>
               <Input
                 id={`${idPrefix}-filter`}
                 value={needle}
                 onChange={(e) => setNeedle(e.target.value)}
-                placeholder="Search…"
+                placeholder={t("shared.search_short")}
                 autoComplete="off"
               />
             </Field>
@@ -91,7 +95,10 @@ export function ResumeLinkedMultiFieldset({
                 variant="outline"
                 size="icon"
                 className="mb-0.5 shrink-0"
-                aria-label={addNewAriaLabel ?? `Add ${legend}`}
+                aria-label={
+                  addNewAriaLabel ??
+                  t("resume.linked_fieldset.aria_add_legend", { legend })
+                }
                 onClick={onAddNew}
               >
                 <PlusIcon />
@@ -107,7 +114,7 @@ export function ResumeLinkedMultiFieldset({
               onClick={() => onSelectedIdsChange(rows.map((r) => r.id))}
               disabled={rows.every((r) => selectedSet.has(r.id))}
             >
-              Select all
+              {t("resume.linked_fieldset.select_all")}
             </Button>
             <Button
               type="button"
@@ -117,7 +124,7 @@ export function ResumeLinkedMultiFieldset({
               onClick={() => onSelectedIdsChange([])}
               disabled={selectedIds.length === 0}
             >
-              Clear selection
+              {t("resume.linked_fieldset.clear_selection")}
             </Button>
           </div>
         </div>
@@ -132,7 +139,10 @@ export function ResumeLinkedMultiFieldset({
                 variant="outline"
                 size="icon"
                 className="shrink-0"
-                aria-label={addNewAriaLabel ?? `Add ${legend}`}
+                aria-label={
+                  addNewAriaLabel ??
+                  t("resume.linked_fieldset.aria_add_legend", { legend })
+                }
                 onClick={onAddNew}
               >
                 <PlusIcon />
@@ -142,7 +152,9 @@ export function ResumeLinkedMultiFieldset({
             <p className="text-muted-foreground text-sm">{emptyBody}</p>
           )
         ) : filtered.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No matches.</p>
+          <p className="text-muted-foreground text-sm">
+            {t("resume.linked_fieldset.no_matches")}
+          </p>
         ) : (
           <FieldGroup className="gap-2">
             {filtered.map((row) => {
@@ -174,7 +186,11 @@ export function ResumeLinkedMultiFieldset({
       {onAddNew && emptyHint ? (
         <FieldDescription>{emptyHint}</FieldDescription>
       ) : null}
-      <FieldDescription>Selected: {selectedIds.length}</FieldDescription>
+      <FieldDescription>
+        {t("resume.linked_fieldset.selected_count", {
+          count: selectedIds.length,
+        })}
+      </FieldDescription>
     </FieldSet>
   )
 }

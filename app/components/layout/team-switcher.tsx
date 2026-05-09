@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 
 import {
   DropdownMenu,
@@ -18,6 +19,7 @@ import {
   useSidebar,
 } from "~/components/ui/sidebar"
 import { ChevronsUpDownIcon, PlusIcon } from "lucide-react"
+import { defaultI18nNs } from "~/lib/i18n/config"
 
 export function TeamSwitcher({
   teams,
@@ -28,6 +30,7 @@ export function TeamSwitcher({
     plan: string
   }[]
 }) {
+  const { t } = useTranslation(defaultI18nNs)
   const { isMobile } = useSidebar()
   const [activeTeam, setActiveTeam] = React.useState(teams[0])
 
@@ -61,7 +64,7 @@ export function TeamSwitcher({
             sideOffset={4}
           >
             <DropdownMenuLabel className="text-xs text-muted-foreground">
-              Teams
+              {t("teams_heading")}
             </DropdownMenuLabel>
             {teams.map((team, index) => (
               <DropdownMenuItem
@@ -81,7 +84,7 @@ export function TeamSwitcher({
               <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                 <PlusIcon className="size-4" />
               </div>
-              <div className="font-medium text-muted-foreground">Add team</div>
+              <div className="font-medium text-muted-foreground">{t("teams_add")}</div>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

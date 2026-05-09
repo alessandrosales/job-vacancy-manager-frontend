@@ -16,5 +16,10 @@
   "nav_links": "Links",
   "nav_work_experience": "Experiência profissional",
   "nav_certifications": "Certificações",
-  "nav_education": "Formação"
+  "nav_education": "Formação",
+  "nav_dark_mode": "Modo escuro",
+  "nav_logout": "Sair",
+  "teams_heading": "Equipes",
+  "teams_add": "Adicionar equipe",
+  "nav_platform": "Plataforma"
 }

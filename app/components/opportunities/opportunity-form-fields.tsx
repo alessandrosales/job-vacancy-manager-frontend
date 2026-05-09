@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { PlusIcon } from "lucide-react"
 
 import { InterestLevelStarPicker } from "~/components/shared/interest-level-star-picker"
@@ -32,6 +33,7 @@ import type {
   OpportunityStatus,
   OpportunityStatusDefinition,
 } from "~/lib/labels"
+import { pagesI18nNs } from "~/lib/i18n/config"
 
 /** Comparação tolerante a tipo/coerção JSON — evita limpar FK válido por mismatch estrito. */
 function fkExistsInList(list: readonly { id: string }[], fk: string): boolean {
@@ -95,6 +97,7 @@ export function OpportunityFormFields({
   referenceLists,
   onReferenceDataRefresh,
 }: OpportunityFormFieldsProps) {
+  const { t } = useTranslation(pagesI18nNs)
   const appData = useAppData()
   const companies = referenceLists?.companies ?? appData.companies
   const roles = referenceLists?.roles ?? appData.roles
@@ -163,7 +166,7 @@ export function OpportunityFormFields({
       />
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor={`${idPrefix}-company`}>Company</FieldLabel>
+          <FieldLabel htmlFor={`${idPrefix}-company`}>{t("opportunities.form_company")}</FieldLabel>
           <div className="flex min-w-0 flex-row items-stretch gap-2">
             {companies.length > 0 ? (
               <Select
@@ -175,7 +178,7 @@ export function OpportunityFormFields({
                   id={`${idPrefix}-company`}
                   className="min-w-0 flex-1"
                 >
-                  <SelectValue placeholder="Select company" />
+                  <SelectValue placeholder={t("opportunities.form_select_company")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -192,7 +195,7 @@ export function OpportunityFormFields({
                 id={`${idPrefix}-company`}
                 className="text-muted-foreground flex min-h-8 flex-1 items-center text-sm"
               >
-                Nenhuma empresa cadastrada.
+                {t("opportunities.form_empty_companies")}
               </p>
             )}
             <Button
@@ -200,20 +203,18 @@ export function OpportunityFormFields({
               variant="outline"
               size="icon"
               className="shrink-0"
-              aria-label="Add company"
+              aria-label={t("opportunities.aria_quick_add_company")}
               onClick={() => setCompanyDialogOpen(true)}
             >
               <PlusIcon />
             </Button>
           </div>
           {companies.length === 0 ? (
-            <FieldDescription>
-              Use + to create a company and select it here.
-            </FieldDescription>
+            <FieldDescription>{t("opportunities.form_company_empty_hint")}</FieldDescription>
           ) : null}
         </Field>
         <Field>
-          <FieldLabel htmlFor={`${idPrefix}-role`}>Role</FieldLabel>
+          <FieldLabel htmlFor={`${idPrefix}-role`}>{t("opportunities.form_role")}</FieldLabel>
           <div className="flex min-w-0 flex-row items-stretch gap-2">
             {roles.length > 0 ? (
               <Select
@@ -222,7 +223,7 @@ export function OpportunityFormFields({
                 onValueChange={onRoleIdChange}
               >
                 <SelectTrigger id={`${idPrefix}-role`} className="min-w-0 flex-1">
-                  <SelectValue placeholder="Select role" />
+                  <SelectValue placeholder={t("opportunities.form_select_role")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -239,7 +240,7 @@ export function OpportunityFormFields({
                 id={`${idPrefix}-role`}
                 className="text-muted-foreground flex min-h-8 flex-1 items-center text-sm"
               >
-                Nenhum cargo cadastrado.
+                {t("opportunities.form_empty_roles")}
               </p>
             )}
             <Button
@@ -247,20 +248,18 @@ export function OpportunityFormFields({
               variant="outline"
               size="icon"
               className="shrink-0"
-              aria-label="Add role"
+              aria-label={t("opportunities.aria_quick_add_role")}
               onClick={() => setRoleDialogOpen(true)}
             >
               <PlusIcon />
             </Button>
           </div>
           {roles.length === 0 ? (
-            <FieldDescription>
-              Use + to create a role and select it here.
-            </FieldDescription>
+            <FieldDescription>{t("opportunities.form_role_empty_hint")}</FieldDescription>
           ) : null}
         </Field>
         <Field>
-          <FieldLabel htmlFor={`${idPrefix}-desc`}>Description</FieldLabel>
+          <FieldLabel htmlFor={`${idPrefix}-desc`}>{t("shared.description")}</FieldLabel>
           <Textarea
             id={`${idPrefix}-desc`}
             value={description}
@@ -270,20 +269,18 @@ export function OpportunityFormFields({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor={`${idPrefix}-url`}>URL</FieldLabel>
+          <FieldLabel htmlFor={`${idPrefix}-url`}>{t("shared.url")}</FieldLabel>
           <Input
             id={`${idPrefix}-url`}
             type="url"
             value={url}
             onChange={(e) => onUrlChange(e.target.value)}
-            placeholder="https://"
+            placeholder={t("company.url_placeholder")}
           />
-          <FieldDescription>
-            Optional. Link to the vacancy posting or company page.
-          </FieldDescription>
+          <FieldDescription>{t("opportunities.form_url_optional_hint")}</FieldDescription>
         </Field>
         <Field>
-          <FieldLabel htmlFor={`${idPrefix}-hourly-rate`}>Hourly rate</FieldLabel>
+          <FieldLabel htmlFor={`${idPrefix}-hourly-rate`}>{t("shared.hourly_rate")}</FieldLabel>
           <Input
             id={`${idPrefix}-hourly-rate`}
             type="number"
@@ -299,14 +296,12 @@ export function OpportunityFormFields({
               const n = Number(v)
               if (Number.isFinite(n) && n >= 0) onHourlyRateChange(n)
             }}
-            placeholder="e.g. 75"
+            placeholder={t("opportunities.form_hourly_example")}
           />
-          <FieldDescription>
-            Optional. Gross pay per hour in your main currency (e.g. USD).
-          </FieldDescription>
+          <FieldDescription>{t("opportunities.form_hourly_hint")}</FieldDescription>
         </Field>
         <Field>
-          <FieldLabel htmlFor={`${idPrefix}-annual-salary`}>Annual salary</FieldLabel>
+          <FieldLabel htmlFor={`${idPrefix}-annual-salary`}>{t("shared.annual_salary")}</FieldLabel>
           <Input
             id={`${idPrefix}-annual-salary`}
             type="number"
@@ -322,14 +317,12 @@ export function OpportunityFormFields({
               const n = Number(v)
               if (Number.isFinite(n) && n >= 0) onAnnualSalaryChange(n)
             }}
-            placeholder="e.g. 120000"
+            placeholder={t("opportunities.form_salary_example")}
           />
-          <FieldDescription>
-            Optional. Total annual compensation in the same currency.
-          </FieldDescription>
+          <FieldDescription>{t("opportunities.form_salary_hint")}</FieldDescription>
         </Field>
         <Field>
-          <FieldLabel htmlFor={`${idPrefix}-status`}>Opportunity status</FieldLabel>
+          <FieldLabel htmlFor={`${idPrefix}-status`}>{t("opportunities.form_opportunity_status")}</FieldLabel>
           <div className="flex min-w-0 flex-row items-stretch gap-2">
             {opportunityStatuses.length > 0 ? (
               <Select
@@ -338,7 +331,7 @@ export function OpportunityFormFields({
                 onValueChange={(v) => onStatusChange(v as OpportunityStatus)}
               >
                 <SelectTrigger id={`${idPrefix}-status`} className="min-w-0 flex-1">
-                  <SelectValue placeholder="Select status" />
+                  <SelectValue placeholder={t("opportunities.form_select_status")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -355,7 +348,7 @@ export function OpportunityFormFields({
                 id={`${idPrefix}-status`}
                 className="text-muted-foreground flex min-h-8 flex-1 items-center text-sm"
               >
-                Nenhum status cadastrado.
+                {t("opportunities.form_empty_statuses")}
               </p>
             )}
             <Button
@@ -363,20 +356,18 @@ export function OpportunityFormFields({
               variant="outline"
               size="icon"
               className="shrink-0"
-              aria-label="Add opportunity status"
+              aria-label={t("opportunities.aria_quick_add_status")}
               onClick={() => setStatusDialogOpen(true)}
             >
               <PlusIcon />
             </Button>
           </div>
           {opportunityStatuses.length === 0 ? (
-            <FieldDescription>
-              Use + to create a pipeline status and select it here.
-            </FieldDescription>
+            <FieldDescription>{t("opportunities.form_status_empty_hint")}</FieldDescription>
           ) : null}
         </Field>
         <Field>
-          <FieldLabel>Interest level</FieldLabel>
+          <FieldLabel>{t("shared.interest_level")}</FieldLabel>
           <InterestLevelStarPicker
             value={interestLevel}
             onChange={onInterestLevelChange}

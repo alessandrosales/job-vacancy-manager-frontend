@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { Link } from "react-router"
 
 import { cn } from "~/lib/utils"
@@ -21,11 +22,13 @@ import {
 import { Input } from "~/components/ui/input"
 import { ApiError } from "~/lib/api/errors"
 import { recoverPassword } from "~/lib/api/resources/passwords"
+import { pagesI18nNs } from "~/lib/i18n/config"
 
 export function RecoverPasswordForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { t } = useTranslation(pagesI18nNs)
   const [email, setEmail] = React.useState("")
   const [pending, setPending] = React.useState(false)
   const [formError, setFormError] = React.useState<string | null>(null)
@@ -48,15 +51,10 @@ export function RecoverPasswordForm({
     } catch (err) {
       if (err instanceof ApiError) {
         const baseMsg = err.fieldErrors.base?.join(". ")
-        setFormError(
-          baseMsg ??
-            "Could not send the request. Please try again in a moment."
-        )
+        setFormError(baseMsg ?? t("auth.recover_error_generic"))
         return
       }
-      setFormError(
-        "Could not connect. Check your network and that the API is reachable (base URL in VITE_API_BASE_URL)."
-      )
+      setFormError(t("auth.recover_error_network"))
     } finally {
       setPending(false)
     }
@@ -66,10 +64,8 @@ export function RecoverPasswordForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Reset password</CardTitle>
-          <CardDescription>
-            Enter your email and we&apos;ll send you a link to reset your password.
-          </CardDescription>
+          <CardTitle className="text-xl">{t("auth.recover_title")}</CardTitle>
+          <CardDescription>{t("auth.recover_desc")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form method="post" onSubmit={handleSubmit}>
@@ -80,8 +76,7 @@ export function RecoverPasswordForm({
                     role="status"
                     className="rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400"
                   >
-                    If an account exists for this email, you&apos;ll receive reset
-                    instructions shortly.
+                    {t("auth.recover_success")}
                   </p>
                 </Field>
               ) : null}
@@ -96,7 +91,7 @@ export function RecoverPasswordForm({
                 </Field>
               ) : null}
               <Field>
-                <FieldLabel htmlFor="recover-email">Email</FieldLabel>
+                <FieldLabel htmlFor="recover-email">{t("shared.email")}</FieldLabel>
                 <Input
                   id="recover-email"
                   type="email"
@@ -111,14 +106,14 @@ export function RecoverPasswordForm({
               </Field>
               <Field>
                 <Button type="submit" disabled={pending || success}>
-                  {pending ? "Sending…" : "Send link"}
+                  {pending ? t("auth.recover_sending") : t("auth.recover_send_link")}
                 </Button>
                 <FieldDescription className="text-center">
                   <Link
                     to="/"
                     className="underline-offset-4 hover:underline"
                   >
-                    Back to sign in
+                    {t("auth.back_sign_in")}
                   </Link>
                 </FieldDescription>
               </Field>
@@ -127,7 +122,7 @@ export function RecoverPasswordForm({
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center text-balance">
-        The email may take a few minutes. Check your spam folder too.
+        {t("auth.recover_footer_hint")}
       </FieldDescription>
     </div>
   )

@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router"
 
 import {
@@ -32,9 +35,10 @@ import {
 } from "~/lib/api/resources/opportunities"
 import { listOpportunityStatuses } from "~/lib/api/resources/opportunity-statuses"
 import { listRoles } from "~/lib/api/resources/roles"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import type { InterestLevel, OpportunityStatus } from "~/lib/labels"
 
-function formErrorMessage(err: unknown): string {
+function formErrorMessage(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
     const parts = [
       ...(err.fieldErrors.company_id ?? []),
@@ -49,18 +53,20 @@ function formErrorMessage(err: unknown): string {
     ]
     if (parts.length > 0) return parts.join(" ")
   }
-  return "Could not save opportunity."
+  return fallback
 }
 
-function listsErrorText(err: unknown): string {
+function listsErrorText(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
     const b = err.fieldErrors.base?.[0]
     if (b) return b
   }
-  return "Could not load form data (companies, roles, or statuses)."
+  return fallback
 }
 
 export default function OpportunityPage() {
+  const { t } = useTranslation(pagesI18nNs)
+  const { t: tc } = useTranslation("common")
   const navigate = useNavigate()
   const { id } = useParams()
   const isEdit = Boolean(id)
@@ -126,12 +132,12 @@ export default function OpportunityPage() {
       .catch((e: unknown) => {
         if (cancelled) return
         setListsLoadState("error")
-        setListsError(listsErrorText(e))
+        setListsError(listsErrorText(e, t("opportunities.form_lists_error")))
       })
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [t])
 
   React.useEffect(() => {
     if (!isEdit || !id) {
@@ -217,39 +223,35 @@ export default function OpportunityPage() {
         setPostSaveOpen(true)
       }
     } catch (err) {
-      setFormError(formErrorMessage(err))
+      setFormError(formErrorMessage(err, t("opportunities.form_save_error")))
     } finally {
       setSubmitting(false)
     }
   }
 
+  const title = isEdit
+    ? t("opportunities.edit_title")
+    : t("opportunities.new_title")
+  const crumbAction = isEdit ? t("shared.crumb_edit") : t("shared.crumb_new")
+  const breadcrumbs = [
+    { label: tc("breadcrumb_dashboard"), to: "/dashboard" },
+    { label: tc("nav_opportunities"), to: "/opportunities" },
+    { label: crumbAction },
+  ]
+
   if (listsLoadState === "loading") {
     return (
-      <AppLayout
-        title={isEdit ? "Edit opportunity" : "New opportunity"}
-        breadcrumbs={[
-          { label: "Dashboard", to: "/dashboard" },
-          { label: "Opportunities", to: "/opportunities" },
-          { label: isEdit ? "Edit" : "New" },
-        ]}
-      >
-        <p className="text-muted-foreground">Loading form…</p>
+      <AppLayout title={title} breadcrumbs={breadcrumbs}>
+        <p className="text-muted-foreground">{t("opportunities.loading_form")}</p>
       </AppLayout>
     )
   }
 
   if (listsLoadState === "error" || !referenceLists) {
     return (
-      <AppLayout
-        title={isEdit ? "Edit opportunity" : "New opportunity"}
-        breadcrumbs={[
-          { label: "Dashboard", to: "/dashboard" },
-          { label: "Opportunities", to: "/opportunities" },
-          { label: isEdit ? "Edit" : "New" },
-        ]}
-      >
+      <AppLayout title={title} breadcrumbs={breadcrumbs}>
         <p className="text-destructive text-sm" role="alert">
-          {listsError ?? "Could not load form data."}
+          {listsError ?? t("opportunities.form_load_error_fallback")}
         </p>
       </AppLayout>
     )
@@ -258,38 +260,28 @@ export default function OpportunityPage() {
   if (isEdit && oppLoadState === "loading") {
     return (
       <AppLayout
-        title="Edit opportunity"
+        title={t("opportunities.edit_title")}
         breadcrumbs={[
-          { label: "Dashboard", to: "/dashboard" },
-          { label: "Opportunities", to: "/opportunities" },
-          { label: "Edit" },
+          { label: tc("breadcrumb_dashboard"), to: "/dashboard" },
+          { label: tc("nav_opportunities"), to: "/opportunities" },
+          { label: t("shared.crumb_edit") },
         ]}
       >
-        <p className="text-muted-foreground">Loading opportunity…</p>
+        <p className="text-muted-foreground">{t("opportunities.loading_record")}</p>
       </AppLayout>
     )
   }
 
-  const title = isEdit ? "Edit opportunity" : "New opportunity"
-  const crumbAction = isEdit ? "Edit" : "New"
-
   return (
-    <AppLayout
-      title={title}
-      breadcrumbs={[
-        { label: "Dashboard", to: "/dashboard" },
-        { label: "Opportunities", to: "/opportunities" },
-        { label: crumbAction },
-      ]}
-    >
+    <AppLayout title={title} breadcrumbs={breadcrumbs}>
       <div className="min-h-0 flex-1 overflow-y-auto">
         <Card className="max-w-xl">
           <CardHeader>
             <CardTitle>{title}</CardTitle>
             <CardDescription>
               {isEdit
-                ? "Update this job opportunity."
-                : "Add a job opportunity to your tracker."}
+                ? t("opportunities.card_desc_edit")
+                : t("opportunities.card_desc_new")}
             </CardDescription>
           </CardHeader>
           <form
@@ -326,13 +318,17 @@ export default function OpportunityPage() {
             </CardContent>
             <CardFooter className="flex flex-wrap justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-                Cancel
+                {t("shared.cancel")}
               </Button>
               <Button
                 type="submit"
                 disabled={!companyId || !roleId || !status || submitting}
               >
-                {submitting ? "Saving…" : isEdit ? "Save changes" : "Save"}
+                {submitting
+                  ? t("shared.saving")
+                  : isEdit
+                    ? t("shared.save_changes")
+                    : t("shared.save")}
               </Button>
             </CardFooter>
           </form>
@@ -340,7 +336,7 @@ export default function OpportunityPage() {
       </div>
       <PostSaveDialog
         open={postSaveOpen}
-        entityLabel="Opportunity"
+        entityLabel={t("entity.opportunity")}
         onGoToList={() => navigate("/opportunities")}
         onAddAnother={() => {
           setPostSaveOpen(false)

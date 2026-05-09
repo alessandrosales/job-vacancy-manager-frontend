@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { Link } from "react-router"
 
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
@@ -26,6 +29,7 @@ import {
 } from "~/components/ui/alert-dialog"
 import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
 import { ApiError } from "~/lib/api/errors"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import {
   deleteReferenceLink as deleteReferenceLinkRequest,
   listReferenceLinks,
@@ -34,10 +38,10 @@ import {
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
 function hrefFromUrl(url: string): string {
-  const t = url.trim()
-  if (!t) return "#"
-  if (/^https?:\/\//i.test(t)) return t
-  return `https://${t}`
+  const raw = url.trim()
+  if (!raw) return "#"
+  if (/^https?:\/\//i.test(raw)) return raw
+  return `https://${raw}`
 }
 
 function filterLinksBySearch(
@@ -62,6 +66,7 @@ function apiErrorText(err: unknown, fallback: string): string {
 }
 
 export default function LinksPage() {
+  const { t } = useTranslation(pagesI18nNs)
   const [links, setLinks] = React.useState<ApiReferenceLink[]>([])
   const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
     "loading"
@@ -82,9 +87,9 @@ export default function LinksPage() {
       setLoadState("idle")
     } catch (e) {
       setLoadState("error")
-      setListError(apiErrorText(e, "Could not load links."))
+      setListError(apiErrorText(e, t("links.load_error")))
     }
-  }, [])
+  }, [t])
 
   React.useEffect(() => {
     void fetchLinks()
@@ -113,23 +118,23 @@ export default function LinksPage() {
       setLinks((prev) => prev.filter((row) => row.id !== deleteId))
       setDeleteId(null)
     } catch (e) {
-      setDeleteError(apiErrorText(e, "Could not delete link."))
+      setDeleteError(apiErrorText(e, t("links.delete_error")))
     } finally {
       setDeleteSubmitting(false)
     }
   }
 
   return (
-    <AppLayout title="Links">
+    <AppLayout title={t("links.title")}>
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
         <ListingPageHeader
-          title="Links"
-          description="Bookmarks and URLs you use alongside your search"
+          title={t("links.title")}
+          description={t("links.description")}
           action={
             <Button asChild>
               <Link to="/links/link">
                 <PlusIcon data-icon="inline-start" />
-                Add link
+                {t("links.add")}
               </Link>
             </Button>
           }
@@ -137,26 +142,29 @@ export default function LinksPage() {
         <ListingTableCard
           stats={
             loadState === "idle" && totalCount > 0
-              ? `Showing ${loadedCount} of ${totalCount}`
+              ? t("shared.showing_loaded_of_total", {
+                  loaded: loadedCount,
+                  total: totalCount,
+                })
               : undefined
           }
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
-          searchPlaceholder="Search links…"
+          searchPlaceholder={t("links.search_placeholder")}
         >
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-28">Actions</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>URL</TableHead>
+                <TableHead className="w-28">{t("shared.actions")}</TableHead>
+                <TableHead>{t("shared.title")}</TableHead>
+                <TableHead>{t("shared.url")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loadState === "loading" ? (
                 <TableRow>
                   <TableCell colSpan={3} className="text-muted-foreground">
-                    Loading links…
+                    {t("links.loading")}
                   </TableCell>
                 </TableRow>
               ) : loadState === "error" ? (
@@ -170,7 +178,7 @@ export default function LinksPage() {
                         size="sm"
                         onClick={() => void fetchLinks()}
                       >
-                        Try again
+                        {t("shared.try_again")}
                       </Button>
                     </div>
                   </TableCell>
@@ -178,13 +186,13 @@ export default function LinksPage() {
               ) : links.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={3} className="text-muted-foreground">
-                    No links yet. Add one to get started.
+                    {t("links.empty")}
                   </TableCell>
                 </TableRow>
               ) : filteredLinks.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={3} className="text-muted-foreground">
-                    No matches for your search.
+                    {t("shared.no_matches_search")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -195,7 +203,7 @@ export default function LinksPage() {
                         <Button variant="ghost" size="icon" asChild>
                           <Link
                             to={`/links/link/${encodeURIComponent(row.id)}`}
-                            aria-label="Edit link"
+                            aria-label={t("links.aria_edit")}
                           >
                             <PencilIcon />
                           </Link>
@@ -203,7 +211,7 @@ export default function LinksPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          aria-label="Delete link"
+                          aria-label={t("links.aria_delete")}
                           onClick={() => {
                             setDeleteError(null)
                             setDeleteId(row.id)
@@ -252,9 +260,9 @@ export default function LinksPage() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete link?</AlertDialogTitle>
+              <AlertDialogTitle>{t("links.delete_title")}</AlertDialogTitle>
               <AlertDialogDescription>
-                This removes the link from your list.
+                {t("links.delete_desc")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             {deleteError ? (
@@ -263,7 +271,9 @@ export default function LinksPage() {
               </p>
             ) : null}
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={deleteSubmitting}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={deleteSubmitting}>
+                {t("shared.cancel")}
+              </AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
                 disabled={deleteSubmitting}
@@ -272,7 +282,7 @@ export default function LinksPage() {
                   void confirmDelete()
                 }}
               >
-                {deleteSubmitting ? "Deleting…" : "Delete"}
+                {deleteSubmitting ? t("shared.deleting") : t("shared.delete")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

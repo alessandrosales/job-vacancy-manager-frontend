@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { Link } from "react-router"
 
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
@@ -26,6 +29,7 @@ import {
 } from "~/components/ui/alert-dialog"
 import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
 import { ApiError } from "~/lib/api/errors"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import {
   deleteWorkExperience as deleteWorkExperienceRequest,
   listWorkExperiences,
@@ -61,6 +65,7 @@ function apiErrorText(err: unknown, fallback: string): string {
 }
 
 export default function WorkExperiencesPage() {
+  const { t } = useTranslation(pagesI18nNs)
   const [workExperiences, setWorkExperiences] = React.useState<ApiWorkExperience[]>(
     []
   )
@@ -83,9 +88,9 @@ export default function WorkExperiencesPage() {
       setLoadState("idle")
     } catch (e) {
       setLoadState("error")
-      setListError(apiErrorText(e, "Could not load work experience."))
+      setListError(apiErrorText(e, t("work_experience.load_error")))
     }
-  }, [])
+  }, [t])
 
   React.useEffect(() => {
     void fetchWorkExperiences()
@@ -114,23 +119,23 @@ export default function WorkExperiencesPage() {
       setWorkExperiences((prev) => prev.filter((row) => row.id !== deleteId))
       setDeleteId(null)
     } catch (e) {
-      setDeleteError(apiErrorText(e, "Could not delete work experience."))
+      setDeleteError(apiErrorText(e, t("work_experience.delete_error")))
     } finally {
       setDeleteSubmitting(false)
     }
   }
 
   return (
-    <AppLayout title="Work experience">
+    <AppLayout title={t("work_experience.list_title")}>
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
         <ListingPageHeader
-          title="Work experience"
-          description="Roles and employers in your career history"
+          title={t("work_experience.list_title")}
+          description={t("work_experience.list_description")}
           action={
             <Button asChild>
               <Link to="/work-experiences/work-experience">
                 <PlusIcon data-icon="inline-start" />
-                Add experience
+                {t("work_experience.add")}
               </Link>
             </Button>
           }
@@ -138,31 +143,34 @@ export default function WorkExperiencesPage() {
         <ListingTableCard
           stats={
             loadState === "idle" && totalCount > 0
-              ? `Showing ${loadedCount} of ${totalCount}`
+              ? t("shared.showing_loaded_of_total", {
+                  loaded: loadedCount,
+                  total: totalCount,
+                })
               : undefined
           }
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
-          searchPlaceholder="Search experience…"
+          searchPlaceholder={t("work_experience.search_placeholder")}
         >
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-28">Actions</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Company</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Remote</TableHead>
-                <TableHead>From</TableHead>
-                <TableHead>To</TableHead>
-                <TableHead>Skills</TableHead>
+                <TableHead className="w-28">{t("shared.actions")}</TableHead>
+                <TableHead>{t("shared.title")}</TableHead>
+                <TableHead>{t("shared.company")}</TableHead>
+                <TableHead>{t("shared.description")}</TableHead>
+                <TableHead>{t("shared.remote")}</TableHead>
+                <TableHead>{t("shared.from")}</TableHead>
+                <TableHead>{t("shared.to")}</TableHead>
+                <TableHead>{t("shared.skills")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loadState === "loading" ? (
                 <TableRow>
                   <TableCell colSpan={8} className="text-muted-foreground">
-                    Loading work experience…
+                    {t("work_experience.loading_list")}
                   </TableCell>
                 </TableRow>
               ) : loadState === "error" ? (
@@ -176,7 +184,7 @@ export default function WorkExperiencesPage() {
                         size="sm"
                         onClick={() => void fetchWorkExperiences()}
                       >
-                        Try again
+                        {t("shared.try_again")}
                       </Button>
                     </div>
                   </TableCell>
@@ -184,13 +192,13 @@ export default function WorkExperiencesPage() {
               ) : workExperiences.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} className="text-muted-foreground">
-                    No work experience yet. Add one to get started.
+                    {t("work_experience.empty")}
                   </TableCell>
                 </TableRow>
               ) : filtered.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} className="text-muted-foreground">
-                    No matches for your search.
+                    {t("shared.no_matches_search")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -201,7 +209,7 @@ export default function WorkExperiencesPage() {
                         <Button variant="ghost" size="icon" asChild>
                           <Link
                             to={`/work-experiences/work-experience/${encodeURIComponent(row.id)}`}
-                            aria-label="Edit work experience"
+                            aria-label={t("work_experience.aria_edit")}
                           >
                             <PencilIcon />
                           </Link>
@@ -209,7 +217,7 @@ export default function WorkExperiencesPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          aria-label="Delete work experience"
+                          aria-label={t("work_experience.aria_delete")}
                           onClick={() => {
                             setDeleteError(null)
                             setDeleteId(row.id)
@@ -224,7 +232,7 @@ export default function WorkExperiencesPage() {
                     <TableCell className="max-w-xs truncate text-muted-foreground">
                       {row.description?.trim() ? row.description : "—"}
                     </TableCell>
-                    <TableCell>{row.is_remote ? "Yes" : "No"}</TableCell>
+                    <TableCell>{row.is_remote ? t("shared.yes") : t("shared.no")}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {row.date_from ?? "—"}
                     </TableCell>
@@ -262,9 +270,9 @@ export default function WorkExperiencesPage() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete work experience?</AlertDialogTitle>
+              <AlertDialogTitle>{t("work_experience.delete_title")}</AlertDialogTitle>
               <AlertDialogDescription>
-                This removes the entry from your list.
+                {t("work_experience.delete_desc")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             {deleteError ? (
@@ -273,7 +281,9 @@ export default function WorkExperiencesPage() {
               </p>
             ) : null}
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={deleteSubmitting}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={deleteSubmitting}>
+                {t("shared.cancel")}
+              </AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
                 disabled={deleteSubmitting}
@@ -282,7 +292,7 @@ export default function WorkExperiencesPage() {
                   void confirmDelete()
                 }}
               >
-                {deleteSubmitting ? "Deleting…" : "Delete"}
+                {deleteSubmitting ? t("shared.deleting") : t("shared.delete")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

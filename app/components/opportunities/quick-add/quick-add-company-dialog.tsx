@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 
 import { InterestLevelStarPicker } from "~/components/shared/interest-level-star-picker"
 import { apiFormErrorFromUnknown } from "~/components/opportunities/quick-add/api-form-error"
@@ -24,6 +25,7 @@ import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
 import { createCompany } from "~/lib/api/resources/companies"
 import type { InterestLevel } from "~/lib/labels"
+import { pagesI18nNs } from "~/lib/i18n/config"
 
 export function QuickAddCompanyDialog({
   open,
@@ -32,6 +34,7 @@ export function QuickAddCompanyDialog({
   persistViaApi = false,
   onPersistedViaApi,
 }: QuickAddRelationDialogProps) {
+  const { t } = useTranslation(pagesI18nNs)
   const { addCompany } = useAppData()
   const [name, setName] = React.useState("")
   const [url, setUrl] = React.useState("")
@@ -51,15 +54,15 @@ export function QuickAddCompanyDialog({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const t = name.trim()
-    if (!t) return
+    const trimmedName = name.trim()
+    if (!trimmedName) return
 
     if (persistViaApi) {
       setFormError(null)
       setSubmitting(true)
       try {
         const created = await createCompany({
-          name: t,
+          name: trimmedName,
           url: url.trim() === "" ? null : url.trim(),
           description: description.trim() === "" ? null : description.trim(),
           interest_level: interestLevel,
@@ -68,7 +71,9 @@ export function QuickAddCompanyDialog({
         await onPersistedViaApi?.()
         onOpenChange(false)
       } catch (err) {
-        setFormError(apiFormErrorFromUnknown(err, "Could not create company."))
+        setFormError(
+          apiFormErrorFromUnknown(err, t("opportunities.quick_add_create_company_error"))
+        )
       } finally {
         setSubmitting(false)
       }
@@ -76,7 +81,7 @@ export function QuickAddCompanyDialog({
     }
 
     const id = addCompany({
-      name: t,
+      name: trimmedName,
       url: url.trim(),
       description: description.trim(),
       interest_level: interestLevel,
@@ -90,10 +95,8 @@ export function QuickAddCompanyDialog({
       <DialogContent className="max-w-md overflow-hidden p-0 sm:max-w-md" showCloseButton>
         <form onSubmit={(ev) => void handleSubmit(ev)} className="flex flex-col">
           <DialogHeader className="shrink-0 px-4 pt-4 pb-2">
-            <DialogTitle>New company</DialogTitle>
-            <DialogDescription>
-              Cria a empresa para poder selecioná-la no formulário.
-            </DialogDescription>
+            <DialogTitle>{t("company.new_title")}</DialogTitle>
+            <DialogDescription>{t("opportunities.quick_add_company_desc")}</DialogDescription>
           </DialogHeader>
           <div className="max-h-[min(70vh,480px)] overflow-y-auto px-4 pt-2 pb-6">
             <FieldGroup>
@@ -103,7 +106,7 @@ export function QuickAddCompanyDialog({
                 </p>
               ) : null}
               <Field>
-                <FieldLabel htmlFor="qac-name">Name</FieldLabel>
+                <FieldLabel htmlFor="qac-name">{t("shared.name")}</FieldLabel>
                 <Input
                   id="qac-name"
                   value={name}
@@ -113,17 +116,17 @@ export function QuickAddCompanyDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qac-url">URL</FieldLabel>
+                <FieldLabel htmlFor="qac-url">{t("shared.url")}</FieldLabel>
                 <Input
                   id="qac-url"
                   type="url"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  placeholder="https://"
+                  placeholder={t("company.url_placeholder")}
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qac-desc">Description</FieldLabel>
+                <FieldLabel htmlFor="qac-desc">{t("shared.description")}</FieldLabel>
                 <Textarea
                   id="qac-desc"
                   value={description}
@@ -132,7 +135,7 @@ export function QuickAddCompanyDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel>Interest level</FieldLabel>
+                <FieldLabel>{t("shared.interest_level")}</FieldLabel>
                 <InterestLevelStarPicker
                   value={interestLevel}
                   onChange={setInterestLevel}
@@ -147,10 +150,10 @@ export function QuickAddCompanyDialog({
               onClick={() => onOpenChange(false)}
               disabled={submitting}
             >
-              Cancel
+              {t("shared.cancel")}
             </Button>
             <Button type="submit" disabled={submitting}>
-              {submitting ? "Saving…" : "Save"}
+              {submitting ? t("shared.saving") : t("shared.save")}
             </Button>
           </DialogFooter>
         </form>

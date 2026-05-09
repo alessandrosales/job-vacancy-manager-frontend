@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { Link } from "react-router"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
@@ -24,6 +25,7 @@ import { Button } from "~/components/ui/button"
 import { Card, CardContent } from "~/components/ui/card"
 import { getColumnBadgeProps, getEffectiveColumnId } from "~/lib/kanban-columns"
 import { cn } from "~/lib/utils"
+import { pagesI18nNs } from "~/lib/i18n/config"
 
 export type KanbanJobCardContentProps = {
   opp: Opportunity
@@ -54,6 +56,7 @@ export function KanbanJobCardContent({
   roles: rolesProp,
   badgeColumnUsesStatusOnly = false,
 }: KanbanJobCardContentProps) {
+  const { t } = useTranslation(pagesI18nNs)
   const appData = useAppData()
   const companies = companiesProp ?? appData.companies
   const roles = rolesProp ?? appData.roles
@@ -84,7 +87,7 @@ export function KanbanJobCardContent({
                   href={opp.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="Open opportunity link"
+                  aria-label={t("opportunities.aria_open_url")}
                   onPointerDown={(e) => e.stopPropagation()}
                   onDoubleClick={(e) => e.stopPropagation()}
                 >
@@ -131,7 +134,7 @@ export function KanbanJobCardContent({
             <Button variant="ghost" size="icon" className="size-7" asChild>
               <Link
                 to={`/opportunities/opportunity/${encodeURIComponent(opp.id)}`}
-                aria-label="Edit opportunity"
+                aria-label={t("opportunities.aria_edit")}
                 onPointerDown={(e) => e.stopPropagation()}
                 onDoubleClick={(e) => e.stopPropagation()}
               >
@@ -143,7 +146,7 @@ export function KanbanJobCardContent({
               size="icon"
               className="size-7 text-destructive hover:text-destructive"
               type="button"
-              aria-label="Delete opportunity"
+              aria-label={t("opportunities.aria_delete")}
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation()

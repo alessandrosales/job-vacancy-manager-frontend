@@ -9,30 +9,15 @@ import {
   acceptLanguageToUi,
   normalizeUiLanguage,
 } from "~/lib/i18n/preferred-language"
-import { GUEST_UI_LANG_STORAGE_KEY } from "~/lib/i18n/constants"
 import { syncAppLanguageTo } from "~/lib/i18n/config"
-
-function readGuestStoredLanguage(): UiLanguageCode | null {
-  try {
-    const raw = localStorage.getItem(GUEST_UI_LANG_STORAGE_KEY)
-    if (!raw) return null
-    return normalizeUiLanguage(raw)
-  } catch {
-    return null
-  }
-}
+import {
+  persistGuestUiLanguage,
+  readGuestUiLanguage,
+} from "~/lib/i18n/guest-ui-lang-storage"
 
 function guestLanguageFromNavigator(): UiLanguageCode {
   if (typeof navigator === "undefined") return "en"
   return acceptLanguageToUi(navigator.language)
-}
-
-function persistGuestLanguage(code: UiLanguageCode): void {
-  try {
-    localStorage.setItem(GUEST_UI_LANG_STORAGE_KEY, code)
-  } catch {
-    /* ignore */
-  }
 }
 
 /**
@@ -58,8 +43,8 @@ export function AppLanguageBridge() {
       if (t && u.id) {
         code = normalizeUiLanguage(u.preferred_language)
       } else {
-        code = readGuestStoredLanguage() ?? guestLanguageFromNavigator()
-        persistGuestLanguage(code)
+        code = readGuestUiLanguage() ?? guestLanguageFromNavigator()
+        persistGuestUiLanguage(code)
       }
 
       await syncAppLanguageTo(code)

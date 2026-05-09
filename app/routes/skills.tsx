@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { Link } from "react-router"
 
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
@@ -26,6 +29,7 @@ import {
 } from "~/components/ui/alert-dialog"
 import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
 import { ApiError } from "~/lib/api/errors"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import {
   deleteSkill as deleteSkillRequest,
   listSkills,
@@ -41,17 +45,18 @@ function filterSkillsBySearch(rows: readonly ApiSkill[], needle: string): ApiSki
   )
 }
 
-function listErrorMessage(err: unknown): string {
+function apiErrorText(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
     const base = err.fieldErrors.base?.[0]
     if (base) return base
     const firstField = Object.values(err.fieldErrors).flat()[0]
     if (firstField) return firstField
   }
-  return "Could not load skills."
+  return fallback
 }
 
 export default function SkillsPage() {
+  const { t } = useTranslation(pagesI18nNs)
   const [skills, setSkills] = React.useState<ApiSkill[]>([])
   const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
     "loading"
@@ -72,9 +77,9 @@ export default function SkillsPage() {
       setLoadState("idle")
     } catch (e) {
       setLoadState("error")
-      setListError(listErrorMessage(e))
+      setListError(apiErrorText(e, t("skills.load_error")))
     }
-  }, [])
+  }, [t])
 
   React.useEffect(() => {
     void fetchSkills()
@@ -103,23 +108,23 @@ export default function SkillsPage() {
       setSkills((prev) => prev.filter((s) => s.id !== deleteId))
       setDeleteId(null)
     } catch (e) {
-      setDeleteError(listErrorMessage(e))
+      setDeleteError(apiErrorText(e, t("skills.delete_error")))
     } finally {
       setDeleteSubmitting(false)
     }
   }
 
   return (
-    <AppLayout title="Skills">
+    <AppLayout title={t("skills.title")}>
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
         <ListingPageHeader
-          title="Skills"
-          description="Technical skills relevant to your job search"
+          title={t("skills.title")}
+          description={t("skills.description")}
           action={
             <Button asChild>
               <Link to="/skills/skill">
                 <PlusIcon data-icon="inline-start" />
-                Add skill
+                {t("skills.add")}
               </Link>
             </Button>
           }
@@ -127,26 +132,29 @@ export default function SkillsPage() {
         <ListingTableCard
           stats={
             loadState === "idle" && totalCount > 0
-              ? `Showing ${loadedCount} of ${totalCount}`
+              ? t("shared.showing_loaded_of_total", {
+                  loaded: loadedCount,
+                  total: totalCount,
+                })
               : undefined
           }
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
-          searchPlaceholder="Search skills…"
+          searchPlaceholder={t("skills.search_placeholder")}
         >
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-28">Actions</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Description</TableHead>
+                <TableHead className="w-28">{t("shared.actions")}</TableHead>
+                <TableHead>{t("shared.name")}</TableHead>
+                <TableHead>{t("shared.description")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loadState === "loading" ? (
                 <TableRow>
                   <TableCell colSpan={3} className="text-muted-foreground">
-                    Loading skills…
+                    {t("skills.loading")}
                   </TableCell>
                 </TableRow>
               ) : loadState === "error" ? (
@@ -155,7 +163,7 @@ export default function SkillsPage() {
                     <div className="flex flex-wrap items-center gap-3">
                       <span className="text-destructive">{listError}</span>
                       <Button type="button" variant="outline" size="sm" onClick={() => void fetchSkills()}>
-                        Try again
+                        {t("shared.try_again")}
                       </Button>
                     </div>
                   </TableCell>
@@ -163,13 +171,13 @@ export default function SkillsPage() {
               ) : skills.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={3} className="text-muted-foreground">
-                    No skills yet. Add one to get started.
+                    {t("skills.empty")}
                   </TableCell>
                 </TableRow>
               ) : filteredSkills.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={3} className="text-muted-foreground">
-                    No matches for your search.
+                    {t("shared.no_matches_search")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -180,7 +188,7 @@ export default function SkillsPage() {
                         <Button variant="ghost" size="icon" asChild>
                           <Link
                             to={`/skills/skill/${encodeURIComponent(skill.id)}`}
-                            aria-label="Edit skill"
+                            aria-label={t("skills.aria_edit")}
                           >
                             <PencilIcon />
                           </Link>
@@ -188,7 +196,7 @@ export default function SkillsPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          aria-label="Delete skill"
+                          aria-label={t("skills.aria_delete")}
                           onClick={() => {
                             setDeleteError(null)
                             setDeleteId(skill.id)
@@ -230,9 +238,9 @@ export default function SkillsPage() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete skill?</AlertDialogTitle>
+              <AlertDialogTitle>{t("skills.delete_title")}</AlertDialogTitle>
               <AlertDialogDescription>
-                This removes the skill from your list.
+                {t("skills.delete_desc")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             {deleteError ? (
@@ -241,7 +249,9 @@ export default function SkillsPage() {
               </p>
             ) : null}
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={deleteSubmitting}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={deleteSubmitting}>
+                {t("shared.cancel")}
+              </AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
                 disabled={deleteSubmitting}
@@ -250,7 +260,7 @@ export default function SkillsPage() {
                   void confirmDelete()
                 }}
               >
-                {deleteSubmitting ? "Deleting…" : "Delete"}
+                {deleteSubmitting ? t("shared.deleting") : t("shared.delete")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

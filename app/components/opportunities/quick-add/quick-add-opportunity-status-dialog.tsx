@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 
 import { apiFormErrorFromUnknown } from "~/components/opportunities/quick-add/api-form-error"
 import type { QuickAddRelationDialogProps } from "~/components/opportunities/quick-add/types"
@@ -31,6 +32,7 @@ import {
 import { Textarea } from "~/components/ui/textarea"
 import { createOpportunityStatus } from "~/lib/api/resources/opportunity-statuses"
 import type { OpportunityStatusDefinition, StatusBadgeVariant } from "~/lib/labels"
+import { pagesI18nNs } from "~/lib/i18n/config"
 
 const BADGE_VARIANTS: StatusBadgeVariant[] = [
   "secondary",
@@ -46,6 +48,7 @@ export function QuickAddOpportunityStatusDialog({
   persistViaApi = false,
   onPersistedViaApi,
 }: QuickAddRelationDialogProps) {
+  const { t } = useTranslation(pagesI18nNs)
   const { addOpportunityStatus } = useAppData()
   const [label, setLabel] = React.useState("")
   const [description, setDescription] = React.useState("")
@@ -63,15 +66,15 @@ export function QuickAddOpportunityStatusDialog({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const t = label.trim()
-    if (!t) return
+    const trimmedLabel = label.trim()
+    if (!trimmedLabel) return
 
     if (persistViaApi) {
       setFormError(null)
       setSubmitting(true)
       try {
         const created = await createOpportunityStatus({
-          label: t,
+          label: trimmedLabel,
           description: description.trim() === "" ? null : description.trim(),
           variant,
         })
@@ -79,7 +82,9 @@ export function QuickAddOpportunityStatusDialog({
         await onPersistedViaApi?.()
         onOpenChange(false)
       } catch (err) {
-        setFormError(apiFormErrorFromUnknown(err, "Could not create status."))
+        setFormError(
+          apiFormErrorFromUnknown(err, t("opportunities.quick_add_create_status_error"))
+        )
       } finally {
         setSubmitting(false)
       }
@@ -87,7 +92,7 @@ export function QuickAddOpportunityStatusDialog({
     }
 
     const row: Omit<OpportunityStatusDefinition, "id"> = {
-      label: t,
+      label: trimmedLabel,
       description: description.trim() || undefined,
       variant,
     }
@@ -101,10 +106,8 @@ export function QuickAddOpportunityStatusDialog({
       <DialogContent className="max-w-md overflow-hidden p-0 sm:max-w-md" showCloseButton>
         <form onSubmit={(ev) => void handleSubmit(ev)} className="flex flex-col">
           <DialogHeader className="shrink-0 px-4 pt-4 pb-2">
-            <DialogTitle>New opportunity status</DialogTitle>
-            <DialogDescription>
-              Novo estágio no pipeline (coluna no Kanban).
-            </DialogDescription>
+            <DialogTitle>{t("opportunities.new_status")}</DialogTitle>
+            <DialogDescription>{t("opportunities.quick_add_status_pipeline_desc")}</DialogDescription>
           </DialogHeader>
           <div className="max-h-[min(70vh,420px)] overflow-y-auto px-4 pt-2 pb-6">
             <FieldGroup>
@@ -114,7 +117,7 @@ export function QuickAddOpportunityStatusDialog({
                 </p>
               ) : null}
               <Field>
-                <FieldLabel htmlFor="qas-label">Label</FieldLabel>
+                <FieldLabel htmlFor="qas-label">{t("shared.label")}</FieldLabel>
                 <Input
                   id="qas-label"
                   value={label}
@@ -124,7 +127,7 @@ export function QuickAddOpportunityStatusDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qas-desc">Description</FieldLabel>
+                <FieldLabel htmlFor="qas-desc">{t("shared.description")}</FieldLabel>
                 <Textarea
                   id="qas-desc"
                   value={description}
@@ -133,7 +136,7 @@ export function QuickAddOpportunityStatusDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qas-variant">Badge variant</FieldLabel>
+                <FieldLabel htmlFor="qas-variant">{t("opportunity_status.badge_style")}</FieldLabel>
                 <Select
                   value={variant}
                   onValueChange={(v) => setVariant(v as StatusBadgeVariant)}
@@ -161,10 +164,10 @@ export function QuickAddOpportunityStatusDialog({
               onClick={() => onOpenChange(false)}
               disabled={submitting}
             >
-              Cancel
+              {t("shared.cancel")}
             </Button>
             <Button type="submit" disabled={submitting}>
-              {submitting ? "Saving…" : "Save"}
+              {submitting ? t("shared.saving") : t("shared.save")}
             </Button>
           </DialogFooter>
         </form>

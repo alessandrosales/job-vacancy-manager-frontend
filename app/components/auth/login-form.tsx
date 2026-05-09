@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import {
   GoogleAuthProvider,
   signInWithEmailAndPassword,
@@ -36,11 +37,14 @@ import {
 import { syncFirebaseUserToApiSession } from "~/lib/firebase-auth-session"
 import { firebaseAuth } from "~/lib/firebase.client"
 import { useSessionUserStore } from "~/stores/session-user-store"
+import { pagesI18nNs } from "~/lib/i18n/config"
+import { AuthUiLanguageSelect } from "~/components/auth/auth-ui-language-select"
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { t } = useTranslation(pagesI18nNs)
   const navigate = useNavigate()
 
   const [email, setEmail] = React.useState("")
@@ -97,14 +101,12 @@ export function LoginForm({
             setFormError(
               parts.length > 0
                 ? parts.join(" ")
-                : "Invalid email or password."
+                : t("auth.invalid_credentials")
             )
             return
           }
           if (apiErr instanceof TypeError) {
-            setFormError(
-              "Could not reach the API. Check your network and VITE_API_BASE_URL."
-            )
+            setFormError(t("auth.network_error"))
             return
           }
           setFormError(firebaseAuthErrorMessage(firebaseErr))
@@ -133,12 +135,11 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
+      <AuthUiLanguageSelect />
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Welcome back</CardTitle>
-          <CardDescription>
-            Sign in with Google or email
-          </CardDescription>
+          <CardTitle className="text-xl">{t("auth.login_title")}</CardTitle>
+          <CardDescription>{t("auth.login_subtitle")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form method="post" onSubmit={handleSubmit}>
@@ -166,14 +167,14 @@ export function LoginForm({
                       fill="currentColor"
                     />
                   </svg>
-                  Sign in with Google
+                  {t("auth.login_google")}
                 </Button>
               </Field>
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
-                Or continue with
+                {t("auth.separator_or_email")}
               </FieldSeparator>
               <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <FieldLabel htmlFor="email">{t("shared.email")}</FieldLabel>
                 <Input
                   id="email"
                   type="email"
@@ -188,12 +189,12 @@ export function LoginForm({
               </Field>
               <Field>
                 <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
+                  <FieldLabel htmlFor="password">{t("shared.password")}</FieldLabel>
                   <Link
                     to="/recover-password"
                     className="ms-auto text-sm underline-offset-4 hover:underline"
                   >
-                    Forgot password?
+                    {t("auth.forgot_password")}
                   </Link>
                 </div>
                 <Input
@@ -209,15 +210,15 @@ export function LoginForm({
               </Field>
               <Field>
                 <Button type="submit" disabled={pending}>
-                  {pending ? "Signing in…" : "Sign in"}
+                  {pending ? t("auth.signing_in") : t("auth.sign_in")}
                 </Button>
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account?{" "}
+                  {t("auth.no_account")}{" "}
                   <Link
                     to="/register"
                     className="underline-offset-4 hover:underline"
                   >
-                    Sign up
+                    {t("auth.sign_up")}
                   </Link>
                 </FieldDescription>
               </Field>
@@ -226,13 +227,13 @@ export function LoginForm({
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center">
-        By continuing, you agree to our{" "}
+        {t("auth.legal_prefix")}{" "}
         <a href="#" className="underline-offset-4 hover:underline">
-          Terms of use
+          {t("auth.terms")}
         </a>{" "}
-        and{" "}
+        {t("auth.legal_and")}{" "}
         <a href="#" className="underline-offset-4 hover:underline">
-          Privacy policy
+          {t("auth.privacy")}
         </a>
         .
       </FieldDescription>

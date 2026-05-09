@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { Link } from "react-router"
 
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
@@ -26,6 +29,7 @@ import {
 } from "~/components/ui/alert-dialog"
 import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
 import { ApiError } from "~/lib/api/errors"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import {
   deleteLanguage as deleteLanguageRequest,
   listLanguages,
@@ -33,19 +37,21 @@ import {
 } from "~/lib/api/resources/languages"
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
-function languageLevelLabel(level: string): string {
-  switch (level) {
-    case "beginner":
-      return "Beginner"
-    case "intermediate":
-      return "Intermediate"
-    case "advanced":
-      return "Advanced"
-    case "native":
-      return "Native"
-    default:
-      return level
+const LANGUAGE_LEVEL_KEYS = [
+  "beginner",
+  "intermediate",
+  "advanced",
+  "native",
+] as const
+
+function languageLevelLabel(
+  t: (key: string) => string,
+  level: string
+): string {
+  if ((LANGUAGE_LEVEL_KEYS as readonly string[]).includes(level)) {
+    return t(`language_level.${level}`)
   }
+  return level
 }
 
 function filterLanguagesBySearch(rows: readonly ApiLanguage[], needle: string): ApiLanguage[] {
@@ -56,17 +62,18 @@ function filterLanguagesBySearch(rows: readonly ApiLanguage[], needle: string): 
   )
 }
 
-function listErrorMessage(err: unknown): string {
+function apiErrorText(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
     const base = err.fieldErrors.base?.[0]
     if (base) return base
     const firstField = Object.values(err.fieldErrors).flat()[0]
     if (firstField) return firstField
   }
-  return "Could not load languages."
+  return fallback
 }
 
 export default function LanguagesPage() {
+  const { t } = useTranslation(pagesI18nNs)
   const [languages, setLanguages] = React.useState<ApiLanguage[]>([])
   const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
     "loading"
@@ -87,9 +94,9 @@ export default function LanguagesPage() {
       setLoadState("idle")
     } catch (e) {
       setLoadState("error")
-      setListError(listErrorMessage(e))
+      setListError(apiErrorText(e, t("languages.load_error")))
     }
-  }, [])
+  }, [t])
 
   React.useEffect(() => {
     void fetchLanguages()
@@ -118,23 +125,23 @@ export default function LanguagesPage() {
       setLanguages((prev) => prev.filter((row) => row.id !== deleteId))
       setDeleteId(null)
     } catch (e) {
-      setDeleteError(listErrorMessage(e))
+      setDeleteError(apiErrorText(e, t("languages.delete_error")))
     } finally {
       setDeleteSubmitting(false)
     }
   }
 
   return (
-    <AppLayout title="Languages">
+    <AppLayout title={t("languages.title")}>
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
         <ListingPageHeader
-          title="Languages"
-          description="Languages you speak — used like skills and roles across the app"
+          title={t("languages.title")}
+          description={t("languages.description")}
           action={
             <Button asChild>
               <Link to="/languages/language">
                 <PlusIcon data-icon="inline-start" />
-                Add language
+                {t("languages.add")}
               </Link>
             </Button>
           }
@@ -142,26 +149,29 @@ export default function LanguagesPage() {
         <ListingTableCard
           stats={
             loadState === "idle" && totalCount > 0
-              ? `Showing ${loadedCount} of ${totalCount}`
+              ? t("shared.showing_loaded_of_total", {
+                  loaded: loadedCount,
+                  total: totalCount,
+                })
               : undefined
           }
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
-          searchPlaceholder="Search languages…"
+          searchPlaceholder={t("languages.search_placeholder")}
         >
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-28">Actions</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Level</TableHead>
+                <TableHead className="w-28">{t("shared.actions")}</TableHead>
+                <TableHead>{t("shared.name")}</TableHead>
+                <TableHead>{t("shared.level")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loadState === "loading" ? (
                 <TableRow>
                   <TableCell colSpan={3} className="text-muted-foreground">
-                    Loading languages…
+                    {t("languages.loading")}
                   </TableCell>
                 </TableRow>
               ) : loadState === "error" ? (
@@ -175,7 +185,7 @@ export default function LanguagesPage() {
                         size="sm"
                         onClick={() => void fetchLanguages()}
                       >
-                        Try again
+                        {t("shared.try_again")}
                       </Button>
                     </div>
                   </TableCell>
@@ -183,13 +193,13 @@ export default function LanguagesPage() {
               ) : languages.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={3} className="text-muted-foreground">
-                    No languages yet. Add one to get started.
+                    {t("languages.empty")}
                   </TableCell>
                 </TableRow>
               ) : filteredLanguages.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={3} className="text-muted-foreground">
-                    No matches for your search.
+                    {t("shared.no_matches_search")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -200,7 +210,7 @@ export default function LanguagesPage() {
                         <Button variant="ghost" size="icon" asChild>
                           <Link
                             to={`/languages/language/${encodeURIComponent(row.id)}`}
-                            aria-label="Edit language"
+                            aria-label={t("languages.aria_edit")}
                           >
                             <PencilIcon />
                           </Link>
@@ -208,7 +218,7 @@ export default function LanguagesPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          aria-label="Delete language"
+                          aria-label={t("languages.aria_delete")}
                           onClick={() => {
                             setDeleteError(null)
                             setDeleteId(row.id)
@@ -220,7 +230,7 @@ export default function LanguagesPage() {
                     </TableCell>
                     <TableCell className="font-medium">{row.name}</TableCell>
                     <TableCell className="text-muted-foreground">
-                      {languageLevelLabel(row.level)}
+                      {languageLevelLabel(t, row.level)}
                     </TableCell>
                   </TableRow>
                 ))
@@ -250,9 +260,9 @@ export default function LanguagesPage() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete language?</AlertDialogTitle>
+              <AlertDialogTitle>{t("languages.delete_title")}</AlertDialogTitle>
               <AlertDialogDescription>
-                This removes the language from your list.
+                {t("languages.delete_desc")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             {deleteError ? (
@@ -261,7 +271,9 @@ export default function LanguagesPage() {
               </p>
             ) : null}
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={deleteSubmitting}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={deleteSubmitting}>
+                {t("shared.cancel")}
+              </AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
                 disabled={deleteSubmitting}
@@ -270,7 +282,7 @@ export default function LanguagesPage() {
                   void confirmDelete()
                 }}
               >
-                {deleteSubmitting ? "Deleting…" : "Delete"}
+                {deleteSubmitting ? t("shared.deleting") : t("shared.delete")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

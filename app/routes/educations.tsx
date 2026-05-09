@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { Link } from "react-router"
 
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
@@ -26,6 +29,7 @@ import {
 } from "~/components/ui/alert-dialog"
 import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
 import { ApiError } from "~/lib/api/errors"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import {
   deleteEducation as deleteEducationRequest,
   listEducations,
@@ -57,6 +61,7 @@ function apiErrorText(err: unknown, fallback: string): string {
 }
 
 export default function EducationsPage() {
+  const { t } = useTranslation(pagesI18nNs)
   const [education, setEducation] = React.useState<ApiEducation[]>([])
   const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
     "loading"
@@ -77,9 +82,9 @@ export default function EducationsPage() {
       setLoadState("idle")
     } catch (e) {
       setLoadState("error")
-      setListError(apiErrorText(e, "Could not load education entries."))
+      setListError(apiErrorText(e, t("educations.load_error")))
     }
-  }, [])
+  }, [t])
 
   React.useEffect(() => {
     void fetchEducations()
@@ -108,23 +113,23 @@ export default function EducationsPage() {
       setEducation((prev) => prev.filter((row) => row.id !== deleteId))
       setDeleteId(null)
     } catch (e) {
-      setDeleteError(apiErrorText(e, "Could not delete education entry."))
+      setDeleteError(apiErrorText(e, t("educations.delete_error")))
     } finally {
       setDeleteSubmitting(false)
     }
   }
 
   return (
-    <AppLayout title="Education">
+    <AppLayout title={t("educations.title")}>
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
         <ListingPageHeader
-          title="Education"
-          description="Degrees and academic programs"
+          title={t("educations.title")}
+          description={t("educations.description")}
           action={
             <Button asChild>
               <Link to="/educations/education">
                 <PlusIcon data-icon="inline-start" />
-                Add education
+                {t("educations.add")}
               </Link>
             </Button>
           }
@@ -132,29 +137,32 @@ export default function EducationsPage() {
         <ListingTableCard
           stats={
             loadState === "idle" && totalCount > 0
-              ? `Showing ${loadedCount} of ${totalCount}`
+              ? t("shared.showing_loaded_of_total", {
+                  loaded: loadedCount,
+                  total: totalCount,
+                })
               : undefined
           }
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
-          searchPlaceholder="Search education…"
+          searchPlaceholder={t("educations.search_placeholder")}
         >
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-28">Actions</TableHead>
-                <TableHead>Institution</TableHead>
-                <TableHead>Degree</TableHead>
-                <TableHead>Field of study</TableHead>
-                <TableHead>From</TableHead>
-                <TableHead>To</TableHead>
+                <TableHead className="w-28">{t("shared.actions")}</TableHead>
+                <TableHead>{t("shared.institution")}</TableHead>
+                <TableHead>{t("shared.degree")}</TableHead>
+                <TableHead>{t("shared.field_of_study")}</TableHead>
+                <TableHead>{t("shared.from")}</TableHead>
+                <TableHead>{t("shared.to")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loadState === "loading" ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-muted-foreground">
-                    Loading education…
+                    {t("educations.loading")}
                   </TableCell>
                 </TableRow>
               ) : loadState === "error" ? (
@@ -168,7 +176,7 @@ export default function EducationsPage() {
                         size="sm"
                         onClick={() => void fetchEducations()}
                       >
-                        Try again
+                        {t("shared.try_again")}
                       </Button>
                     </div>
                   </TableCell>
@@ -176,13 +184,13 @@ export default function EducationsPage() {
               ) : education.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-muted-foreground">
-                    No education entries yet. Add one to get started.
+                    {t("educations.empty")}
                   </TableCell>
                 </TableRow>
               ) : filtered.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-muted-foreground">
-                    No matches for your search.
+                    {t("shared.no_matches_search")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -193,7 +201,7 @@ export default function EducationsPage() {
                         <Button variant="ghost" size="icon" asChild>
                           <Link
                             to={`/educations/education/${encodeURIComponent(row.id)}`}
-                            aria-label="Edit education"
+                            aria-label={t("educations.aria_edit")}
                           >
                             <PencilIcon />
                           </Link>
@@ -201,7 +209,7 @@ export default function EducationsPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          aria-label="Delete education"
+                          aria-label={t("educations.aria_delete")}
                           onClick={() => {
                             setDeleteError(null)
                             setDeleteId(row.id)
@@ -250,9 +258,9 @@ export default function EducationsPage() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete education?</AlertDialogTitle>
+              <AlertDialogTitle>{t("educations.delete_title")}</AlertDialogTitle>
               <AlertDialogDescription>
-                This removes the entry from your list.
+                {t("educations.delete_desc")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             {deleteError ? (
@@ -261,7 +269,9 @@ export default function EducationsPage() {
               </p>
             ) : null}
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={deleteSubmitting}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={deleteSubmitting}>
+                {t("shared.cancel")}
+              </AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
                 disabled={deleteSubmitting}
@@ -270,7 +280,7 @@ export default function EducationsPage() {
                   void confirmDelete()
                 }}
               >
-                {deleteSubmitting ? "Deleting…" : "Delete"}
+                {deleteSubmitting ? t("shared.deleting") : t("shared.delete")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

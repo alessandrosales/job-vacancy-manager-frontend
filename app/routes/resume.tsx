@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { Link, useNavigate, useParams } from "react-router"
 
 import { QuickAddRoleDialog } from "~/components/opportunities/quick-add/quick-add-role-dialog"
@@ -70,6 +73,7 @@ import { listWorkExperiences } from "~/lib/api/resources/work-experiences"
 import { apiRoleToRole } from "~/lib/opportunity-api-mappers"
 import { CheckIcon, Loader2Icon, PlusIcon, SparklesIcon, XIcon } from "lucide-react"
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import {
   DEFAULT_RESUME_PREFERRED_LANGUAGE,
   RESUME_PREFERRED_LANGUAGE_OPTIONS,
@@ -162,6 +166,8 @@ async function syncResumeRelations(
 }
 
 export default function ResumeDocumentPage() {
+  const { t } = useTranslation(pagesI18nNs)
+  const { t: tc } = useTranslation("common")
   const navigate = useNavigate()
   const { id } = useParams()
   const isEdit = Boolean(id)
@@ -247,7 +253,7 @@ export default function ResumeDocumentPage() {
         } catch (e) {
           if (!cancelled) {
             setPageStatus("error")
-            setPageError(apiErrorText(e, "Could not load resume data."))
+            setPageError(apiErrorText(e, t("resume.load_error_data")))
           }
         }
         return
@@ -275,7 +281,7 @@ export default function ResumeDocumentPage() {
             setPageStatus("not_found")
           } else {
             setPageStatus("error")
-            setPageError(apiErrorText(e, "Could not load resume data."))
+            setPageError(apiErrorText(e, t("resume.load_error_data")))
           }
         }
       }
@@ -284,7 +290,7 @@ export default function ResumeDocumentPage() {
     return () => {
       cancelled = true
     }
-  }, [id, retryNonce, reloadReferenceLists])
+  }, [id, retryNonce, reloadReferenceLists, t])
 
   const rolesIdSignature = React.useMemo(
     () => roles.map((r) => r.id).sort().join("\0"),
@@ -352,14 +358,14 @@ export default function ResumeDocumentPage() {
         setPostSaveOpen(true)
       }
     } catch (err) {
-      setSaveError(apiErrorText(err, "Could not save resume."))
+      setSaveError(apiErrorText(err, t("resume.save_error")))
     } finally {
       setSaving(false)
     }
   }
 
-  const pageTitle = isEdit ? "Edit resume" : "New resume"
-  const crumbAction = isEdit ? "Edit" : "New"
+  const pageTitle = isEdit ? t("resume.edit_title") : t("resume.new_title")
+  const crumbAction = isEdit ? t("shared.crumb_edit") : t("shared.crumb_new")
 
   const workExperienceRows = workExperiences.map((w) => ({
     id: w.id,
@@ -430,12 +436,12 @@ export default function ResumeDocumentPage() {
       <AppLayout
         title={pageTitle}
         breadcrumbs={[
-          { label: "Dashboard", to: "/dashboard" },
-          { label: "Resumes", to: "/resumes" },
+          { label: tc("breadcrumb_dashboard"), to: "/dashboard" },
+          { label: tc("nav_resumes"), to: "/resumes" },
           { label: crumbAction },
         ]}
       >
-        <p className="text-muted-foreground py-12 text-center text-sm">Loading…</p>
+        <p className="text-muted-foreground py-12 text-center text-sm">{t("resume.loading")}</p>
       </AppLayout>
     )
   }
@@ -445,20 +451,20 @@ export default function ResumeDocumentPage() {
       <AppLayout
         title={pageTitle}
         breadcrumbs={[
-          { label: "Dashboard", to: "/dashboard" },
-          { label: "Resumes", to: "/resumes" },
+          { label: tc("breadcrumb_dashboard"), to: "/dashboard" },
+          { label: tc("nav_resumes"), to: "/resumes" },
           { label: crumbAction },
         ]}
       >
         <p className="text-destructive px-1 text-sm" role="alert">
-          {pageError ?? "Something went wrong."}{" "}
+          {pageError ?? t("resume.something_wrong")}{" "}
           <Button
             type="button"
             variant="link"
             className="text-destructive h-auto p-0 align-baseline underline"
             onClick={() => setRetryNonce((n) => n + 1)}
           >
-            Retry
+            {t("shared.retry")}
           </Button>
         </p>
       </AppLayout>
@@ -468,23 +474,23 @@ export default function ResumeDocumentPage() {
   if (pageStatus === "not_found") {
     return (
       <AppLayout
-        title="Resume not found"
+        title={t("resume.not_found_title")}
         breadcrumbs={[
-          { label: "Dashboard", to: "/dashboard" },
-          { label: "Resumes", to: "/resumes" },
-          { label: "Not found" },
+          { label: tc("breadcrumb_dashboard"), to: "/dashboard" },
+          { label: tc("nav_resumes"), to: "/resumes" },
+          { label: t("shared.crumb_not_found") },
         ]}
       >
         <Card className="max-w-lg">
           <CardHeader>
-            <CardTitle>Resume not found</CardTitle>
+            <CardTitle>{t("resume.not_found_title")}</CardTitle>
             <CardDescription>
-              This resume does not exist or you no longer have access to it.
+              {t("resume.not_found_body")}
             </CardDescription>
           </CardHeader>
           <CardFooter>
             <Button asChild>
-              <Link to="/resumes">Back to resumes</Link>
+              <Link to="/resumes">{t("resume.back_to_list")}</Link>
             </Button>
           </CardFooter>
         </Card>
@@ -496,8 +502,8 @@ export default function ResumeDocumentPage() {
     <AppLayout
       title={pageTitle}
       breadcrumbs={[
-        { label: "Dashboard", to: "/dashboard" },
-        { label: "Resumes", to: "/resumes" },
+        { label: tc("breadcrumb_dashboard"), to: "/dashboard" },
+        { label: tc("nav_resumes"), to: "/resumes" },
         { label: crumbAction },
       ]}
     >
@@ -511,16 +517,14 @@ export default function ResumeDocumentPage() {
           <CardHeader>
             <CardTitle>{pageTitle}</CardTitle>
             <CardDescription>
-              {isEdit
-                ? "Update this saved resume. Set the output language, link one role, and attach any experiences, certifications, education rows, and skills."
-                : "Create a resume: choose the output language first, then pick the target role and attach supporting records."}
+              {isEdit ? t("resume.card_desc_edit") : t("resume.card_desc_new")}
             </CardDescription>
           </CardHeader>
           <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
             <CardContent>
               <FieldGroup>
                 <Field>
-                  <FieldLabel htmlFor="resume-preferred-lang">Resume language</FieldLabel>
+                  <FieldLabel htmlFor="resume-preferred-lang">{t("resume.field_preferred_language")}</FieldLabel>
                   <Select
                     key={`resume-preferred-lang-${id ?? "new"}`}
                     value={normalizeResumePreferredLanguage(preferredLanguage)}
@@ -530,37 +534,36 @@ export default function ResumeDocumentPage() {
                     disabled={saving}
                   >
                     <SelectTrigger id="resume-preferred-lang" className="w-full">
-                      <SelectValue placeholder="Language for generated resume" />
+                      <SelectValue placeholder={t("resume.placeholder_preferred_language")} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
                         {RESUME_PREFERRED_LANGUAGE_OPTIONS.map((opt) => (
                           <SelectItem key={opt.value} value={opt.value}>
-                            {opt.label}
+                            {t(`resume.output_lang.${opt.value}`)}
                           </SelectItem>
                         ))}
                       </SelectGroup>
                     </SelectContent>
                   </Select>
                   <FieldDescription>
-                    Language used when this resume is generated or exported (English, Portuguese — Brazil,
-                    or Spanish). Choose this before filling in the rest of the form.
+                    {t("resume.preferred_language_hint")}
                   </FieldDescription>
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="resume-title">Title</FieldLabel>
+                  <FieldLabel htmlFor="resume-title">{t("shared.title")}</FieldLabel>
                   <Input
                     id="resume-title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="e.g. Full stack — EU remote"
+                    placeholder={t("resume.title_placeholder")}
                     required
                   />
                 </Field>
                 <Field>
                   <div className="flex flex-wrap items-end justify-between gap-2">
                     <FieldLabel htmlFor="resume-desc" className="mb-0">
-                      Description
+                      {t("shared.description")}
                     </FieldLabel>
                     <Button
                       type="button"
@@ -569,20 +572,20 @@ export default function ResumeDocumentPage() {
                       onClick={() => setAiDialogOpen(true)}
                     >
                       <SparklesIcon data-icon="inline-start" />
-                      Generate with AI
+                      {t("resume.generate_ai")}
                     </Button>
                   </div>
                   <Textarea
                     id="resume-desc"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Short summary, target roles, or notes for this version."
+                    placeholder={t("resume.description_placeholder")}
                     required
                     rows={4}
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="resume-role">Role</FieldLabel>
+                  <FieldLabel htmlFor="resume-role">{t("shared.role")}</FieldLabel>
                   <div className="flex min-w-0 flex-row items-stretch gap-2">
                     {roles.length > 0 ? (
                       <Select
@@ -594,7 +597,7 @@ export default function ResumeDocumentPage() {
                         required
                       >
                         <SelectTrigger id="resume-role" className="w-full min-w-0 flex-1">
-                          <SelectValue placeholder="Select one role" />
+                          <SelectValue placeholder={t("resume.role_placeholder")} />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
@@ -611,7 +614,7 @@ export default function ResumeDocumentPage() {
                         id="resume-role"
                         className="text-muted-foreground flex min-h-8 flex-1 items-center text-sm"
                       >
-                        Nenhum cargo cadastrado.
+                        {t("resume.no_roles")}
                       </p>
                     )}
                     <Button
@@ -619,7 +622,7 @@ export default function ResumeDocumentPage() {
                       variant="outline"
                       size="icon"
                       className="shrink-0"
-                      aria-label="Add role"
+                      aria-label={t("roles.add")}
                       onClick={() => setRoleDialogOpen(true)}
                     >
                       <PlusIcon />
@@ -627,12 +630,12 @@ export default function ResumeDocumentPage() {
                   </div>
                   {roles.length === 0 ? (
                     <FieldDescription>
-                      Use + to create a role and select it here.
+                      {t("resume.role_hint_empty")}
                     </FieldDescription>
                   ) : null}
                   {roles.length > 0 && !hasValidRole ? (
                     <FieldDescription className="text-destructive">
-                      Select a role to enable saving.
+                      {t("resume.role_hint_required")}
                     </FieldDescription>
                   ) : null}
                 </Field>
@@ -641,49 +644,49 @@ export default function ResumeDocumentPage() {
               <div className="mt-6 flex flex-col gap-6">
                 <ResumeLinkedMultiFieldset
                   idPrefix="resume-we"
-                  legend="Work experience"
-                  description="Experiences to include on this resume."
+                  legend={t("resume.legend_work")}
+                  description={t("resume.work_desc")}
                   rows={workExperienceRows}
                   selectedIds={workExperienceIds}
                   onSelectedIdsChange={setWorkExperienceIds}
-                  emptyMessage="Nenhuma experiência cadastrada."
-                  emptyHint="Use + para criar uma experiência e selecioná-la aqui."
+                  emptyMessage={t("resume.work_empty")}
+                  emptyHint={t("resume.work_hint")}
                   onAddNew={() => setWeDialogOpen(true)}
-                  addNewAriaLabel="Add work experience"
+                  addNewAriaLabel={t("resume.aria_add_work")}
                 />
                 <ResumeLinkedMultiFieldset
                   idPrefix="resume-cert"
-                  legend="Certifications"
-                  description="Credentials to highlight."
+                  legend={t("resume.legend_cert")}
+                  description={t("resume.cert_desc")}
                   rows={certificationRows}
                   selectedIds={certificationIds}
                   onSelectedIdsChange={setCertificationIds}
-                  emptyMessage="Nenhuma certificação cadastrada."
-                  emptyHint="Use + para criar uma certificação e selecioná-la aqui."
+                  emptyMessage={t("resume.cert_empty")}
+                  emptyHint={t("resume.cert_hint")}
                   onAddNew={() => setCertDialogOpen(true)}
-                  addNewAriaLabel="Add certification"
+                  addNewAriaLabel={t("resume.aria_add_cert")}
                 />
                 <ResumeLinkedMultiFieldset
                   idPrefix="resume-edu"
-                  legend="Education"
-                  description="Academic entries to list."
+                  legend={t("resume.legend_edu")}
+                  description={t("resume.edu_desc")}
                   rows={educationRows}
                   selectedIds={educationIds}
                   onSelectedIdsChange={setEducationIds}
-                  emptyMessage="Nenhuma formação cadastrada."
-                  emptyHint="Use + para criar uma formação e selecioná-la aqui."
+                  emptyMessage={t("resume.edu_empty")}
+                  emptyHint={t("resume.edu_hint")}
                   onAddNew={() => setEduDialogOpen(true)}
-                  addNewAriaLabel="Add education"
+                  addNewAriaLabel={t("resume.aria_add_edu")}
                 />
                 <WorkExperienceSkillFieldset
                   idPrefix="resume-skills"
                   skills={skills}
                   skillIds={skillIds}
                   onSkillIdsChange={setSkillIds}
-                  emptyMessage="Nenhuma habilidade cadastrada."
-                  emptyHint="Use + para criar uma habilidade e selecioná-la aqui."
+                  emptyMessage={t("resume.skills_empty")}
+                  emptyHint={t("resume.skills_hint")}
                   onAddNew={() => setSkillDialogOpen(true)}
-                  addNewAriaLabel="Add skill"
+                  addNewAriaLabel={t("resume.aria_add_skill")}
                 />
               </div>
             </CardContent>
@@ -693,16 +696,16 @@ export default function ResumeDocumentPage() {
                 variant="outline"
                 size="sm"
                 className="max-sm:size-9 max-sm:min-h-9 max-sm:min-w-9 max-sm:justify-center max-sm:gap-0 max-sm:!px-0 max-sm:!ps-0 max-sm:!pe-0"
-                aria-label="Cancel"
+                aria-label={t("resume.cancel_aria")}
                 onClick={() => navigate(-1)}
               >
                 <XIcon className="size-4 shrink-0 sm:hidden" aria-hidden />
-                <span className="max-sm:sr-only">Cancel</span>
+                <span className="max-sm:sr-only">{t("shared.cancel")}</span>
               </Button>
               {isEdit && id ? (
                 <ResumeCompiledDownloadMenu
                   resumeId={id}
-                  resumeTitle={title.trim() || "Resume"}
+                  resumeTitle={title.trim() || t("resume.untitled_resume")}
                   compiledMarkdown={editDocument?.compiled_markdown}
                 />
               ) : null}
@@ -710,19 +713,19 @@ export default function ResumeDocumentPage() {
                 type="submit"
                 size="sm"
                 className="max-sm:size-9 max-sm:min-h-9 max-sm:min-w-9 max-sm:justify-center max-sm:gap-0 max-sm:!px-0 max-sm:!ps-0 max-sm:!pe-0"
-                aria-label={isEdit ? "Save changes" : "Save"}
+                aria-label={isEdit ? t("resume.save_aria_edit") : t("resume.save_aria_new")}
                 disabled={!canSave}
               >
                 {saving ? (
                   <>
                     <Loader2Icon className="size-4 shrink-0 animate-spin" aria-hidden />
-                    <span className="max-sm:sr-only">Saving…</span>
+                    <span className="max-sm:sr-only">{t("resume.saving_sr")}</span>
                   </>
                 ) : (
                   <>
                     <CheckIcon className="size-4 shrink-0 sm:hidden" aria-hidden />
                     <span className="max-sm:sr-only">
-                      {isEdit ? "Save changes" : "Save"}
+                      {isEdit ? t("shared.save_changes") : t("shared.save")}
                     </span>
                   </>
                 )}
@@ -745,7 +748,7 @@ export default function ResumeDocumentPage() {
               if (!next) setCompileAutoStart(false)
             }}
             resumeId={id}
-            resumeTitle={title || "Resume"}
+            resumeTitle={title || t("resume.untitled_resume")}
             autoStart={compileAutoStart}
             onCompiled={handleResumeMarkdownCompiled}
           />
@@ -764,8 +767,8 @@ export default function ResumeDocumentPage() {
           onOpenChange={setWeDialogOpen}
           skills={skills}
           onEmptySkillsAddNew={() => setSkillDialogOpen(true)}
-          emptySkillsMessage="Nenhuma habilidade cadastrada."
-          emptySkillsHint="Use + para criar uma habilidade e marcá-la aqui."
+          emptySkillsMessage={t("resume.we_empty_skills")}
+          emptySkillsHint={t("resume.we_empty_skills_hint")}
           onAdded={(newId) => {
             setWorkExperienceIds((prev) =>
               prev.includes(newId) ? prev : [...prev, newId]
@@ -802,7 +805,7 @@ export default function ResumeDocumentPage() {
       </div>
       <PostSaveDialog
         open={postSaveOpen}
-        entityLabel="Resume"
+        entityLabel={t("entity.resume")}
         onGoToList={() => navigate("/resumes")}
         onAddAnother={() => {
           setPostSaveOpen(false)

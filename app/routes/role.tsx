@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router"
 
 import { AppLayout } from "~/components/layout/app-layout"
@@ -21,6 +24,7 @@ import { Textarea } from "~/components/ui/textarea"
 import { InterestLevelStarPicker } from "~/components/shared/interest-level-star-picker"
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 import { ApiError } from "~/lib/api/errors"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import {
   createRole,
   getRole,
@@ -28,7 +32,7 @@ import {
 } from "~/lib/api/resources/roles"
 import type { InterestLevel } from "~/lib/labels"
 
-function formErrorMessage(err: unknown): string {
+function formErrorMessage(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
     const parts = [
       ...(err.fieldErrors.name ?? []),
@@ -36,12 +40,14 @@ function formErrorMessage(err: unknown): string {
       ...(err.fieldErrors.interest_level ?? []),
       ...(err.fieldErrors.base ?? []),
     ]
-    if (parts.length > 0) return parts[0] ?? "Could not save role."
+    if (parts.length > 0) return parts[0] ?? fallback
   }
-  return "Could not save role."
+  return fallback
 }
 
 export default function RolePage() {
+  const { t } = useTranslation(pagesI18nNs)
+  const { t: tc } = useTranslation("common")
   const navigate = useNavigate()
   const { id } = useParams()
   const isEdit = Boolean(id)
@@ -113,47 +119,36 @@ export default function RolePage() {
         setPostSaveOpen(true)
       }
     } catch (err) {
-      setFormError(formErrorMessage(err))
+      setFormError(formErrorMessage(err, t("role.form_error")))
     } finally {
       setSubmitting(false)
     }
   }
 
+  const title = isEdit ? t("role.edit_title") : t("role.new_title")
+  const crumbAction = isEdit ? t("shared.crumb_edit") : t("shared.crumb_new")
+  const breadcrumbs = [
+    { label: tc("breadcrumb_dashboard"), to: "/dashboard" },
+    { label: tc("nav_roles"), to: "/roles" },
+    { label: crumbAction },
+  ]
+
   if (isEdit && loadState === "loading") {
     return (
-      <AppLayout
-        title="Edit role"
-        breadcrumbs={[
-          { label: "Dashboard", to: "/dashboard" },
-          { label: "Roles", to: "/roles" },
-          { label: "Edit" },
-        ]}
-      >
-        <p className="text-muted-foreground">Loading role…</p>
+      <AppLayout title={t("role.edit_title")} breadcrumbs={breadcrumbs}>
+        <p className="text-muted-foreground">{t("role.load_loading")}</p>
       </AppLayout>
     )
   }
 
-  const title = isEdit ? "Edit role" : "New role"
-  const crumbAction = isEdit ? "Edit" : "New"
-
   return (
-    <AppLayout
-      title={title}
-      breadcrumbs={[
-        { label: "Dashboard", to: "/dashboard" },
-        { label: "Roles", to: "/roles" },
-        { label: crumbAction },
-      ]}
-    >
+    <AppLayout title={title} breadcrumbs={breadcrumbs}>
       <div className="min-h-0 flex-1 overflow-y-auto">
         <Card className="max-w-xl">
           <CardHeader>
             <CardTitle>{title}</CardTitle>
             <CardDescription>
-              {isEdit
-                ? "Update this role."
-                : "Add a job role you care about."}
+              {isEdit ? t("role.card_desc_edit") : t("role.card_desc_new")}
             </CardDescription>
           </CardHeader>
           <form
@@ -168,7 +163,7 @@ export default function RolePage() {
                   </p>
                 ) : null}
                 <Field>
-                  <FieldLabel htmlFor="role-name">Name</FieldLabel>
+                  <FieldLabel htmlFor="role-name">{t("shared.name")}</FieldLabel>
                   <Input
                     id="role-name"
                     value={name}
@@ -178,18 +173,18 @@ export default function RolePage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="role-desc">Description</FieldLabel>
+                  <FieldLabel htmlFor="role-desc">{t("shared.description")}</FieldLabel>
                   <Textarea
                     id="role-desc"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={4}
                     disabled={submitting}
-                    placeholder="Optional"
+                    placeholder={t("shared.optional")}
                   />
                 </Field>
                 <Field>
-                  <FieldLabel>Interest level</FieldLabel>
+                  <FieldLabel>{t("shared.interest_level")}</FieldLabel>
                   <div
                     className={
                       submitting ? "pointer-events-none opacity-60" : undefined
@@ -210,14 +205,14 @@ export default function RolePage() {
                 disabled={submitting}
                 onClick={() => navigate(-1)}
               >
-                Cancel
+                {t("shared.cancel")}
               </Button>
               <Button type="submit" disabled={submitting}>
                 {submitting
-                  ? "Saving…"
+                  ? t("shared.saving")
                   : isEdit
-                    ? "Save changes"
-                    : "Save"}
+                    ? t("shared.save_changes")
+                    : t("shared.save")}
               </Button>
             </CardFooter>
           </form>
@@ -225,7 +220,7 @@ export default function RolePage() {
       </div>
       <PostSaveDialog
         open={postSaveOpen}
-        entityLabel="Role"
+        entityLabel={t("entity.role")}
         onGoToList={() => navigate("/roles")}
         onAddAnother={() => {
           setPostSaveOpen(false)

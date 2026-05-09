@@ -1,10 +1,12 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { StarIcon } from "lucide-react"
 
 import type { InterestLevel } from "~/lib/labels"
 import { cn } from "~/lib/utils"
+import { pagesI18nNs } from "~/lib/i18n/config"
 
 type InterestLevelStarPickerProps = {
   value: InterestLevel
@@ -22,6 +24,7 @@ export function InterestLevelStarPicker({
   showValueLabel = true,
   size = "md",
 }: InterestLevelStarPickerProps) {
+  const { t } = useTranslation(pagesI18nNs)
   const [hoverStars, setHoverStars] = React.useState<number | null>(null)
   const previewStars = hoverStars ?? value
 
@@ -44,7 +47,7 @@ export function InterestLevelStarPicker({
               onFocus={() => setHoverStars(starValue)}
               onClick={() => onChange(starValue as InterestLevel)}
               className={cn("rounded-sm", size === "sm" ? "p-0.5" : "p-0.5")}
-              aria-label={`Set interest level using ${starValue} stars`}
+              aria-label={t("shared.star_interest_aria", { stars: starValue })}
             >
               <StarIcon
                 className={cn(

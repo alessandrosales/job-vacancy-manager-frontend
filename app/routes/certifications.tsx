@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { Link } from "react-router"
 
 import { InfiniteScrollSentinelRow } from "~/components/listing/infinite-scroll-sentinel-row"
@@ -26,6 +29,7 @@ import {
 } from "~/components/ui/alert-dialog"
 import { useInfiniteScrollList } from "~/hooks/use-infinite-scroll-list"
 import { ApiError } from "~/lib/api/errors"
+import { pagesI18nNs } from "~/lib/i18n/config"
 import {
   deleteCertification as deleteCertificationRequest,
   listCertifications,
@@ -57,6 +61,7 @@ function apiErrorText(err: unknown, fallback: string): string {
 }
 
 export default function CertificationsPage() {
+  const { t } = useTranslation(pagesI18nNs)
   const [certifications, setCertifications] = React.useState<ApiCertification[]>(
     []
   )
@@ -79,9 +84,9 @@ export default function CertificationsPage() {
       setLoadState("idle")
     } catch (e) {
       setLoadState("error")
-      setListError(apiErrorText(e, "Could not load certifications."))
+      setListError(apiErrorText(e, t("certifications.load_error")))
     }
-  }, [])
+  }, [t])
 
   React.useEffect(() => {
     void fetchCertifications()
@@ -110,23 +115,23 @@ export default function CertificationsPage() {
       setCertifications((prev) => prev.filter((row) => row.id !== deleteId))
       setDeleteId(null)
     } catch (e) {
-      setDeleteError(apiErrorText(e, "Could not delete certification."))
+      setDeleteError(apiErrorText(e, t("certifications.delete_error")))
     } finally {
       setDeleteSubmitting(false)
     }
   }
 
   return (
-    <AppLayout title="Certifications">
+    <AppLayout title={t("certifications.title")}>
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
         <ListingPageHeader
-          title="Certifications"
-          description="Professional certifications and credentials"
+          title={t("certifications.title")}
+          description={t("certifications.description")}
           action={
             <Button asChild>
               <Link to="/certifications/certification">
                 <PlusIcon data-icon="inline-start" />
-                Add certification
+                {t("certifications.add")}
               </Link>
             </Button>
           }
@@ -134,27 +139,30 @@ export default function CertificationsPage() {
         <ListingTableCard
           stats={
             loadState === "idle" && totalCount > 0
-              ? `Showing ${loadedCount} of ${totalCount}`
+              ? t("shared.showing_loaded_of_total", {
+                  loaded: loadedCount,
+                  total: totalCount,
+                })
               : undefined
           }
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
-          searchPlaceholder="Search certifications…"
+          searchPlaceholder={t("certifications.search_placeholder")}
         >
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-28">Actions</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Valid from</TableHead>
-                <TableHead>Valid to</TableHead>
+                <TableHead className="w-28">{t("shared.actions")}</TableHead>
+                <TableHead>{t("shared.name")}</TableHead>
+                <TableHead>{t("shared.valid_from")}</TableHead>
+                <TableHead>{t("shared.valid_to")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loadState === "loading" ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-muted-foreground">
-                    Loading certifications…
+                    {t("certifications.loading")}
                   </TableCell>
                 </TableRow>
               ) : loadState === "error" ? (
@@ -168,7 +176,7 @@ export default function CertificationsPage() {
                         size="sm"
                         onClick={() => void fetchCertifications()}
                       >
-                        Try again
+                        {t("shared.try_again")}
                       </Button>
                     </div>
                   </TableCell>
@@ -176,13 +184,13 @@ export default function CertificationsPage() {
               ) : certifications.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-muted-foreground">
-                    No certifications yet. Add one to get started.
+                    {t("certifications.empty")}
                   </TableCell>
                 </TableRow>
               ) : filtered.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-muted-foreground">
-                    No matches for your search.
+                    {t("shared.no_matches_search")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -193,7 +201,7 @@ export default function CertificationsPage() {
                         <Button variant="ghost" size="icon" asChild>
                           <Link
                             to={`/certifications/certification/${encodeURIComponent(row.id)}`}
-                            aria-label="Edit certification"
+                            aria-label={t("certifications.aria_edit")}
                           >
                             <PencilIcon />
                           </Link>
@@ -201,7 +209,7 @@ export default function CertificationsPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          aria-label="Delete certification"
+                          aria-label={t("certifications.aria_delete")}
                           onClick={() => {
                             setDeleteError(null)
                             setDeleteId(row.id)
@@ -246,9 +254,9 @@ export default function CertificationsPage() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete certification?</AlertDialogTitle>
+              <AlertDialogTitle>{t("certifications.delete_title")}</AlertDialogTitle>
               <AlertDialogDescription>
-                This removes the certification from your list.
+                {t("certifications.delete_desc")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             {deleteError ? (
@@ -257,7 +265,9 @@ export default function CertificationsPage() {
               </p>
             ) : null}
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={deleteSubmitting}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={deleteSubmitting}>
+                {t("shared.cancel")}
+              </AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
                 disabled={deleteSubmitting}
@@ -266,7 +276,7 @@ export default function CertificationsPage() {
                   void confirmDelete()
                 }}
               >
-                {deleteSubmitting ? "Deleting…" : "Delete"}
+                {deleteSubmitting ? t("shared.deleting") : t("shared.delete")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

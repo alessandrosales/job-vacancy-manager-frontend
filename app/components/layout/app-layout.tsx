@@ -1,5 +1,8 @@
+"use client"
+
 import * as React from "react"
-import { Link } from "react-router"
+import { useTranslation } from "react-i18next"
+import { Link, useLocation } from "react-router"
 
 import { AuthenticatedSessionBootstrap } from "~/components/layout/authenticated-session-bootstrap"
 import { AppSidebar } from "~/components/layout/app-sidebar"
@@ -31,14 +34,15 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ title, breadcrumbs, children }: AppLayoutProps) {
+  const { t: tc } = useTranslation("common")
+  const location = useLocation()
+  const isDashboardPath = location.pathname === "/dashboard"
+  const dashboardLabel = tc("breadcrumb_dashboard")
   const crumbs: AppLayoutBreadcrumb[] =
     breadcrumbs ??
-    (title === "Dashboard"
-      ? [{ label: "Dashboard" }]
-      : [
-          { label: "Dashboard", to: "/dashboard" },
-          { label: title },
-        ])
+    (isDashboardPath
+      ? [{ label: dashboardLabel }]
+      : [{ label: dashboardLabel, to: "/dashboard" }, { label: title }])
 
   return (
     <SidebarProvider>

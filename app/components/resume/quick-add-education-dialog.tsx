@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 
 import { apiFormErrorFromUnknown } from "~/components/opportunities/quick-add/api-form-error"
 import type { QuickAddRelationDialogProps } from "~/components/opportunities/quick-add/types"
@@ -16,6 +17,7 @@ import {
 import { Field, FieldGroup, FieldLabel } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { createEducation } from "~/lib/api/resources/educations"
+import { pagesI18nNs } from "~/lib/i18n/config"
 
 function emptyToNull(s: string): string | null {
   const t = s.trim()
@@ -28,6 +30,7 @@ export function QuickAddEducationDialog({
   onAdded,
   onPersistedViaApi,
 }: QuickAddRelationDialogProps) {
+  const { t } = useTranslation(pagesI18nNs)
   const [institutionName, setInstitutionName] = React.useState("")
   const [degree, setDegree] = React.useState("")
   const [fieldOfStudy, setFieldOfStudy] = React.useState("")
@@ -65,7 +68,9 @@ export function QuickAddEducationDialog({
       await onPersistedViaApi?.()
       onOpenChange(false)
     } catch (err) {
-      setFormError(apiFormErrorFromUnknown(err, "Could not create education."))
+      setFormError(
+        apiFormErrorFromUnknown(err, t("resume.quick_add_create_education_error"))
+      )
     } finally {
       setSubmitting(false)
     }
@@ -76,10 +81,8 @@ export function QuickAddEducationDialog({
       <DialogContent className="max-w-md overflow-hidden p-0 sm:max-w-md" showCloseButton>
         <form onSubmit={(ev) => void handleSubmit(ev)} className="flex flex-col">
           <DialogHeader className="shrink-0 px-4 pt-4 pb-2">
-            <DialogTitle>New education</DialogTitle>
-            <DialogDescription>
-              Cria a formação para poder vinculá-la a este currículo.
-            </DialogDescription>
+            <DialogTitle>{t("education.new_title")}</DialogTitle>
+            <DialogDescription>{t("resume.quick_add_edu_desc")}</DialogDescription>
           </DialogHeader>
           <div className="max-h-[min(70vh,520px)] overflow-y-auto px-4 pt-2 pb-6">
             <FieldGroup>
@@ -89,7 +92,7 @@ export function QuickAddEducationDialog({
                 </p>
               ) : null}
               <Field>
-                <FieldLabel htmlFor="qae-inst">Institution name</FieldLabel>
+                <FieldLabel htmlFor="qae-inst">{t("education.institution_name")}</FieldLabel>
                 <Input
                   id="qae-inst"
                   value={institutionName}
@@ -100,27 +103,27 @@ export function QuickAddEducationDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qae-degree">Degree</FieldLabel>
+                <FieldLabel htmlFor="qae-degree">{t("shared.degree")}</FieldLabel>
                 <Input
                   id="qae-degree"
                   value={degree}
                   onChange={(e) => setDegree(e.target.value)}
-                  placeholder="Optional"
+                  placeholder={t("shared.optional")}
                   disabled={submitting}
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qae-field">Field of study</FieldLabel>
+                <FieldLabel htmlFor="qae-field">{t("shared.field_of_study")}</FieldLabel>
                 <Input
                   id="qae-field"
                   value={fieldOfStudy}
                   onChange={(e) => setFieldOfStudy(e.target.value)}
-                  placeholder="Optional"
+                  placeholder={t("shared.optional")}
                   disabled={submitting}
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qae-from">Date from</FieldLabel>
+                <FieldLabel htmlFor="qae-from">{t("certification.date_from")}</FieldLabel>
                 <Input
                   id="qae-from"
                   type="date"
@@ -130,7 +133,7 @@ export function QuickAddEducationDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qae-to">Date to</FieldLabel>
+                <FieldLabel htmlFor="qae-to">{t("certification.date_to")}</FieldLabel>
                 <Input
                   id="qae-to"
                   type="date"
@@ -148,10 +151,10 @@ export function QuickAddEducationDialog({
               onClick={() => onOpenChange(false)}
               disabled={submitting}
             >
-              Cancel
+              {t("shared.cancel")}
             </Button>
             <Button type="submit" disabled={submitting}>
-              {submitting ? "Saving…" : "Save"}
+              {submitting ? t("shared.saving") : t("shared.save")}
             </Button>
           </DialogFooter>
         </form>

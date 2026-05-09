@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 
 import { apiFormErrorFromUnknown } from "~/components/opportunities/quick-add/api-form-error"
 import type { QuickAddRelationDialogProps } from "~/components/opportunities/quick-add/types"
@@ -16,6 +17,7 @@ import {
 import { Field, FieldGroup, FieldLabel } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { createCertification } from "~/lib/api/resources/certifications"
+import { pagesI18nNs } from "~/lib/i18n/config"
 
 function emptyToNull(s: string): string | null {
   const t = s.trim()
@@ -28,6 +30,7 @@ export function QuickAddCertificationDialog({
   onAdded,
   onPersistedViaApi,
 }: QuickAddRelationDialogProps) {
+  const { t } = useTranslation(pagesI18nNs)
   const [name, setName] = React.useState("")
   const [dateFrom, setDateFrom] = React.useState("")
   const [dateTo, setDateTo] = React.useState("")
@@ -44,14 +47,14 @@ export function QuickAddCertificationDialog({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const t = name.trim()
-    if (!t) return
+    const trimmedName = name.trim()
+    if (!trimmedName) return
 
     setFormError(null)
     setSubmitting(true)
     try {
       const created = await createCertification({
-        name: t,
+        name: trimmedName,
         date_from: emptyToNull(dateFrom),
         date_to: emptyToNull(dateTo),
       })
@@ -59,7 +62,9 @@ export function QuickAddCertificationDialog({
       await onPersistedViaApi?.()
       onOpenChange(false)
     } catch (err) {
-      setFormError(apiFormErrorFromUnknown(err, "Could not create certification."))
+      setFormError(
+        apiFormErrorFromUnknown(err, t("resume.quick_add_create_cert_error"))
+      )
     } finally {
       setSubmitting(false)
     }
@@ -70,10 +75,8 @@ export function QuickAddCertificationDialog({
       <DialogContent className="max-w-md overflow-hidden p-0 sm:max-w-md" showCloseButton>
         <form onSubmit={(ev) => void handleSubmit(ev)} className="flex flex-col">
           <DialogHeader className="shrink-0 px-4 pt-4 pb-2">
-            <DialogTitle>New certification</DialogTitle>
-            <DialogDescription>
-              Cria a certificação para poder vinculá-la a este currículo.
-            </DialogDescription>
+            <DialogTitle>{t("certification.new_title")}</DialogTitle>
+            <DialogDescription>{t("resume.quick_add_cert_desc")}</DialogDescription>
           </DialogHeader>
           <div className="max-h-[min(70vh,480px)] overflow-y-auto px-4 pt-2 pb-6">
             <FieldGroup>
@@ -83,7 +86,7 @@ export function QuickAddCertificationDialog({
                 </p>
               ) : null}
               <Field>
-                <FieldLabel htmlFor="qac-name">Name</FieldLabel>
+                <FieldLabel htmlFor="qac-name">{t("shared.name")}</FieldLabel>
                 <Input
                   id="qac-name"
                   value={name}
@@ -94,7 +97,7 @@ export function QuickAddCertificationDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qac-from">Date from</FieldLabel>
+                <FieldLabel htmlFor="qac-from">{t("certification.date_from")}</FieldLabel>
                 <Input
                   id="qac-from"
                   type="date"
@@ -104,7 +107,7 @@ export function QuickAddCertificationDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qac-to">Date to</FieldLabel>
+                <FieldLabel htmlFor="qac-to">{t("certification.date_to")}</FieldLabel>
                 <Input
                   id="qac-to"
                   type="date"
@@ -122,10 +125,10 @@ export function QuickAddCertificationDialog({
               onClick={() => onOpenChange(false)}
               disabled={submitting}
             >
-              Cancel
+              {t("shared.cancel")}
             </Button>
             <Button type="submit" disabled={submitting}>
-              {submitting ? "Saving…" : "Save"}
+              {submitting ? t("shared.saving") : t("shared.save")}
             </Button>
           </DialogFooter>
         </form>
