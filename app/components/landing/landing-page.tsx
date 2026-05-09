@@ -214,7 +214,8 @@ export function LandingPage() {
             />
           </Link>
 
-          <div className="col-start-2 row-start-1 justify-self-end md:hidden">
+          <div className="col-start-2 row-start-1 flex items-center justify-end gap-2 md:hidden">
+            <LandingThemeToggle />
             <LandingMobileNavDrawer />
           </div>
 

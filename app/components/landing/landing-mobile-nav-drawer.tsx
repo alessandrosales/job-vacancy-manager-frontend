@@ -5,7 +5,6 @@ import { MenuIcon, XIcon } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { AuthUiLanguageSelect } from "~/components/auth/auth-ui-language-select"
-import { LandingThemeToggle } from "~/components/landing/landing-theme-toggle"
 import { Button } from "~/components/ui/button"
 import { Separator } from "~/components/ui/separator"
 import {
@@ -68,15 +67,6 @@ export function LandingMobileNavDrawer() {
               menuAlign="start"
               triggerClassName="w-full min-w-0 max-w-none justify-between"
             />
-          </div>
-
-          <Separator />
-
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-sm font-medium text-foreground">
-              {t("nav.theme_label")}
-            </span>
-            <LandingThemeToggle />
           </div>
 
           <Separator />

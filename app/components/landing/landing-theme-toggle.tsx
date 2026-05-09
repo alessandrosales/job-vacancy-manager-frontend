@@ -13,7 +13,7 @@ import { defaultI18nNs } from "~/lib/i18n/config"
  */
 export function LandingThemeToggle() {
   const { t } = useTranslation(defaultI18nNs)
-  const [mode, setMode] = React.useState<ThemeMode>("light")
+  const [mode, setMode] = React.useState<ThemeMode>("dark")
 
   React.useEffect(() => {
     const stored = getStoredTheme()

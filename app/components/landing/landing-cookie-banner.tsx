@@ -45,13 +45,13 @@ export function LandingCookieBanner() {
     >
       {/* backdrop line */}
       <div className="border-t border-border/60 bg-background/95 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-4 sm:gap-y-2 sm:px-6 sm:py-3.5 lg:px-8">
-          {/* icon + text */}
-          <div className="flex min-w-0 flex-1 items-start gap-3 sm:items-center">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-x-6 sm:gap-y-2 sm:px-6 sm:py-3.5 lg:px-8">
+          {/* icon + text — largura total no mobile */}
+          <div className="flex min-w-0 w-full items-start gap-3 sm:flex-1 sm:items-center">
             <span className="mt-0.5 flex shrink-0 text-muted-foreground sm:mt-0">
               <CookieIcon className="size-4.5" />
             </span>
-            <p className="text-sm leading-snug text-muted-foreground">
+            <p className="min-w-0 flex-1 text-sm leading-snug text-muted-foreground">
               {t("cookie_banner.text")}{" "}
               <Link
                 to="/privacy-policy"
@@ -63,31 +63,35 @@ export function LandingCookieBanner() {
             </p>
           </div>
 
-          {/* actions */}
-          <div className="flex shrink-0 items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => dismiss("essential")}
-              className="h-8 text-xs"
-            >
-              {t("cookie_banner.essential_only")}
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => dismiss("all")}
-              className="h-8 text-xs"
-            >
-              {t("cookie_banner.accept")}
-            </Button>
-            <button
-              type="button"
-              aria-label={t("cookie_banner.close_aria")}
-              onClick={() => dismiss("essential")}
-              className="ml-1 flex size-7 items-center justify-center rounded-md text-muted-foreground/70 transition-colors hover:bg-muted hover:text-foreground"
-            >
-              <XIcon className="size-3.5" />
-            </button>
+          {/* actions — coluna no mobile (largura total), linha à direita no desktop */}
+          <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+            <div className="flex w-full gap-2 sm:w-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => dismiss("essential")}
+                className="h-9 flex-1 text-xs sm:h-8 sm:flex-initial"
+              >
+                {t("cookie_banner.essential_only")}
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => dismiss("all")}
+                className="h-9 flex-1 text-xs sm:h-8 sm:flex-initial"
+              >
+                {t("cookie_banner.accept")}
+              </Button>
+            </div>
+            <div className="flex justify-end sm:contents">
+              <button
+                type="button"
+                aria-label={t("cookie_banner.close_aria")}
+                onClick={() => dismiss("essential")}
+                className="flex size-9 items-center justify-center rounded-md text-muted-foreground/70 transition-colors hover:bg-muted hover:text-foreground sm:ml-1 sm:size-7"
+              >
+                <XIcon className="size-3.5" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
