@@ -7,6 +7,7 @@ import { Link, useLocation } from "react-router"
 import { Button } from "~/components/ui/button"
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -48,59 +49,62 @@ export function OpenAiKeyOnboardingDialog() {
   }, [userId, ai_token_configured, me_synced_for_token, location.pathname])
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) => {
-        setOpen(next)
-      }}
-    >
-      <DialogContent className="sm:max-w-lg" showCloseButton>
-        <DialogHeader>
-          <DialogTitle>{t("openai_onboarding.title")}</DialogTitle>
-          <DialogDescription>{t("openai_onboarding.description")}</DialogDescription>
-        </DialogHeader>
+    <Dialog open={open} onOpenChange={setOpen}>
+      {/*
+        Render só com open=true evita overlay preso: Presence do Radix espera animationend na saída;
+        se a animação CSS não completar, o layer pode ficar invisível mas ainda com pointer-events.
+      */}
+      {open ? (
+        <DialogContent className="sm:max-w-lg" showCloseButton>
+          <DialogHeader>
+            <DialogTitle>{t("openai_onboarding.title")}</DialogTitle>
+            <DialogDescription>{t("openai_onboarding.description")}</DialogDescription>
+          </DialogHeader>
 
-        <div className="flex flex-col gap-4">
-          <div
-            className="flex flex-col gap-2 rounded-lg border border-border bg-muted/40 p-3"
-            role="note"
-          >
-            <p className="font-medium text-foreground">{t("openai_onboarding.importance_title")}</p>
-            <p className="text-muted-foreground">{t("openai_onboarding.importance_body")}</p>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <p className="font-medium text-foreground">{t("openai_onboarding.steps_heading")}</p>
-            <ol className="flex flex-col gap-3 ps-5 text-muted-foreground [list-style-type:decimal]">
-              <li>{t("openai_onboarding.step1")}</li>
-              <li>{t("openai_onboarding.step2")}</li>
-              <li>{t("openai_onboarding.step3")}</li>
-            </ol>
-          </div>
-
-          <p>
-            <a
-              href={OPENAI_API_KEYS_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-primary underline underline-offset-4 hover:text-foreground"
+          <div className="flex flex-col gap-4">
+            <div
+              className="flex flex-col gap-2 rounded-lg border border-border bg-muted/40 p-3"
+              role="note"
             >
-              {t("openai_onboarding.openai_keys_link")}
-            </a>
-          </p>
-        </div>
+              <p className="font-medium text-foreground">{t("openai_onboarding.importance_title")}</p>
+              <p className="text-muted-foreground">{t("openai_onboarding.importance_body")}</p>
+            </div>
 
-        <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-end">
-          <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-            {t("openai_onboarding.dismiss")}
-          </Button>
-          <Button type="button" asChild>
-            <Link to="/my-data" onClick={() => setOpen(false)}>
-              {t("openai_onboarding.cta_my_data")}
-            </Link>
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+            <div className="flex flex-col gap-2">
+              <p className="font-medium text-foreground">{t("openai_onboarding.steps_heading")}</p>
+              <ol className="flex flex-col gap-3 ps-5 text-muted-foreground [list-style-type:decimal]">
+                <li>{t("openai_onboarding.step1")}</li>
+                <li>{t("openai_onboarding.step2")}</li>
+                <li>{t("openai_onboarding.step3")}</li>
+              </ol>
+            </div>
+
+            <p>
+              <a
+                href={OPENAI_API_KEYS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-primary underline underline-offset-4 hover:text-foreground"
+              >
+                {t("openai_onboarding.openai_keys_link")}
+              </a>
+            </p>
+          </div>
+
+          <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-end">
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                {t("openai_onboarding.dismiss")}
+              </Button>
+            </DialogClose>
+            <DialogClose asChild>
+              <Button type="button" asChild>
+                <Link to="/my-data">{t("openai_onboarding.cta_my_data")}</Link>
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      ) : null}
     </Dialog>
   )
 }
