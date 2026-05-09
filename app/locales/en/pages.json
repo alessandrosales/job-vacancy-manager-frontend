@@ -670,5 +670,18 @@
     "form_error_fallback": "Could not save your profile. Try again.",
     "age_invalid": "Age must be a whole number between 0 and 150, or leave blank.",
     "profile_not_loaded": "Profile not loaded yet."
+  },
+  "openai_onboarding": {
+    "title": "Set up your OpenAI API key",
+    "description": "Some features use OpenAI models on your account (resume PDF import, AI-assisted text, Markdown compilation). Without a valid key, those features will not work.",
+    "importance_title": "Why this matters",
+    "importance_body": "Your key is stored on your profile (ai_token in the database): it is never shown again after saving, and usage is billed by OpenAI to your own account under their pricing.",
+    "steps_heading": "Steps",
+    "step1": "Open OpenAI API keys (link below).",
+    "step2": "Create a new secret key and copy the value (usually starts with sk-).",
+    "step3": "Go to My data, paste into the OpenAI API key field, and save your profile.",
+    "openai_keys_link": "Open OpenAI API keys",
+    "cta_my_data": "Go to My data",
+    "dismiss": "Later"
   }
 }

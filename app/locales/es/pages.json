@@ -670,5 +670,18 @@
     "form_error_fallback": "No se pudo guardar tu perfil. Inténtalo de nuevo.",
     "age_invalid": "La edad debe ser un número entero entre 0 y 150, o déjala vacía.",
     "profile_not_loaded": "Perfil aún no cargado."
+  },
+  "openai_onboarding": {
+    "title": "Configura tu clave API de OpenAI",
+    "description": "Algunas funciones usan modelos de OpenAI en tu cuenta (importar CV en PDF, texto con IA, compilación Markdown). Sin una clave válida, no funcionarán.",
+    "importance_title": "Por qué es importante",
+    "importance_body": "La clave se guarda en tu perfil (ai_token en la base de datos): no se vuelve a mostrar tras guardar y el uso se factura en tu cuenta de OpenAI según sus precios.",
+    "steps_heading": "Pasos",
+    "step1": "Abre la página de API keys de OpenAI (enlace abajo).",
+    "step2": "Crea una nueva secret key y copia el valor (suele empezar por sk-).",
+    "step3": "Ve a Mis datos, pégala en el campo de la clave API de OpenAI y guarda el perfil.",
+    "openai_keys_link": "Abrir API keys en OpenAI",
+    "cta_my_data": "Ir a Mis datos",
+    "dismiss": "Más tarde"
   }
 }

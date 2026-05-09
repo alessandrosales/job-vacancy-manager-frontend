@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import { Link, useLocation } from "react-router"
 
 import { AuthenticatedSessionBootstrap } from "~/components/layout/authenticated-session-bootstrap"
+import { OpenAiKeyOnboardingDialog } from "~/components/onboarding/open-ai-key-onboarding-dialog"
 import { AppSidebar } from "~/components/layout/app-sidebar"
 import { FloatingAgentAssistant } from "~/components/layout/floating-agent-assistant"
 import {
@@ -47,6 +48,7 @@ export function AppLayout({ title, breadcrumbs, children }: AppLayoutProps) {
   return (
     <SidebarProvider>
       <AuthenticatedSessionBootstrap />
+      <OpenAiKeyOnboardingDialog />
       <AppSidebar />
       <SidebarInset className="relative min-h-0 overflow-hidden">
         <div

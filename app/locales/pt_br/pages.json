@@ -670,5 +670,18 @@
     "form_error_fallback": "Não foi possível salvar seu perfil. Tente novamente.",
     "age_invalid": "A idade deve ser um número inteiro entre 0 e 150, ou deixe em branco.",
     "profile_not_loaded": "Perfil ainda não carregado."
+  },
+  "openai_onboarding": {
+    "title": "Configure sua chave da API OpenAI",
+    "description": "Parte dos recursos usa modelos da OpenAI na sua conta (importação de currículo em PDF, textos com IA, compilação em Markdown). Sem uma chave válida, essas funções não funcionam.",
+    "importance_title": "Por que isso é importante",
+    "importance_body": "No sistema, a chave fica guardada no seu perfil (campo ai_token no banco): ela não é mostrada de novo depois de salvar e o uso é faturado pela OpenAI na sua própria conta, conforme as regras deles.",
+    "steps_heading": "Passo a passo",
+    "step1": "Abra a página de API keys da OpenAI (link abaixo).",
+    "step2": "Crie uma nova secret key e copie o valor (costuma começar com sk-).",
+    "step3": "Vá em Meus dados, cole no campo da chave da API OpenAI e salve o perfil.",
+    "openai_keys_link": "Abrir API keys na OpenAI",
+    "cta_my_data": "Ir para Meus dados",
+    "dismiss": "Mais tarde"
   }
 }
