@@ -38,6 +38,7 @@ import { syncFirebaseUserToApiSession } from "~/lib/firebase-auth-session"
 import { firebaseAuth } from "~/lib/firebase.client"
 import { useSessionUserStore } from "~/stores/session-user-store"
 import { pagesI18nNs } from "~/lib/i18n/config"
+import { AuthLegalLinks } from "~/components/auth/auth-legal-links"
 import { AuthUiLanguageSelect } from "~/components/auth/auth-ui-language-select"
 
 export function LoginForm({
@@ -226,17 +227,7 @@ export function LoginForm({
           </form>
         </CardContent>
       </Card>
-      <FieldDescription className="px-6 text-center">
-        {t("auth.legal_prefix")}{" "}
-        <a href="#" className="underline-offset-4 hover:underline">
-          {t("auth.terms")}
-        </a>{" "}
-        {t("auth.legal_and")}{" "}
-        <a href="#" className="underline-offset-4 hover:underline">
-          {t("auth.privacy")}
-        </a>
-        .
-      </FieldDescription>
+      <AuthLegalLinks />
     </div>
   )
 }

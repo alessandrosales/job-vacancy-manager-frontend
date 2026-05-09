@@ -5,9 +5,12 @@ export default [
     ".well-known/appspecific/com.chrome.devtools.json",
     "routes/well-known.chrome-devtools.tsx"
   ),
-  index("routes/login.tsx"),
+  index("routes/landing.tsx"),
+  route("login", "routes/login.tsx"),
   route("home", "routes/home.tsx"),
   route("register", "routes/register.tsx"),
+  route("privacy-policy", "routes/privacy-policy.tsx"),
+  route("terms-of-use", "routes/terms-of-use.tsx"),
   route("recover-password", "routes/recover-password.tsx"),
   route("reset-password", "routes/reset-password.tsx"),
   route("dashboard", "routes/dashboard.tsx"),

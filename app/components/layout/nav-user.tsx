@@ -129,7 +129,7 @@ export function NavUser({
             </DropdownMenuCheckboxItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link to="/" onClick={() => clearAuthSession()}>
+              <Link to="/login" onClick={() => clearAuthSession()}>
                 <LogOutIcon />
                 {t("nav_logout")}
               </Link>

@@ -1,0 +1,158 @@
+{
+  "nav_aria": "Navegación del sitio",
+  "nav_home": "Inicio",
+  "nav_login": "Iniciar sesión",
+  "nav_register": "Registro",
+  "privacy": {
+    "doc_title": "Política de privacidad",
+    "title": "Política de privacidad",
+    "updated": "Última actualización: 9 de mayo de 2026",
+    "intro": "Hireest (\"nosotros\", \"nuestro\") es una plataforma de gestión de búsqueda de empleo con herramientas de creación de currículum y asistencia por inteligencia artificial. Esta Política de privacidad describe qué datos personales recopilamos, los fines del tratamiento, con quién los compartimos, cuánto tiempo los conservamos y cuáles son tus derechos como titular. El tratamiento se realiza en cumplimiento de la Ley General de Protección de Datos de Brasil (LGPD — Ley n.º 13.709/2018), el Reglamento General de Protección de Datos (RGPD/GDPR) cuando sea aplicable y demás normativas vigentes. Al crear una cuenta y utilizar el servicio, reconoces haber leído y comprendido esta Política.",
+    "sections": [
+      {
+        "heading": "1. Responsable del tratamiento y delegado de protección de datos (DPO)",
+        "body": "El responsable del tratamiento de los datos personales recopilados en esta plataforma es Hireest (nombre de la entidad jurídica, número de registro e información completa se publicarán aquí tras la constitución formal de la empresa). Toda comunicación relativa a privacidad, ejercicio de derechos o notificación de incidentes debe enviarse a support@hireest.com con el asunto \"Privacidad – [tipo de solicitud]\". Procuramos responder dentro de 15 días hábiles."
+      },
+      {
+        "heading": "2. Datos de cuenta y perfil profesional",
+        "body": "Recopilamos la información que nos proporcionas directamente: nombre completo, correo electrónico, contraseña (almacenada exclusivamente como hash bcrypt — nunca en texto plano), teléfono, URL de foto de perfil, biografía, dirección completa, edad, género y estado civil. También recopilamos datos del perfil profesional que introduces o importas: experiencias laborales, formación académica, certificaciones, habilidades, idiomas y enlaces de referencia. Los campos como dirección, edad, género y estado civil son opcionales; omitirlos no impide el acceso a las funciones principales."
+      },
+      {
+        "heading": "3. Datos de oportunidades y pipeline",
+        "body": "Recopilamos los datos que registras en tu pipeline de vacantes: nombres de empresas y puestos de interés, descripciones de ofertas, rangos salariales, enlaces a publicaciones externas, etapa del proceso selectivo, notas e historial de movimientos. Estos datos te pertenecen íntegramente y se utilizan exclusivamente para operar el servicio en tu cuenta, sin ser compartidos ni analizados de forma agregada sin tu consentimiento."
+      },
+      {
+        "heading": "4. Token de API de IA e interacciones con el asistente",
+        "body": "Si proporcionas tu propio token de API de inteligencia artificial, se almacenará cifrado y se utilizará únicamente para procesar tus solicitudes explícitas al asistente. Los registros de interacciones con IA (prompts y respuestas) pueden conservarse temporalmente con fines de auditoría y prevención de abusos. No compartimos el contenido de tus interacciones con terceros para entrenamiento de modelos ni con fines comerciales sin tu consentimiento expreso."
+      },
+      {
+        "heading": "5. Datos técnicos y de uso",
+        "body": "Recopilamos automáticamente información técnica como dirección IP, tipo y versión del navegador, sistema operativo, páginas visitadas, duración de la sesión y marcas de tiempo de acceso. Estos datos se usan para garantizar la seguridad del servicio, diagnosticar fallos, prevenir abusos y mejorar la experiencia. No los utilizamos para crear perfiles de comportamiento con fines publicitarios."
+      },
+      {
+        "heading": "6. Importación de PDF de LinkedIn",
+        "body": "La función de importación procesa el archivo PDF que exportas directamente desde tu propia cuenta de LinkedIn. Hireest no está afiliado a LinkedIn, no accede a tu cuenta en esa plataforma y no conserva el archivo PDF original tras completar la extracción de datos estructurados. Eres responsable de tener el derecho a usar el contenido importado y de revisar todos los campos mapeados antes de exportar cualquier currículum generado a partir de esa importación."
+      },
+      {
+        "heading": "7. Cómo usamos tus datos",
+        "body": "Utilizamos tus datos personales para: (a) crear y gestionar tu cuenta y entregar las funcionalidades contratadas; (b) procesar importaciones de currículum y generar exportaciones en los formatos seleccionados; (c) operar el asistente de IA cuando lo activas; (d) enviarte comunicaciones transaccionales esenciales (confirmación de registro, restablecimiento de contraseña, notificaciones de seguridad); (e) detectar y prevenir fraudes, abusos y brechas de seguridad; (f) cumplir obligaciones legales y responder a solicitudes de autoridades competentes. No usamos tus datos para publicidad de comportamiento de terceros."
+      },
+      {
+        "heading": "8. Bases legales del tratamiento",
+        "body": "Tratamos tus datos personales con base en las siguientes hipótesis legales: ejecución del contrato, para gestionar tu cuenta y entregar el servicio; cumplimiento de una obligación legal, cuando lo exige la ley; interés legítimo del responsable, para seguridad, prevención de fraude y mejora del producto, respetando tus derechos y libertades; y consentimiento, para funcionalidades opcionales como comunicaciones de marketing, que puedes retirar en cualquier momento sin afectar el uso del servicio. Si se aplica el RGPD/GDPR, tienes además derecho a presentar reclamaciones ante una autoridad de control."
+      },
+      {
+        "heading": "9. Compartición de datos con terceros",
+        "body": "No vendemos, alquilamos ni comercializamos tus datos personales. Solo podemos compartirlos con: (a) proveedores de infraestructura en la nube (alojamiento, base de datos, envío de correo transaccional) que actúan como encargados del tratamiento bajo acuerdos de confidencialidad y protección de datos; (b) proveedores de API de IA, exclusivamente para procesar tus solicitudes al asistente; (c) autoridades públicas, judiciales o administrativas cuando lo exija la ley, una orden judicial o la defensa de derechos legítimos. Exigimos contractualmente que todos los subencargados mantengan medidas de seguridad equivalentes a las nuestras."
+      },
+      {
+        "heading": "10. Transferencias internacionales de datos",
+        "body": "Nuestros proveedores de infraestructura pueden procesar datos en servidores ubicados fuera de Brasil y del Espacio Económico Europeo. En esos casos, garantizamos un nivel de protección adecuado mediante cláusulas contractuales estándar, programas de certificación reconocidos o decisiones de adecuación de las autoridades competentes de protección de datos, de conformidad con los arts. 33-34 de la LGPD y el Capítulo V del RGPD/GDPR cuando sea aplicable."
+      },
+      {
+        "heading": "11. Plazo de conservación",
+        "body": "Conservamos tus datos personales mientras tu cuenta esté activa y durante el tiempo necesario para los fines descritos en esta Política. Tras la eliminación de la cuenta, los datos personales identificables se borran en un plazo de 90 días, salvo cuando la conservación sea necesaria para: cumplir una obligación legal o reglamentaria; ejercer derechos en procedimientos judiciales, administrativos o arbitrales; o prevenir fraudes o abusos en la creación de nuevas cuentas. Los datos anonimizados o agregados podrán conservarse indefinidamente con fines estadísticos."
+      },
+      {
+        "heading": "12. Seguridad",
+        "body": "Aplicamos medidas técnicas y organizativas acordes con el estado del arte: cifrado en tránsito mediante TLS 1.2 o superior; cifrado en reposo para datos sensibles; hashing de contraseñas con bcrypt y factor de coste elevado; control de acceso basado en roles (RBAC); monitoreo de anomalías y registros de auditoría; y un proceso documentado de respuesta a incidentes. En caso de brecha de datos que represente un riesgo significativo para los titulares, notificaremos a la autoridad supervisora competente (ANPD en Brasil) y a los usuarios afectados en los plazos exigidos por la ley aplicable."
+      },
+      {
+        "heading": "13. Tus derechos como titular",
+        "body": "Tienes derecho, en cualquier momento y de forma gratuita, a: confirmar la existencia del tratamiento; acceder a tus datos; corregir datos incompletos, inexactos o desactualizados; solicitar la anonimización, bloqueo o eliminación de datos innecesarios o tratados en incumplimiento; obtener información sobre la compartición con terceros; solicitar la portabilidad de tus datos a otro servicio; revocar el consentimiento previamente otorgado; y presentar una reclamación ante la autoridad de protección de datos correspondiente. Para ejercer cualquiera de estos derechos, escribe a support@hireest.com con el asunto \"Privacidad – [derecho solicitado]\"."
+      },
+      {
+        "heading": "14. Protección de menores",
+        "body": "Hireest está destinado exclusivamente a personas mayores de 18 años. No recopilamos conscientemente datos de niños o adolescentes. Si tenemos conocimiento de que se han recopilado datos de un menor sin el consentimiento adecuado de sus tutores legales, los eliminaremos de inmediato. Si crees que esto ha ocurrido, notifícanos en support@hireest.com."
+      },
+      {
+        "heading": "15. Cookies y tecnologías de rastreo",
+        "body": "Utilizamos cookies estrictamente necesarias para la autenticación, gestión de sesión y almacenamiento de preferencias (como el idioma de la interfaz). No utilizamos cookies de rastreo de terceros con fines publicitarios. Si se introducen tecnologías analíticas en el futuro, informaremos previamente y ofreceremos opciones de exclusión. Puedes gestionar y eliminar cookies desde la configuración de tu navegador, aunque deshabilitar las cookies esenciales puede afectar al funcionamiento de la plataforma."
+      },
+      {
+        "heading": "16. Cambios en esta Política",
+        "body": "Podemos actualizar esta Política periódicamente para reflejar cambios en el producto, la legislación o nuestras prácticas. Publicaremos la versión revisada en esta página con una fecha de actualización. Para cambios sustanciales que reduzcan tus derechos o amplíen el uso de los datos, enviaremos un aviso por correo electrónico con al menos 15 días de antelación. El uso continuado del servicio tras la entrada en vigor de los cambios implica la aceptación de la nueva versión."
+      },
+      {
+        "heading": "17. Contacto y canal de privacidad",
+        "body": "Para consultas sobre esta Política, ejercicio de derechos, notificación de incidentes o cualquier comunicación relativa a privacidad, escríbenos a support@hireest.com con el asunto \"Privacidad – [tipo de solicitud]\". También puedes presentar una reclamación ante la Autoridad Nacional de Protección de Datos de Brasil (ANPD) en www.gov.br/anpd, o ante la autoridad de control de tu país de residencia si te encuentras en el Espacio Económico Europeo."
+      }
+    ]
+  },
+  "terms": {
+    "doc_title": "Términos de uso",
+    "title": "Términos de uso",
+    "updated": "Última actualización: 9 de mayo de 2026",
+    "intro": "Estos Términos de uso (\"Términos\") constituyen un acuerdo vinculante entre tú y Hireest y rigen el acceso y uso de la plataforma de gestión de búsqueda de empleo con funciones de creación de currículum, pipeline de vacantes y asistencia por inteligencia artificial. Al crear una cuenta, importar datos o usar cualquier función del servicio, declaras tener capacidad legal para contratar, ser mayor de 18 años y aceptar íntegramente estos Términos y nuestra Política de privacidad. Si no estás de acuerdo con alguna disposición, no utilices el servicio.",
+    "sections": [
+      {
+        "heading": "1. Partes y capacidad",
+        "body": "Las partes de este acuerdo son: (a) Hireest, operado por una entidad jurídica a formalizar (nombre, número de registro e información completa se publicarán aquí tras la constitución de la empresa); y (b) tú, persona física con plena capacidad civil, mayor de 18 años. Si utilizas el servicio en nombre de una persona jurídica, declaras tener poderes para representarla y vincularla a estos Términos."
+      },
+      {
+        "heading": "2. Descripción del servicio",
+        "body": "Hireest es una plataforma SaaS que te permite: organizar vacantes en pipelines con vistas de tabla y Kanban; construir perfiles profesionales estructurados con experiencias, formación, certificaciones y habilidades; importar datos de currículum desde PDFs exportados de LinkedIn; exportar currículos en múltiples formatos (PDF, Markdown y otros); y utilizar un asistente de IA para sugerencias de texto y priorización del pipeline. Hireest es una herramienta de organización y productividad de carrera — no una agencia de empleo, bolsa de trabajo ni prestadora de servicios de orientación profesional regulada. Las funciones pueden añadirse, modificarse o discontinuarse con previo aviso razonable."
+      },
+      {
+        "heading": "3. Cuenta, credenciales y responsabilidades",
+        "body": "Debes proporcionar información veraz, completa y actualizada al registrarte y mantenerla así mientras uses el servicio. Eres el único responsable de mantener la confidencialidad de tus credenciales (correo y contraseña) y de todas las acciones realizadas en tu cuenta, autorizadas o no. Notifícanos de inmediato en support@hireest.com si sospechas de acceso no autorizado. Hireest no se responsabiliza de los daños derivados del incumplimiento de estas obligaciones ni del uso indebido de tus credenciales por terceros."
+      },
+      {
+        "heading": "4. Uso aceptable — conductas prohibidas",
+        "body": "Aceptas no: usar el servicio para fines ilegales, fraudulentos o contrarios a la buena fe; intentar acceder a cuentas de terceros o realizar ingeniería inversa de la plataforma; practicar scraping, crawling o recopilación automatizada de datos que comprometa la estabilidad del servicio; transmitir malware, virus o cualquier código malicioso; enviar contenido que infrinja derechos de propiedad intelectual, privacidad u honor de terceros, o que sea discriminatorio, ofensivo o ilegal; crear múltiples cuentas para eludir límites, restricciones o suspensiones; ni suplantar la identidad de otra persona o entidad. Las infracciones pueden dar lugar a la suspensión inmediata o eliminación definitiva de la cuenta sin derecho a reembolso."
+      },
+      {
+        "heading": "5. Contenido del usuario y licencia",
+        "body": "Conservas todos los derechos de propiedad intelectual sobre el contenido que registras en la plataforma (datos del currículum, oportunidades, notas y archivos). Al usar el servicio, concedes a Hireest una licencia mundial, no exclusiva, gratuita y revocable para alojar, procesar, almacenar y mostrar tu contenido exclusivamente con el fin de operar y mejorar el servicio para tu cuenta. Declaras y garantizas tener el derecho a enviar todo el contenido que introduzcas y que dicho contenido no infringe derechos de terceros ni la legislación aplicable."
+      },
+      {
+        "heading": "6. Propiedad intelectual de Hireest",
+        "body": "Hireest, sus logotipos, marcas, nombres comerciales, diseño de interfaz, código fuente, algoritmos y demás elementos del producto son propiedad exclusiva de Hireest o de sus licenciantes, protegidos por derechos de autor, legislación de marcas y demás leyes de propiedad intelectual aplicables. Nada en estos Términos te transfiere ningún derecho sobre la propiedad intelectual de Hireest. Se prohíbe la reproducción, distribución, modificación o creación de obras derivadas sin autorización previa y expresa por escrito."
+      },
+      {
+        "heading": "7. Importación de datos de LinkedIn",
+        "body": "La función de importación procesa los archivos PDF que exportas directamente desde tu propia cuenta de LinkedIn. Hireest no está afiliado a LinkedIn Corporation, no es avalado por ella y no accede a tu cuenta de LinkedIn. Hireest no conserva el archivo PDF original tras completar la extracción de datos. Eres el único responsable de cumplir los Términos de servicio de LinkedIn y de tener derecho a usar el contenido importado. Hireest no se responsabiliza de imprecisiones derivadas de la estructura del PDF que proporciones."
+      },
+      {
+        "heading": "8. Funciones de inteligencia artificial",
+        "body": "Hireest puede ofrecer sugerencias de texto, análisis del pipeline y otras funciones basadas en modelos de lenguaje de IA. Los resultados generados por IA son de carácter auxiliar e informativo — no constituyen asesoramiento profesional de carrera, jurídico, financiero ni de ninguna otra naturaleza regulada. Eres el único responsable de revisar, editar, aprobar y asumir la responsabilidad de todo el contenido antes de enviarlo a reclutadores, sistemas de candidatura o cualquier tercero. Hireest no garantiza que los textos generados por IA sean precisos, completos, libres de sesgo ni que sean aprobados por ningún sistema de selección específico."
+      },
+      {
+        "heading": "9. Sin garantía de resultados profesionales",
+        "body": "Hireest es una herramienta de organización y producción de contenido de carrera. No garantizamos en ningún caso que el uso de la plataforma vaya a resultar en entrevistas, ofertas de empleo, contrataciones ni ningún otro resultado profesional. Los resultados de los procesos de selección dependen de factores completamente ajenos al control de Hireest, incluyendo decisiones exclusivas de reclutadores y empleadores, condiciones del mercado laboral, las cualificaciones y el historial del candidato y otras variables impredecibles. El uso de Hireest no crea una relación laboral, de servicios de carrera ni de asesoramiento profesional entre las partes."
+      },
+      {
+        "heading": "10. Exclusión de garantías generales",
+        "body": "El servicio se presta \"tal cual\" y \"según disponibilidad\", sin garantías de ningún tipo, expresas o implícitas, incluyendo idoneidad para un fin específico, disponibilidad ininterrumpida, ausencia de errores, compatibilidad con sistemas de terceros o que el servicio cumplirá tus expectativas, en la máxima medida permitida por la ley aplicable. Hireest puede estar no disponible por mantenimiento programado, incidentes técnicos o fuerza mayor; realizamos esfuerzos razonables para comunicar las interrupciones planificadas con antelación y restaurar el servicio con prontitud."
+      },
+      {
+        "heading": "11. Limitación de responsabilidad",
+        "body": "En la máxima medida permitida por la legislación aplicable, Hireest no será responsable de daños indirectos, incidentales, especiales, consecuentes o punitivos, incluyendo lucro cesante, pérdida de datos, daño a la reputación u oportunidades de empleo perdidas, aunque se le haya informado de la posibilidad de tales daños. La responsabilidad total de Hireest ante ti, por cualquier causa relacionada con el uso del servicio, se limitará al importe total abonado por el servicio en los 12 meses anteriores al hecho generador, o a 10 USD (diez dólares estadounidenses), lo que sea mayor. Nada en estos Términos limita responsabilidades que no puedan excluirse conforme a la normativa de protección al consumidor aplicable."
+      },
+      {
+        "heading": "12. Indemnización",
+        "body": "Aceptas defender, indemnizar y eximir a Hireest, sus socios, directores, empleados y prestadores de servicios de cualquier reclamación, acción judicial, responsabilidad, pérdida, daño, coste y gasto (incluidos honorarios legales razonables) derivados de: tu incumplimiento de estos Términos; el contenido que envíes, importes o publiques en la plataforma; tu uso ilegal o no autorizado del servicio; o la infracción de derechos de terceros por tu conducta."
+      },
+      {
+        "heading": "13. Cierre de cuenta y del servicio",
+        "body": "Puedes cerrar tu cuenta en cualquier momento desde la configuración de la plataforma o solicitándolo a support@hireest.com. Hireest puede suspender o cancelar tu cuenta por incumplimiento de estos Términos, impago, resolución judicial o necesidad operativa urgente. Hireest puede modificar, suspender o discontinuar el servicio total o parcialmente con aviso previo razonable, salvo en situaciones de urgencia por seguridad, exigencia legal o fuerza mayor. El cierre no extingue los derechos y obligaciones constituidos antes de la fecha de cierre."
+      },
+      {
+        "heading": "14. Modificaciones de los Términos",
+        "body": "Hireest puede actualizar estos Términos periódicamente. Publicaremos la versión actualizada en esta página con una nueva fecha de vigencia. Para cambios sustanciales que restrinjan tus derechos o aumenten tus obligaciones, enviaremos un aviso por correo electrónico con al menos 15 días de antelación. El uso continuado del servicio tras la fecha de vigencia de los cambios supone la aceptación de los nuevos Términos. Si no estás de acuerdo con los cambios, deberás cerrar tu cuenta antes de que entren en vigor."
+      },
+      {
+        "heading": "15. Ley aplicable y fuero",
+        "body": "Estos Términos se rigen por las leyes de la República Federativa de Brasil. Para la resolución de disputas que no puedan resolverse amistosamente, las partes se someten a los tribunales de la ciudad donde Hireest tenga su sede (a determinar tras la constitución formal de la empresa), renunciando a cualquier otro fuero, por privilegiado que sea. Los usuarios que tengan la condición de consumidores conforme a la normativa de protección al consumidor aplicable podrán elegir el fuero de su domicilio según lo permitido por dicha normativa."
+      },
+      {
+        "heading": "16. Disposiciones generales",
+        "body": "Si alguna disposición de estos Términos es declarada inválida o inaplicable por un tribunal competente, el resto de las disposiciones permanecerá en plena vigencia. El hecho de que Hireest no ejercite algún derecho o disposición no constituye una renuncia al mismo. Estos Términos, junto con la Política de privacidad, constituyen el acuerdo íntegro entre tú y Hireest respecto al servicio y sustituyen cualquier acuerdo anterior. Las notificaciones formales a Hireest deben enviarse por correo electrónico a support@hireest.com."
+      },
+      {
+        "heading": "17. Contacto",
+        "body": "Para consultas, notificaciones legales o cualquier comunicación formal relativa a estos Términos, escríbenos a support@hireest.com con el asunto \"Términos de uso – [tema]\". Procuramos responder las comunicaciones formales dentro de los 5 días hábiles siguientes a su recepción. Los datos completos de la entidad jurídica se publicarán aquí tras la constitución formal."
+      }
+    ]
+  }
+}

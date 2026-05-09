@@ -1,0 +1,228 @@
+{
+  "meta": {
+    "title": "Hireest — Gerencie sua busca de emprego como um produto",
+    "description": "Importe o currículo em PDF do LinkedIn, exporte em vários formatos, gere versões amigáveis a ATS com apoio de IA, gerencie vagas e use insights—com organização avançada de oportunidades em um só espaço de trabalho."
+  },
+  "nav": {
+    "sign_in": "Entrar",
+    "start_free": "Começar grátis",
+    "aria_label": "Navegação principal",
+    "menu_open_aria": "Abrir menu",
+    "menu_title": "Menu",
+    "menu_close_aria": "Fechar menu",
+    "theme_label": "Aparência"
+  },
+  "hero": {
+    "eyebrow": "PDF do LinkedIn · ATS · vários formatos · fluxo de vagas · insights",
+    "headline": "A forma mais tranquila de buscar seu próximo desafio.",
+    "subhead": "Traga o PDF do LinkedIn, mantenha um perfil estruturado, exporte nos formatos que recrutadores esperam e gerencie vagas com insights e organização avançada—tudo no mesmo fluxo.",
+    "cta_primary": "Criar conta",
+    "cta_secondary": "Já tenho conta"
+  },
+  "problem": {
+    "title": "Isso te soa familiar?",
+    "intro": "Dez abas abertas e aquela sensação de caos? Não é só bagunça de arquivos: você perde follow-ups e envia candidaturas mais fracas.",
+    "scenarios": [
+      {
+        "title": "Links e anotações somem",
+        "body": "Você guardou a vaga no chat, metade da descrição num doc e o e-mail do recrutador na caixa de entrada—e na segunda-feira não acha nada disso."
+      },
+      {
+        "title": "O currículo diverge da realidade",
+        "body": "Você ajusta um PDF para cada vaga enquanto skills, datas e conquistas ficam em outro lugar—cada edição aumenta o risco de inconsistência."
+      },
+      {
+        "title": "Você não enxerga todo o processo",
+        "body": "Sabe que está ocupado, mas não quais oportunidades merecem um empurrão nesta semana—o esforço se espalha em vez de se acumular."
+      }
+    ]
+  },
+  "steps": {
+    "title": "Como o Hireest entra na sua semana",
+    "subtitle": "Três movimentos. Um sistema. Menos carga mental.",
+    "items": [
+      {
+        "title": "Registre cada oportunidade uma vez",
+        "body": "Empresas, cargos, links, faixas de remuneração e estágio em tabela ou Kanban—filtros avançados e busca deixam o status visível, não enterrado na caixa de entrada."
+      },
+      {
+        "title": "Monte cópias de CV que você reaproveita",
+        "body": "Comece pela importação do PDF do LinkedIn quando quiser velocidade; depois refine experiências, certificações, skills e idiomas em cópias de CV que alimentam todos os formatos de exportação."
+      },
+      {
+        "title": "Revise e decida com confiança",
+        "body": "Use insights sobre a saúde do seu fluxo de vagas e prioridades e abra o assistente quando quiser texto, priorização ou um segundo parecer—sem sair do quadro."
+      }
+    ]
+  },
+  "cta_mid": {
+    "title": "Dê à próxima candidatura um lugar fixo",
+    "body": "Comece grátis hoje. Traga seu fluxo real de vagas quando quiser—sem criar hábitos novos além de um espaço de trabalho.",
+    "primary": "Criar conta",
+    "secondary": "Entrar"
+  },
+  "pillars": {
+    "title": "Por que quem leva a carreira a sério escolhe o Hireest",
+    "items": {
+      "workspace": {
+        "title": "Um espaço de trabalho privado",
+        "body": "Empresas, cargos, habilidades e histórico ficam organizados na sua conta—prontos para currículos e candidaturas, sem planilhas espalhadas."
+      },
+      "global": {
+        "title": "Pensado para o mundo",
+        "body": "Interface em vários idiomas e currículos adaptados ao jeito como você se candidata—no Brasil ou em processos internacionais."
+      },
+      "ats": {
+        "title": "Currículos prontos para ATS, afiados com IA",
+        "body": "Monte currículos que os sistemas de triagem leiam sem tropeços, mantenha palavras-chave fiéis ao que você fez e use IA para lapidar frases—sem desmontar a estrutura que sustenta cada exportação."
+      }
+    }
+  },
+  "compare": {
+    "title": "Ferramentas espalhadas vs um espaço de trabalho",
+    "col_chaos": "Abas e arquivos",
+    "col_hireest": "Hireest",
+    "rows": [
+      {
+        "chaos": "Redigitar o LinkedIn em outra ferramenta",
+        "hireest": "Importe o PDF do currículo do LinkedIn e mapeie para dados de perfil estruturados"
+      },
+      {
+        "chaos": "Um PDF frágil para cada canal",
+        "hireest": "Exporte o currículo em vários formatos a partir da mesma fonte viva"
+      },
+      {
+        "chaos": "Keywords soltas sem estrutura",
+        "hireest": "Geração amigável a ATS com apoio de IA—legível para software e humanos"
+      },
+      {
+        "chaos": "Uma aba por vaga, zero consolidação",
+        "hireest": "Gestão de vagas + organização avançada de oportunidades—tabela, Kanban, filtros e busca"
+      }
+    ]
+  },
+  "features": {
+    "title": "Seis frentes para levar sua busca com método—do PDF às prioridades da semana",
+    "subtitle": "Seis frentes que transformam arquivos espalhados em um fluxo de vagas que você consegue operar: importar, estruturar, exportar, gerenciar, analisar e organizar—sem recomeçar do zero toda segunda.",
+    "linkedin_pdf": {
+      "title": "Importação de currículo em PDF do LinkedIn",
+      "desc": "Use o PDF que você já exporta do LinkedIn para dar partida no perfil—cargos, datas e bullets viram blocos estruturados que você revisa e refina com confiança."
+    },
+    "export_formats": {
+      "title": "Exportação em vários formatos",
+      "desc": "Leve a mesma verdade para PDF, Markdown e outras saídas que recrutadores e sistemas esperam—sem cópias divergentes que fogem do controle."
+    },
+    "ats_resume": {
+      "title": "Currículo no padrão ATS (AI friendly)",
+      "desc": "Formato e títulos claros para triagem automática, palavras-chave honestas e texto refinado com IA—legível para recrutadores e para os filtros das plataformas."
+    },
+    "opportunities": {
+      "title": "Gerenciamento de vagas",
+      "desc": "Acompanhe publicações de ponta a ponta—links, remuneração, estágio, responsáveis e histórico—para cada vaga ter endereço fixo, não uma aba perdida."
+    },
+    "insights": {
+      "title": "Insights para melhores oportunidades",
+      "desc": "Veja onde seu fluxo de vagas está saudável, parado ou sobrecarregado e invista tempo nas oportunidades que realmente merecem empurrão nesta semana."
+    },
+    "advanced_org": {
+      "title": "Organização avançada de oportunidades",
+      "desc": "Alterne entre tabelas densas e Kanban, combine filtros e busca e mantenha visões customizadas sem virar planilha fora de controle."
+    }
+  },
+  "assistant_section": {
+    "coming_soon": "Disponível em breve",
+    "title": "IA que enxerga a vaga e o seu currículo ao mesmo tempo",
+    "intro": "Afine bullets, alinhe o tom ao cargo e escolha o que merece follow-up—com sugestões ancoradas na oportunidade em tela e no seu perfil estruturado, em vez de um chat genérico e achismo.",
+    "bullets": [
+      "Use insights do fluxo de vagas para decidir quais merecem follow-up—menos achismo, mais prioridade",
+      "Afine texto amigável a ATS mantendo blocos ligados ao seu perfil estruturado",
+      "Compare formatos de exportação antes de enviar para cada canal bater com os mesmos fatos"
+    ]
+  },
+  "testimonials": {
+    "title": "Relatos de nossos usuários",
+    "subtitle": "Depoimentos de quem usa um único espaço de trabalho para vagas, currículo e follow-up—sem depender de dez abas.",
+    "items": [
+      {
+        "quote": "Eu vivia com uma aba por empresa e perdia prazo de retorno. Com o Kanban e os lembretes visuais do fluxo de vagas, sei onde empurrar cada processo na mesma semana.",
+        "name": "Ana Paula M.",
+        "role": "Product designer · São Paulo"
+      },
+      {
+        "quote": "Importei o PDF do LinkedIn, corrigi os campos uma vez e passei a exportar PDF e Markdown sem divergência. Menos retrabalho e mais consistência entre candidaturas.",
+        "name": "Ricardo S.",
+        "role": "Engenheiro de software · Remoto"
+      },
+      {
+        "quote": "Os insights do fluxo de vagas me dizem o que está estável ou engarrafado antes de eu abrir o e-mail. O assistente ajuda a lapidar texto sem sair da tela da vaga.",
+        "name": "Mariana L.",
+        "role": "Product manager · Belo Horizonte"
+      }
+    ]
+  },
+  "faq": {
+    "title": "Perguntas frequentes",
+    "subtitle": "Respostas diretas sobre o produto, sua conta e seus dados."
+  },
+  "faq_items": [
+    {
+      "q": "O que é o Hireest?",
+      "a": "É uma plataforma para organizar sua busca de emprego: currículo estruturado com importação do PDF do LinkedIn, gestão de vagas em tabela e Kanban, exportação em vários formatos e insights sobre seu fluxo de candidaturas. Você usa com login; o produto evolui com novos recursos ao longo do tempo."
+    },
+    {
+      "q": "Onde ficam meus dados?",
+      "a": "Suas informações ficam associadas à sua conta autenticada e são tratadas conforme nossa Política de Privacidade—incluindo finalidade, retenção e seus direitos sobre os dados."
+    },
+    {
+      "q": "Posso importar meu currículo em PDF do LinkedIn?",
+      "a": "Sim. Importe o PDF que você já exporta do LinkedIn, revise os campos sugeridos e use isso como base única para ajustes e exportações—sem redigitar tudo em outra ferramenta."
+    },
+    {
+      "q": "Posso usar Kanban e tabela juntos?",
+      "a": "Sim. São duas visões das mesmas oportunidades—você escolhe densidade para revisão ou colunas para movimento sem duplicar entradas."
+    },
+    {
+      "q": "Há suporte a vários idiomas?",
+      "a": "A interface está em inglês, português (Brasil) e espanhol. Currículos podem ter idioma preferido para alinhar à forma como você se candidata."
+    },
+    {
+      "q": "Preciso de cartão de crédito para começar?",
+      "a": "Não é necessário cartão para criar conta e começar a usar. Se no futuro houver planos pagos ou limites, comunicaremos com clareza antes de cobrar qualquer valor."
+    },
+    {
+      "q": "O que torna os currículos “estruturados” aqui?",
+      "a": "Experiências, certificações, formação e skills são registros de primeira classe ligados ao currículo. Você gera saídas amigáveis a ATS e exporta em vários formatos a partir desse modelo—não de copiar e colar solto."
+    },
+    {
+      "q": "Para quem é o Hireest?",
+      "a": "Para quem trata a busca como projeto: várias empresas, estágios em paralelo e dados de carreira reutilizáveis—não um PDF estático e uma pasta da esperança."
+    }
+  ],
+  "cta": {
+    "title": "Pronto para se contratar com menos caos?",
+    "body": "Entre em minutos. Sem cartão para começar—evolua no seu ritmo quando fizer sentido.",
+    "button": "Começar com o Hireest"
+  },
+  "cookie_banner": {
+    "aria_label": "Aviso de cookies",
+    "text": "Usamos cookies essenciais para autenticação e preferências de idioma, e podemos usar cookies analíticos para melhorar o serviço. Ao continuar, você aceita o uso de cookies conforme nossa",
+    "privacy_link": "Política de Privacidade",
+    "accept": "Aceitar tudo",
+    "essential_only": "Apenas essenciais",
+    "close_aria": "Fechar aviso de cookies"
+  },
+  "footer": {
+    "tagline": "Hireest — sua busca de emprego, elevada.",
+    "link_login": "Entrar",
+    "link_register": "Criar conta",
+    "link_faq": "FAQ",
+    "social_nav_aria": "Hireest nas redes sociais",
+    "social_linkedin": "Hireest no LinkedIn (abre em nova aba)",
+    "social_github": "Hireest no GitHub (abre em nova aba)",
+    "social_x": "Hireest no X (abre em nova aba)",
+    "legal_nav_aria": "Informações legais",
+    "link_terms": "Termos de uso",
+    "link_privacy": "Política de privacidade",
+    "copyright": "© {{year}} Hireest. Todos os direitos reservados."
+  }
+}

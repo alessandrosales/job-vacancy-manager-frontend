@@ -40,7 +40,7 @@ export function AuthenticatedSessionBootstrap() {
         if (ac.signal.aborted) return
         if (err instanceof ApiError && err.status === 401) {
           clearAuthSession()
-          navigate("/", { replace: true })
+          navigate("/login", { replace: true })
         }
       }
     })()

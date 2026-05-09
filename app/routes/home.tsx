@@ -18,7 +18,7 @@ export default function Home() {
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
           <Button asChild variant="outline">
-            <Link to="/">{t("home.login")}</Link>
+            <Link to="/login">{t("home.login")}</Link>
           </Button>
           <Button asChild variant="secondary">
             <Link to="/register">{t("home.register")}</Link>

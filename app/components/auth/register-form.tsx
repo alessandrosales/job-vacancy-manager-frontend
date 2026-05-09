@@ -11,6 +11,7 @@ import { Link, useNavigate } from "react-router"
 
 import { cn } from "~/lib/utils"
 import { Button } from "~/components/ui/button"
+import { Checkbox } from "~/components/ui/checkbox"
 import {
   Card,
   CardContent,
@@ -26,6 +27,8 @@ import {
   FieldSeparator,
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
+import { Label } from "~/components/ui/label"
+import { AuthLegalLinks } from "~/components/auth/auth-legal-links"
 import { ApiError } from "~/lib/api/errors"
 import { registerWithEmail } from "~/lib/api/resources/auth"
 import { setAuthToken } from "~/lib/auth-token"
@@ -54,6 +57,7 @@ export function RegisterForm({
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [passwordConfirmation, setPasswordConfirmation] = React.useState("")
+  const [acceptedPolicies, setAcceptedPolicies] = React.useState(false)
   const [pending, setPending] = React.useState(false)
   const [formError, setFormError] = React.useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = React.useState<
@@ -77,6 +81,11 @@ export function RegisterForm({
   async function submitRegister() {
     setFormError(null)
     setFieldErrors({})
+
+    if (!acceptedPolicies) {
+      setFormError(t("auth.accept_policy_required"))
+      return
+    }
 
     if (password !== passwordConfirmation) {
       setFieldErrors({
@@ -117,6 +126,10 @@ export function RegisterForm({
 
   async function signUpWithGooglePopup() {
     setFormError(null)
+    if (!acceptedPolicies) {
+      setFormError(t("auth.accept_policy_required"))
+      return
+    }
     setPending(true)
     try {
       const credential = await signInWithPopup(
@@ -151,6 +164,30 @@ export function RegisterForm({
                   </p>
                 </Field>
               ) : null}
+              <Field>
+                <div className="flex gap-3">
+                  <Checkbox
+                    id="register-accept-policies"
+                    checked={acceptedPolicies}
+                    onCheckedChange={(value) => {
+                      const next = value === true
+                      setAcceptedPolicies(next)
+                      if (next) setFormError(null)
+                    }}
+                    disabled={pending}
+                    className="mt-0.5"
+                  />
+                  <Label
+                    htmlFor="register-accept-policies"
+                    className="cursor-pointer font-normal leading-snug text-muted-foreground"
+                  >
+                    {t("auth.accept_register_label")}
+                  </Label>
+                </div>
+                {!acceptedPolicies ? (
+                  <FieldDescription>{t("auth.accept_policy_hint")}</FieldDescription>
+                ) : null}
+              </Field>
               <Field>
                 <Button
                   variant="outline"
@@ -249,13 +286,16 @@ export function RegisterForm({
                 ) : null}
               </Field>
               <Field>
-                <Button type="submit" disabled={pending}>
+                <Button
+                  type="submit"
+                  disabled={pending || !acceptedPolicies}
+                >
                   {pending ? t("auth.creating_account") : t("auth.create_account")}
                 </Button>
                 <FieldDescription className="text-center">
                   {t("auth.has_account")}{" "}
                   <Link
-                    to="/"
+                    to="/login"
                     className="underline-offset-4 hover:underline"
                   >
                     {t("auth.sign_in")}
@@ -266,17 +306,7 @@ export function RegisterForm({
           </form>
         </CardContent>
       </Card>
-      <FieldDescription className="px-6 text-center">
-        {t("auth.legal_prefix")}{" "}
-        <a href="#" className="underline-offset-4 hover:underline">
-          {t("auth.terms")}
-        </a>{" "}
-        {t("auth.legal_and")}{" "}
-        <a href="#" className="underline-offset-4 hover:underline">
-          {t("auth.privacy")}
-        </a>
-        .
-      </FieldDescription>
+      <AuthLegalLinks />
     </div>
   )
 }

@@ -142,7 +142,10 @@
     "doc_title_reset": "Nueva contraseña",
     "ui_language": "Idioma",
     "terms": "Términos de uso",
-    "privacy": "Política de privacidad"
+    "privacy": "Política de privacidad",
+    "accept_register_label": "He leído y acepto los Términos de uso y la Política de privacidad enlazados abajo.",
+    "accept_policy_required": "Debes aceptar los Términos de uso y la Política de privacidad para crear una cuenta.",
+    "accept_policy_hint": "Lee los enlaces legales debajo de la tarjeta y marca la casilla para continuar."
   },
   "home": {
     "title": "Hireest",

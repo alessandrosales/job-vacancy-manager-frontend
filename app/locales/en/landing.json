@@ -1,0 +1,228 @@
+{
+  "meta": {
+    "title": "Hireest — Run your job search like a product",
+    "description": "Import your LinkedIn resume as PDF, export in multiple formats, build ATS-friendly resumes with AI help, manage vacancies, and get insights—all with advanced opportunity organization in one workspace."
+  },
+  "nav": {
+    "sign_in": "Sign in",
+    "start_free": "Get started free",
+    "aria_label": "Main navigation",
+    "menu_open_aria": "Open menu",
+    "menu_title": "Menu",
+    "menu_close_aria": "Close menu",
+    "theme_label": "Appearance"
+  },
+  "hero": {
+    "eyebrow": "LinkedIn PDF import · ATS resumes · multi-format export · pipeline · insights",
+    "headline": "The calmest way to pursue your next role.",
+    "subhead": "Bring your LinkedIn resume in as a PDF, keep one structured profile, export in the formats recruiters expect, and run vacancies with insights and advanced organization—without losing the thread.",
+    "cta_primary": "Create your account",
+    "cta_secondary": "I already have an account"
+  },
+  "problem": {
+    "title": "Sound familiar?",
+    "intro": "Ten tabs open and it still feels like chaos? It isn’t just messy files—you miss follow-ups and send weaker applications.",
+    "scenarios": [
+      {
+        "title": "Links and notes evaporate",
+        "body": "You saved a posting in chat, half the JD in a doc, and the recruiter thread in email—then you cannot find any of it on Monday."
+      },
+      {
+        "title": "Your resume drifts from reality",
+        "body": "You tweak a PDF for each role while your real skills, dates, and wins live somewhere else—so every edit risks inconsistency."
+      },
+      {
+        "title": "You don’t see the whole process",
+        "body": "You know you are busy, but not which opportunities actually deserve a push this week—so effort spreads thin instead of compounding."
+      }
+    ]
+  },
+  "steps": {
+    "title": "How Hireest fits your week",
+    "subtitle": "Three moves. One system. Less mental load.",
+    "items": [
+      {
+        "title": "Capture every opportunity once",
+        "body": "Log companies, roles, links, compensation hints, and stage in a table or Kanban—advanced filters and search keep status visible, not buried in inboxes."
+      },
+      {
+        "title": "Build CV copy you reuse",
+        "body": "Start from a LinkedIn PDF import when you want speed, then refine work history, certifications, skills, and languages into CV copy that powers every export format."
+      },
+      {
+        "title": "Review and decide with confidence",
+        "body": "Use insights on pipeline health and priorities, then open the assistant when you want wording, prioritization, or a second opinion—without leaving the board."
+      }
+    ]
+  },
+  "cta_mid": {
+    "title": "Give your next application a home base",
+    "body": "Start free today. Bring your real pipeline when you are ready—no new habits required beyond one workspace.",
+    "primary": "Create your account",
+    "secondary": "Sign in"
+  },
+  "pillars": {
+    "title": "Why serious job seekers choose Hireest",
+    "items": {
+      "workspace": {
+        "title": "One private workspace",
+        "body": "Companies, roles, skills, and history stay organized under your account—ready for resumes and applications without scattered spreadsheets."
+      },
+      "global": {
+        "title": "Built for a global market",
+        "body": "Interface in multiple languages and resume output tuned for how you apply—whether you interview across borders or close to home."
+      },
+      "ats": {
+        "title": "ATS-ready, AI-sharpened resumes",
+        "body": "Generate layouts parsers understand, keep keywords honest, and let AI polish phrasing—without breaking the structure that feeds every export."
+      }
+    }
+  },
+  "compare": {
+    "title": "Scattered tools vs one workspace",
+    "col_chaos": "Tabs & files",
+    "col_hireest": "Hireest",
+    "rows": [
+      {
+        "chaos": "You retype LinkedIn into yet another tool",
+        "hireest": "Import your LinkedIn resume PDF and map it into structured profile data"
+      },
+      {
+        "chaos": "One brittle PDF for every channel",
+        "hireest": "Export resumes in multiple formats from the same living source"
+      },
+      {
+        "chaos": "Keyword stuffing with no structure",
+        "hireest": "ATS-friendly generation with AI help—readable by parsers and humans"
+      },
+      {
+        "chaos": "Tabs for every vacancy, zero roll-up",
+        "hireest": "Vacancy management plus advanced opportunity views—table, Kanban, filters, search"
+      }
+    ]
+  },
+  "features": {
+    "title": "Six fronts to run your search with intent—from PDF import to this week’s priorities",
+    "subtitle": "Six capabilities that turn scattered files into a pipeline you can ship: import, structure, export, manage, analyze, and organize—without starting from zero every Monday.",
+    "linkedin_pdf": {
+      "title": "LinkedIn resume import (PDF)",
+      "desc": "Drop in the PDF you already export from LinkedIn to kick off your profile—roles, dates, and bullets mapped into structured blocks you can trust and refine."
+    },
+    "export_formats": {
+      "title": "Export resumes in multiple formats",
+      "desc": "Ship the same truth as PDF, Markdown, and other outputs recruiters and systems expect—no duplicate files that drift out of sync."
+    },
+    "ats_resume": {
+      "title": "ATS-friendly resumes, AI-ready polish",
+      "desc": "Layouts and headings parsers understand, honest keyword coverage, and AI-assisted phrasing so you stay readable to software and humans alike."
+    },
+    "opportunities": {
+      "title": "Vacancy and opportunity management",
+      "desc": "Track postings end to end—links, compensation, stage, owners, and history—so every vacancy has a home instead of a lost browser tab."
+    },
+    "insights": {
+      "title": "Insights that surface better moves",
+      "desc": "See where your pipeline is healthy, stalled, or overheated so you spend time on opportunities that actually deserve a push this week."
+    },
+    "advanced_org": {
+      "title": "Advanced opportunity organization",
+      "desc": "Switch between dense tables and Kanban, combine filters and search, and keep custom views without spreadsheet chaos."
+    }
+  },
+  "assistant_section": {
+    "coming_soon": "Coming soon",
+    "title": "AI that reads the posting alongside your resume",
+    "intro": "Sharpen bullets, match tone to the role, and pick what deserves follow-up—suggestions grounded in the opportunity on screen and your structured profile, not a blank chat thread and guesswork.",
+    "bullets": [
+      "Stress-test which vacancies deserve follow-up using pipeline insights—not gut feel alone",
+      "Tune ATS-friendly wording while keeping blocks tied to your structured profile",
+      "Compare export formats before you send so every channel matches the same facts"
+    ]
+  },
+  "testimonials": {
+    "title": "Stories from our users",
+    "subtitle": "Notes from folks who run applications, resumes, and follow-ups from one workspace—not ten browser tabs.",
+    "items": [
+      {
+        "quote": "I used to keep one tab per company and miss reply windows. With Kanban and a visible pipeline, I know exactly where to push each process this week.",
+        "name": "Ana Paula M.",
+        "role": "Product designer · São Paulo"
+      },
+      {
+        "quote": "I imported my LinkedIn PDF, fixed the fields once, and export PDF and Markdown without drift. Less rework and more consistency across applications.",
+        "name": "Ricardo S.",
+        "role": "Software engineer · Remote"
+      },
+      {
+        "quote": "Pipeline insights show what is stable or stuck before I even open email. The assistant helps polish copy without leaving the opportunity screen.",
+        "name": "Mariana L.",
+        "role": "Product manager · Belo Horizonte"
+      }
+    ]
+  },
+  "faq": {
+    "title": "Questions, answered",
+    "subtitle": "Straight answers about the product, your account, and your data."
+  },
+  "faq_items": [
+    {
+      "q": "What is Hireest?",
+      "a": "Hireest helps you run an organized job search: structured resumes with LinkedIn PDF import, vacancy tracking in table and Kanban views, multi-format exports, and insights across your applications. You sign in and use it as a living product—we keep shipping improvements over time."
+    },
+    {
+      "q": "Where does my data live?",
+      "a": "Your information is tied to your authenticated account and handled according to our Privacy Policy—including purpose, retention, and your rights."
+    },
+    {
+      "q": "Can I import my LinkedIn resume as a PDF?",
+      "a": "Yes. Bring in the PDF you already export from LinkedIn, review the mapped fields, and treat it as one source for edits and exports—without retyping everything elsewhere."
+    },
+    {
+      "q": "Can I use Kanban and the table together?",
+      "a": "Yes. They are two views on the same opportunities—you choose density for review or columns for motion without duplicating entries."
+    },
+    {
+      "q": "Do you support multiple languages?",
+      "a": "The interface is available in English, Portuguese (Brazil), and Spanish. Resumes can carry a preferred language field so outputs align with how you apply."
+    },
+    {
+      "q": "Do I need a credit card to get started?",
+      "a": "No. You can create an account without a card. If paid plans or limits are introduced later, we will explain them clearly before charging anything."
+    },
+    {
+      "q": "What makes resumes “structured” here?",
+      "a": "Experiences, certifications, education, and skills are first-class records linked into resumes. You compile ATS-friendly outputs and multi-format exports from that model—not from scattered copy-and-paste."
+    },
+    {
+      "q": "Who is Hireest for?",
+      "a": "People who run an active search like a project: multiple companies, parallel stages, and reusable career data—not a single static PDF and a hope folder."
+    }
+  ],
+  "cta": {
+    "title": "Ready to hire yourself—with less chaos?",
+    "body": "Join in minutes. No credit card to get started—grow at your own pace when it makes sense.",
+    "button": "Start with Hireest"
+  },
+  "cookie_banner": {
+    "aria_label": "Cookie notice",
+    "text": "We use essential cookies for authentication and language preferences, and may use analytics cookies to improve the service. By continuing, you accept the use of cookies as described in our",
+    "privacy_link": "Privacy Policy",
+    "accept": "Accept all",
+    "essential_only": "Essential only",
+    "close_aria": "Close cookie notice"
+  },
+  "footer": {
+    "tagline": "Hireest — job search, elevated.",
+    "link_login": "Sign in",
+    "link_register": "Create account",
+    "link_faq": "FAQ",
+    "social_nav_aria": "Hireest on social media",
+    "social_linkedin": "Hireest on LinkedIn (opens in a new tab)",
+    "social_github": "Hireest on GitHub (opens in a new tab)",
+    "social_x": "Hireest on X (opens in a new tab)",
+    "legal_nav_aria": "Legal information",
+    "link_terms": "Terms of use",
+    "link_privacy": "Privacy policy",
+    "copyright": "© {{year}} Hireest. All rights reserved."
+  }
+}

@@ -190,7 +190,7 @@ export function ResetPasswordForm({
                 </Button>
                 <FieldDescription className="text-center">
                   <Link
-                    to="/"
+                    to="/login"
                     className="underline-offset-4 hover:underline"
                   >
                     {t("auth.back_sign_in")}

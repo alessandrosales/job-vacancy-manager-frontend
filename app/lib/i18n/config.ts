@@ -18,9 +18,17 @@ import commonEs from "~/locales/es/common.json"
 import pagesEn from "~/locales/en/pages.json"
 import pagesPtBr from "~/locales/pt_br/pages.json"
 import pagesEs from "~/locales/es/pages.json"
+import landingEn from "~/locales/en/landing.json"
+import landingPtBr from "~/locales/pt_br/landing.json"
+import landingEs from "~/locales/es/landing.json"
+import legalEn from "~/locales/en/legal.json"
+import legalPtBr from "~/locales/pt_br/legal.json"
+import legalEs from "~/locales/es/legal.json"
 
 export const defaultI18nNs = "common" as const
 export const pagesI18nNs = "pages" as const
+export const landingI18nNs = "landing" as const
+export const legalI18nNs = "legal" as const
 
 /**
  * No SSR o bundle não tem idioma até `entry.server` chamar `changeLanguage`.
@@ -32,9 +40,14 @@ function computeInitialHydrationLng(): UiLanguageCode {
 }
 
 const resources = {
-  en: { common: commonEn, pages: pagesEn },
-  pt_br: { common: commonPtBr, pages: pagesPtBr },
-  es: { common: commonEs, pages: pagesEs },
+  en: { common: commonEn, pages: pagesEn, landing: landingEn, legal: legalEn },
+  pt_br: {
+    common: commonPtBr,
+    pages: pagesPtBr,
+    landing: landingPtBr,
+    legal: legalPtBr,
+  },
+  es: { common: commonEs, pages: pagesEs, landing: landingEs, legal: legalEs },
 } as const
 
 const i18nInitPromise = i18n.use(initReactI18next).init({
@@ -43,7 +56,7 @@ const i18nInitPromise = i18n.use(initReactI18next).init({
   fallbackLng: "en",
   supportedLngs: ["en", "pt_br", "es"],
   defaultNS: defaultI18nNs,
-  ns: [defaultI18nNs, pagesI18nNs],
+  ns: [defaultI18nNs, pagesI18nNs, landingI18nNs, legalI18nNs],
   interpolation: {
     escapeValue: false,
   },

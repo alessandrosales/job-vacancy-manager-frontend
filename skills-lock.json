@@ -7,10 +7,22 @@
       "skillPath": "skills/firebase-auth-basics/SKILL.md",
       "computedHash": "a68238619839f44f3b4c7d02d0c96bc05df2b018edd62dd299c964ce871d80a3"
     },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-design/SKILL.md",
+      "computedHash": "063a0e6448123cd359ad0044cc46b0e490cc7964d45ef4bb9fd842bd2ffbca67"
+    },
     "inertia-rails-architecture": {
       "source": "inertia-rails/skills",
       "sourceType": "github",
       "computedHash": "0df28a8608906ab197357e7b2668e649f9956b3d549594f00c8979c589b88f01"
+    },
+    "landing-page-copywriter": {
+      "source": "onewave-ai/claude-skills",
+      "sourceType": "github",
+      "skillPath": "landing-page-copywriter/SKILL.md",
+      "computedHash": "f7c7ceb8d99be73eb3e84c6281f1cd56121342f36c94b1d5d2835e4273598ab1"
     },
     "react-i18n": {
       "source": "fusengine/agents",
