@@ -6,10 +6,6 @@ import landingPtBr from "~/locales/pt_br/landing.json"
 import { resolveRequestUiLanguage } from "~/lib/i18n/resolve-request-ui-language"
 
 export async function loader({ request }: Route.LoaderArgs) {
-  console.error("[landing] loader (deploy smoke)", {
-    url: request.url,
-    at: new Date().toISOString(),
-  })
   const lng = resolveRequestUiLanguage(request)
   const pack =
     lng === "pt_br" ? landingPtBr : lng === "es" ? landingEs : landingEn
