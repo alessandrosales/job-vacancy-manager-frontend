@@ -1,25 +1,14 @@
 import type { Route } from "./+types/landing"
 import { LandingPage } from "~/components/landing/landing-page"
-import landingEn from "~/locales/en/landing.json"
-import landingEs from "~/locales/es/landing.json"
-import landingPtBr from "~/locales/pt_br/landing.json"
-import { resolveRequestUiLanguage } from "~/lib/i18n/resolve-request-ui-language"
+import { buildLandingMetaDescriptors } from "~/lib/seo/landing-seo"
 
-export async function loader({ request }: Route.LoaderArgs) {
-  const lng = resolveRequestUiLanguage(request)
-  const pack =
-    lng === "pt_br" ? landingPtBr : lng === "es" ? landingEs : landingEn
-  return pack.meta
-}
-
-export function meta({ data }: Route.MetaArgs) {
-  if (!data) {
-    return [{ title: "Hireest" }, { name: "description", content: "" }]
-  }
-  return [
-    { title: data.title },
-    { name: "description", content: data.description },
-  ]
+/**
+ * SEO da landing fica travado em inglês — UI continua multilíngue via i18next
+ * (`entry.server.tsx` resolve o idioma para o render). Ver
+ * `app/lib/seo/landing-seo.ts` para a justificativa e os tags emitidos.
+ */
+export function meta(_args: Route.MetaArgs) {
+  return buildLandingMetaDescriptors()
 }
 
 export default function LandingRoute() {

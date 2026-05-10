@@ -1,0 +1,23 @@
+{
+  "name": "Hireest",
+  "short_name": "Hireest",
+  "description": "Job Search Tracker & ATS Resume Builder",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/icon-p.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "605x597",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
