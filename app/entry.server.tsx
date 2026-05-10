@@ -25,6 +25,17 @@ export default function handleRequest(
     })
   }
 
+  if (request.method === "GET") {
+    try {
+      const { pathname } = new URL(request.url)
+      if (pathname === "/" || pathname === "") {
+        console.error("[deploy-smoke] SSR GET /", new Date().toISOString())
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
   return (async () => {
     await awaitI18nReady()
     await i18n.changeLanguage(resolveRequestUiLanguage(request))
