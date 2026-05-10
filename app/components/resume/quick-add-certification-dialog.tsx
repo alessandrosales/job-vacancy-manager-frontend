@@ -72,16 +72,24 @@ export function QuickAddCertificationDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md overflow-hidden p-0 sm:max-w-md" showCloseButton>
-        <form onSubmit={(ev) => void handleSubmit(ev)} className="flex flex-col">
+      <DialogContent
+        className="max-w-md overflow-hidden p-0 sm:max-w-md"
+        showCloseButton
+      >
+        <form
+          onSubmit={(ev) => void handleSubmit(ev)}
+          className="flex flex-col"
+        >
           <DialogHeader className="shrink-0 px-4 pt-4 pb-2">
             <DialogTitle>{t("certification.new_title")}</DialogTitle>
-            <DialogDescription>{t("resume.quick_add_cert_desc")}</DialogDescription>
+            <DialogDescription>
+              {t("resume.quick_add_cert_desc")}
+            </DialogDescription>
           </DialogHeader>
           <div className="max-h-[min(70vh,480px)] overflow-y-auto px-4 pt-2 pb-6">
             <FieldGroup>
               {formError ? (
-                <p role="alert" className="text-destructive text-sm">
+                <p role="alert" className="text-sm text-destructive">
                   {formError}
                 </p>
               ) : null}
@@ -97,7 +105,9 @@ export function QuickAddCertificationDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qac-from">{t("certification.date_from")}</FieldLabel>
+                <FieldLabel htmlFor="qac-from">
+                  {t("certification.date_from")}
+                </FieldLabel>
                 <Input
                   id="qac-from"
                   type="date"
@@ -107,7 +117,9 @@ export function QuickAddCertificationDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qac-to">{t("certification.date_to")}</FieldLabel>
+                <FieldLabel htmlFor="qac-to">
+                  {t("certification.date_to")}
+                </FieldLabel>
                 <Input
                   id="qac-to"
                   type="date"

@@ -1,8 +1,5 @@
 import { apiRequestJson, apiRequestNoContent } from "~/lib/api/client"
-import type {
-  ApiIndexParams,
-  PaginatedEnvelope,
-} from "~/lib/api/pagination"
+import type { ApiIndexParams, PaginatedEnvelope } from "~/lib/api/pagination"
 import { toIndexQuery } from "~/lib/api/pagination"
 
 /** Payload JSON de `Opportunity#as_api_json` (Rails). */
@@ -33,12 +30,14 @@ export type ApiOpportunityWrite = Pick<
   | "annual_salary"
 >
 
-export async function listOpportunities(
-  params: { paginated: false }
-): Promise<ApiOpportunity[]>
-export async function listOpportunities(
-  params?: { paginated?: true; page?: number; per_page?: number }
-): Promise<PaginatedEnvelope<ApiOpportunity>>
+export async function listOpportunities(params: {
+  paginated: false
+}): Promise<ApiOpportunity[]>
+export async function listOpportunities(params?: {
+  paginated?: true
+  page?: number
+  per_page?: number
+}): Promise<PaginatedEnvelope<ApiOpportunity>>
 export async function listOpportunities(
   params?: ApiIndexParams
 ): Promise<PaginatedEnvelope<ApiOpportunity> | ApiOpportunity[]> {

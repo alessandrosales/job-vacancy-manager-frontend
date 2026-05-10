@@ -67,13 +67,16 @@ export function AppLayout({ title, breadcrumbs, children }: AppLayoutProps) {
                 {crumbs.map((crumb, i) => {
                   const isLast = i === crumbs.length - 1
                   const hideRootOnMobile = crumbs.length > 1 && i === 0
-                  const hideLeadingSeparatorOnMobile = crumbs.length > 1 && i === 1
+                  const hideLeadingSeparatorOnMobile =
+                    crumbs.length > 1 && i === 1
                   return (
                     <React.Fragment key={`${crumb.label}-${String(i)}`}>
                       {i > 0 ? (
                         <BreadcrumbSeparator
                           className={
-                            hideLeadingSeparatorOnMobile ? "hidden md:block" : undefined
+                            hideLeadingSeparatorOnMobile
+                              ? "hidden md:block"
+                              : undefined
                           }
                         />
                       ) : null}

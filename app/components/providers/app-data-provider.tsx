@@ -187,7 +187,9 @@ function normalizeOptionalNonNegativeNumber(
   return n
 }
 
-function normalizeOpportunityStatuses(raw: unknown): OpportunityStatusDefinition[] {
+function normalizeOpportunityStatuses(
+  raw: unknown
+): OpportunityStatusDefinition[] {
   if (!Array.isArray(raw) || raw.length === 0) {
     return DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS.map((s) => ({ ...s }))
   }
@@ -259,7 +261,11 @@ function resolveOpportunityRoleId(
 }
 
 /** Lê um campo aceitando tanto o nome snake_case (v4) quanto camelCase (v3 legado). */
-function readField<T>(obj: Record<string, unknown>, snake: string, camel: string): T | undefined {
+function readField<T>(
+  obj: Record<string, unknown>,
+  snake: string,
+  camel: string
+): T | undefined {
   const v = obj[snake] ?? obj[camel]
   return v as T | undefined
 }
@@ -377,7 +383,9 @@ function parseResumes(
     if (typeof o.id !== "string") continue
     const roleRaw = o.role_id ?? o.roleId
     const role_id =
-      typeof roleRaw === "string" && ctx.validRoleIds.has(roleRaw) ? roleRaw : ""
+      typeof roleRaw === "string" && ctx.validRoleIds.has(roleRaw)
+        ? roleRaw
+        : ""
     out.push({
       id: o.id,
       title: asString(o.title),
@@ -401,7 +409,10 @@ function parseResumes(
         o.education_ids ?? o.educationIds,
         ctx.validEducationIds
       ),
-      skill_ids: normalizeSkillIds(o.skill_ids ?? o.skillIds, ctx.validSkillIds),
+      skill_ids: normalizeSkillIds(
+        o.skill_ids ?? o.skillIds,
+        ctx.validSkillIds
+      ),
     })
   }
   return out
@@ -426,32 +437,48 @@ function parseStored(raw: string | null): AppDataState | null {
     )
     const validStatusIds = new Set(opportunity_statuses.map((s) => s.id))
 
-    const rawCustomColumns = readField<unknown[]>(data, "kanban_custom_columns", "kanbanCustomColumns")
-    const kanban_custom_columns: KanbanCustomColumn[] = Array.isArray(rawCustomColumns)
-      ? rawCustomColumns as KanbanCustomColumn[]
+    const rawCustomColumns = readField<unknown[]>(
+      data,
+      "kanban_custom_columns",
+      "kanbanCustomColumns"
+    )
+    const kanban_custom_columns: KanbanCustomColumn[] = Array.isArray(
+      rawCustomColumns
+    )
+      ? (rawCustomColumns as KanbanCustomColumn[])
       : []
     const customIds = new Set(kanban_custom_columns.map((c) => c.id))
 
-    const rawColumnOrder = readField<unknown[]>(data, "kanban_column_order", "kanbanColumnOrder")
+    const rawColumnOrder = readField<unknown[]>(
+      data,
+      "kanban_column_order",
+      "kanbanColumnOrder"
+    )
     const kanban_column_order: string[] = Array.isArray(rawColumnOrder)
       ? (rawColumnOrder as string[])
       : []
 
     const fallbackStatus = opportunity_statuses[0]!.id
 
-    const companies: Company[] = data.companies.map((c: Record<string, unknown>) => ({
-      id: c.id,
-      name: c.name,
-      url: c.url,
-      description: c.description,
-      interest_level: normalizeInterestLevel(c.interest_level ?? c.interestLevel),
-    })) as Company[]
+    const companies: Company[] = data.companies.map(
+      (c: Record<string, unknown>) => ({
+        id: c.id,
+        name: c.name,
+        url: c.url,
+        description: c.description,
+        interest_level: normalizeInterestLevel(
+          c.interest_level ?? c.interestLevel
+        ),
+      })
+    ) as Company[]
 
     const roles: Role[] = data.roles.map((r: Record<string, unknown>) => ({
       id: r.id,
       name: r.name,
       description: r.description,
-      interest_level: normalizeInterestLevel(r.interest_level ?? r.interestLevel),
+      interest_level: normalizeInterestLevel(
+        r.interest_level ?? r.interestLevel
+      ),
     })) as Role[]
 
     const skills: Skill[] = data.skills as Skill[]
@@ -467,24 +494,36 @@ function parseStored(raw: string | null): AppDataState | null {
       "work_experiences",
       "workExperiences"
     )
-    const work_experiences = parseWorkExperiences(work_experiences_raw, validSkillIds)
-    const certifications_raw = readField<unknown>(data, "certifications", "certifications")
+    const work_experiences = parseWorkExperiences(
+      work_experiences_raw,
+      validSkillIds
+    )
+    const certifications_raw = readField<unknown>(
+      data,
+      "certifications",
+      "certifications"
+    )
     const certifications = parseCertifications(
       Array.isArray(certifications_raw) ? certifications_raw : []
     )
     const education_raw = readField<unknown>(data, "education", "education")
-    const education = parseEducation(Array.isArray(education_raw) ? education_raw : [])
+    const education = parseEducation(
+      Array.isArray(education_raw) ? education_raw : []
+    )
     const resumes_raw = readField<unknown>(data, "resumes", "resumes")
-    const resumes = parseResumes(Array.isArray(resumes_raw) ? resumes_raw : [], {
-      validWorkExperienceIds: new Set(work_experiences.map((w) => w.id)),
-      validCertificationIds: new Set(certifications.map((c) => c.id)),
-      validEducationIds: new Set(education.map((e) => e.id)),
-      validSkillIds,
-      validRoleIds: new Set(roles.map((r) => r.id)),
-    })
+    const resumes = parseResumes(
+      Array.isArray(resumes_raw) ? resumes_raw : [],
+      {
+        validWorkExperienceIds: new Set(work_experiences.map((w) => w.id)),
+        validCertificationIds: new Set(certifications.map((c) => c.id)),
+        validEducationIds: new Set(education.map((e) => e.id)),
+        validSkillIds,
+        validRoleIds: new Set(roles.map((r) => r.id)),
+      }
+    )
 
     return {
-      ...data as Partial<AppDataState>,
+      ...(data as Partial<AppDataState>),
       opportunity_statuses,
       opportunities: data.opportunities.map((o: Record<string, unknown>) => {
         const status = validStatusIds.has(o.status as string)
@@ -494,7 +533,9 @@ function parseStored(raw: string | null): AppDataState | null {
           (o.board_column_id as string | undefined) ??
           (o.boardColumnId as string | undefined)
         if (board_column_id != null) {
-          const ok = validStatusIds.has(board_column_id) || customIds.has(board_column_id)
+          const ok =
+            validStatusIds.has(board_column_id) ||
+            customIds.has(board_column_id)
           if (!ok) board_column_id = undefined
         }
         const raw_interest = o.interest_level ?? o.interestLevel
@@ -634,7 +675,10 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       addOpportunity: (row) => {
         const id = createId()
         setState((s) => {
-          const next = { ...s, opportunities: [...s.opportunities, { id, ...row }] }
+          const next = {
+            ...s,
+            opportunities: [...s.opportunities, { id, ...row }],
+          }
           persist(next)
           return next
         })
@@ -654,7 +698,10 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       },
       deleteOpportunity: (id) => {
         setState((s) => {
-          const next = { ...s, opportunities: s.opportunities.filter((o) => o.id !== id) }
+          const next = {
+            ...s,
+            opportunities: s.opportunities.filter((o) => o.id !== id),
+          }
           persist(next)
           return next
         })
@@ -697,7 +744,10 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
           const next: AppDataState = {
             ...s,
             opportunity_statuses: nextStatuses,
-            kanban_column_order: [...nextStatuses.map((x) => x.id), ...customPart],
+            kanban_column_order: [
+              ...nextStatuses.map((x) => x.id),
+              ...customPart,
+            ],
           }
           persist(next)
           return next
@@ -719,7 +769,9 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       deleteOpportunityStatus: (id) => {
         setState((s) => {
           if (s.opportunity_statuses.length <= 1) return s
-          const replacement = s.opportunity_statuses.find((x) => x.id !== id)?.id
+          const replacement = s.opportunity_statuses.find(
+            (x) => x.id !== id
+          )?.id
           if (!replacement) return s
 
           const nextStatuses = s.opportunity_statuses.filter((x) => x.id !== id)
@@ -782,7 +834,9 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         setState((s) => {
           const next = {
             ...s,
-            companies: s.companies.map((c) => (c.id === id ? { id, ...row } : c)),
+            companies: s.companies.map((c) =>
+              c.id === id ? { id, ...row } : c
+            ),
           }
           persist(next)
           return next
@@ -790,7 +844,10 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       },
       deleteCompany: (id) => {
         setState((s) => {
-          const next = { ...s, companies: s.companies.filter((c) => c.id !== id) }
+          const next = {
+            ...s,
+            companies: s.companies.filter((c) => c.id !== id),
+          }
           persist(next)
           return next
         })
@@ -901,7 +958,10 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       addWorkExperience: (row) => {
         const id = createId()
         setState((s) => {
-          const next = { ...s, work_experiences: [...s.work_experiences, { id, ...row }] }
+          const next = {
+            ...s,
+            work_experiences: [...s.work_experiences, { id, ...row }],
+          }
           persist(next)
           return next
         })
@@ -926,7 +986,9 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
             work_experiences: s.work_experiences.filter((we) => we.id !== id),
             resumes: s.resumes.map((r) => ({
               ...r,
-              work_experience_ids: r.work_experience_ids.filter((wid) => wid !== id),
+              work_experience_ids: r.work_experience_ids.filter(
+                (wid) => wid !== id
+              ),
             })),
           }
           persist(next)
@@ -936,7 +998,10 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       addCertification: (row) => {
         const id = createId()
         setState((s) => {
-          const next = { ...s, certifications: [...s.certifications, { id, ...row }] }
+          const next = {
+            ...s,
+            certifications: [...s.certifications, { id, ...row }],
+          }
           persist(next)
           return next
         })
@@ -961,7 +1026,9 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
             certifications: s.certifications.filter((c) => c.id !== id),
             resumes: s.resumes.map((r) => ({
               ...r,
-              certification_ids: r.certification_ids.filter((cid) => cid !== id),
+              certification_ids: r.certification_ids.filter(
+                (cid) => cid !== id
+              ),
             })),
           }
           persist(next)
@@ -981,7 +1048,9 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         setState((s) => {
           const next = {
             ...s,
-            education: s.education.map((e) => (e.id === id ? { id, ...row } : e)),
+            education: s.education.map((e) =>
+              e.id === id ? { id, ...row } : e
+            ),
           }
           persist(next)
           return next

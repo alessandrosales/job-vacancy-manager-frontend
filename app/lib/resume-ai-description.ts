@@ -50,6 +50,8 @@ export async function generateResumeDescriptionWithAi(
       previous_description: ctx.previousDescription,
     })
   } catch (err) {
-    throw new Error(suggestionErrorMessage(err, "Could not generate a description."))
+    throw new Error(
+      suggestionErrorMessage(err, "Could not generate a description.")
+    )
   }
 }

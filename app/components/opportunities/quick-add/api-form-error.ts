@@ -1,6 +1,9 @@
 import { ApiError } from "~/lib/api/errors"
 
-export function apiFormErrorFromUnknown(err: unknown, fallback: string): string {
+export function apiFormErrorFromUnknown(
+  err: unknown,
+  fallback: string
+): string {
   if (err instanceof ApiError) {
     const base = err.fieldErrors.base?.[0]
     if (base) return base

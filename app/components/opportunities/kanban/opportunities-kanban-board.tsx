@@ -82,9 +82,7 @@ function persistColumnIfNeeded(
           url: opp.url,
           status: columnId,
           interest_level: opp.interest_level,
-          ...(statusColumnsOnly
-            ? {}
-            : { board_column_id: columnId }),
+          ...(statusColumnsOnly ? {} : { board_column_id: columnId }),
           hourly_rate: opp.hourly_rate,
           annual_salary: opp.annual_salary,
         })
@@ -123,8 +121,14 @@ type SortableBoardColumnProps = {
 }
 
 function SortableBoardColumn(props: SortableBoardColumnProps) {
-  const { transform, transition, setNodeRef, attributes, listeners, isDragging } =
-    useSortable({ id: columnSortableId(props.columnId) })
+  const {
+    transform,
+    transition,
+    setNodeRef,
+    attributes,
+    listeners,
+    isDragging,
+  } = useSortable({ id: columnSortableId(props.columnId) })
 
   return (
     <div
@@ -201,7 +205,9 @@ export function OpportunitiesKanbanBoard({
 
   const itemsByColumnOpts = React.useMemo(
     () =>
-      statusColumnsOnly ? { assignColumnByStatusOnly: true as const } : undefined,
+      statusColumnsOnly
+        ? { assignColumnByStatusOnly: true as const }
+        : undefined,
     [statusColumnsOnly]
   )
 
@@ -218,7 +224,9 @@ export function OpportunitiesKanbanBoard({
   const opportunityByIdRef = React.useRef(opportunityById)
   opportunityByIdRef.current = opportunityById
 
-  const [columnItems, setColumnItems] = React.useState<Record<string, string[]>>(() =>
+  const [columnItems, setColumnItems] = React.useState<
+    Record<string, string[]>
+  >(() =>
     itemsByColumnFromOpportunities(
       opportunities,
       orderedColumnIds,
@@ -237,7 +245,10 @@ export function OpportunitiesKanbanBoard({
     )
     const next: Record<string, number> = {}
     for (const columnId of orderedColumnIds) {
-      next[columnId] = Math.min(KANBAN_COLUMN_PAGE_SIZE, initial[columnId]?.length ?? 0)
+      next[columnId] = Math.min(
+        KANBAN_COLUMN_PAGE_SIZE,
+        initial[columnId]?.length ?? 0
+      )
     }
     return next
   })
@@ -245,10 +256,11 @@ export function OpportunitiesKanbanBoard({
   const [newColumnName, setNewColumnName] = React.useState("")
   const [newOpportunityStatusLabel, setNewOpportunityStatusLabel] =
     React.useState("")
-  const [statusCreateSubmitting, setStatusCreateSubmitting] = React.useState(false)
-  const [statusCreateError, setStatusCreateError] = React.useState<string | null>(
-    null
-  )
+  const [statusCreateSubmitting, setStatusCreateSubmitting] =
+    React.useState(false)
+  const [statusCreateError, setStatusCreateError] = React.useState<
+    string | null
+  >(null)
   const [activeId, setActiveId] = React.useState<string | null>(null)
   const lastOverId = React.useRef<string | null>(null)
   const recentlyMovedToNewContainer = React.useRef(false)
@@ -270,7 +282,10 @@ export function OpportunitiesKanbanBoard({
       for (const columnId of nextOrder) {
         const total = nextItems[columnId]?.length ?? 0
         const current = prev[columnId] ?? KANBAN_COLUMN_PAGE_SIZE
-        next[columnId] = Math.min(Math.max(current, KANBAN_COLUMN_PAGE_SIZE), total)
+        next[columnId] = Math.min(
+          Math.max(current, KANBAN_COLUMN_PAGE_SIZE),
+          total
+        )
       }
       return next
     })
@@ -299,7 +314,8 @@ export function OpportunitiesKanbanBoard({
     })
   )
 
-  const isActiveColumnDrag = activeId != null && parseColumnSortableId(activeId) != null
+  const isActiveColumnDrag =
+    activeId != null && parseColumnSortableId(activeId) != null
 
   const collisionDetectionStrategy = React.useCallback<CollisionDetection>(
     (args) => {
@@ -316,7 +332,10 @@ export function OpportunitiesKanbanBoard({
 
       if (overId != null) {
         const overCol = parseColumnDroppableId(overId)
-        if (overCol != null && Object.prototype.hasOwnProperty.call(columnItems, overCol)) {
+        if (
+          overCol != null &&
+          Object.prototype.hasOwnProperty.call(columnItems, overCol)
+        ) {
           const colIds = columnItems[overCol] ?? []
           if (colIds.length > 0) {
             const closestInCol = closestCorners({
@@ -372,7 +391,10 @@ export function OpportunitiesKanbanBoard({
       const overIndexInList = overItems.indexOf(overId)
       let newIndex = overItems.length
 
-      if (parseColumnDroppableId(overId) !== overContainer && overIndexInList >= 0) {
+      if (
+        parseColumnDroppableId(overId) !== overContainer &&
+        overIndexInList >= 0
+      ) {
         const isBelowOverItem =
           active.rect.current.translated &&
           active.rect.current.translated.top > over.rect.top + over.rect.height
@@ -408,7 +430,11 @@ export function OpportunitiesKanbanBoard({
     const activeColumnSortableId = parseColumnSortableId(String(active.id))
     if (activeColumnSortableId) {
       const overColumnSortableId = parseColumnSortableId(String(over.id))
-      if (!overColumnSortableId || activeColumnSortableId === overColumnSortableId) return
+      if (
+        !overColumnSortableId ||
+        activeColumnSortableId === overColumnSortableId
+      )
+        return
 
       setOrderedColumnIds((prev) => {
         const oldIndex = prev.indexOf(activeColumnSortableId)
@@ -500,7 +526,10 @@ export function OpportunitiesKanbanBoard({
       await onOpportunityStatusesRefresh()
     } catch (e) {
       setStatusCreateError(
-        apiFormErrorFromUnknown(e, t("opportunities.quick_add_create_status_error"))
+        apiFormErrorFromUnknown(
+          e,
+          t("opportunities.quick_add_create_status_error")
+        )
       )
     } finally {
       setStatusCreateSubmitting(false)
@@ -578,7 +607,9 @@ export function OpportunitiesKanbanBoard({
                         setNewOpportunityStatusLabel(event.target.value)
                         if (statusCreateError) setStatusCreateError(null)
                       }}
-                      placeholder={t("opportunities.kanban_placeholder_new_column")}
+                      placeholder={t(
+                        "opportunities.kanban_placeholder_new_column"
+                      )}
                       disabled={statusCreateSubmitting}
                       className="h-8 focus-visible:ring-1 focus-visible:ring-inset"
                       onKeyDown={(event) => {
@@ -588,13 +619,16 @@ export function OpportunitiesKanbanBoard({
                       }}
                     />
                     {statusCreateError ? (
-                      <p className="text-destructive px-0.5 text-xs" role="alert">
+                      <p
+                        className="px-0.5 text-xs text-destructive"
+                        role="alert"
+                      >
                         {statusCreateError}
                       </p>
                     ) : null}
                   </div>
                   <div
-                    className="border-border/80 bg-muted/30 flex min-h-0 flex-1 flex-col rounded-lg border border-dashed p-2"
+                    className="flex min-h-0 flex-1 flex-col rounded-lg border border-dashed border-border/80 bg-muted/30 p-2"
                     aria-hidden
                   />
                 </div>
@@ -605,7 +639,9 @@ export function OpportunitiesKanbanBoard({
                   <Input
                     value={newColumnName}
                     onChange={(event) => setNewColumnName(event.target.value)}
-                    placeholder={t("opportunities.kanban_placeholder_new_column")}
+                    placeholder={t(
+                      "opportunities.kanban_placeholder_new_column"
+                    )}
                     className="h-8 focus-visible:ring-1 focus-visible:ring-inset"
                     onKeyDown={(event) => {
                       if (event.key !== "Enter") return
@@ -615,7 +651,7 @@ export function OpportunitiesKanbanBoard({
                   />
                 </div>
                 <div
-                  className="border-border/80 bg-muted/30 flex min-h-0 flex-1 flex-col rounded-lg border border-dashed p-2"
+                  className="flex min-h-0 flex-1 flex-col rounded-lg border border-dashed border-border/80 bg-muted/30 p-2"
                   aria-hidden
                 />
               </div>

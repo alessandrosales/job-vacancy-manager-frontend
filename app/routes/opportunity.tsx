@@ -82,8 +82,12 @@ export default function OpportunityPage() {
   const [roleId, setRoleId] = React.useState("")
   const [description, setDescription] = React.useState("")
   const [url, setUrl] = React.useState("")
-  const [hourlyRate, setHourlyRate] = React.useState<number | undefined>(undefined)
-  const [annualSalary, setAnnualSalary] = React.useState<number | undefined>(undefined)
+  const [hourlyRate, setHourlyRate] = React.useState<number | undefined>(
+    undefined
+  )
+  const [annualSalary, setAnnualSalary] = React.useState<number | undefined>(
+    undefined
+  )
   const [status, setStatus] = React.useState<OpportunityStatus>("")
   const [interestLevel, setInterestLevel] = React.useState<InterestLevel>(0)
   const [postSaveOpen, setPostSaveOpen] = React.useState(false)
@@ -159,7 +163,10 @@ export default function OpportunityPage() {
         setAnnualSalary(o.annual_salary)
         setStatus(o.status)
         setInterestLevel(
-          Math.min(5, Math.max(0, Math.round(o.interest_level))) as InterestLevel
+          Math.min(
+            5,
+            Math.max(0, Math.round(o.interest_level))
+          ) as InterestLevel
         )
         setOppLoadState("idle")
       })
@@ -242,7 +249,9 @@ export default function OpportunityPage() {
   if (listsLoadState === "loading") {
     return (
       <AppLayout title={title} breadcrumbs={breadcrumbs}>
-        <p className="text-muted-foreground">{t("opportunities.loading_form")}</p>
+        <p className="text-muted-foreground">
+          {t("opportunities.loading_form")}
+        </p>
       </AppLayout>
     )
   }
@@ -250,7 +259,7 @@ export default function OpportunityPage() {
   if (listsLoadState === "error" || !referenceLists) {
     return (
       <AppLayout title={title} breadcrumbs={breadcrumbs}>
-        <p className="text-destructive text-sm" role="alert">
+        <p className="text-sm text-destructive" role="alert">
           {listsError ?? t("opportunities.form_load_error_fallback")}
         </p>
       </AppLayout>
@@ -267,7 +276,9 @@ export default function OpportunityPage() {
           { label: t("shared.crumb_edit") },
         ]}
       >
-        <p className="text-muted-foreground">{t("opportunities.loading_record")}</p>
+        <p className="text-muted-foreground">
+          {t("opportunities.loading_record")}
+        </p>
       </AppLayout>
     )
   }
@@ -290,7 +301,7 @@ export default function OpportunityPage() {
           >
             <CardContent>
               {formError ? (
-                <p className="text-destructive mb-2 text-sm" role="alert">
+                <p className="mb-2 text-sm text-destructive" role="alert">
                   {formError}
                 </p>
               ) : null}
@@ -317,7 +328,11 @@ export default function OpportunityPage() {
               />
             </CardContent>
             <CardFooter className="flex flex-wrap justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate(-1)}
+              >
                 {t("shared.cancel")}
               </Button>
               <Button

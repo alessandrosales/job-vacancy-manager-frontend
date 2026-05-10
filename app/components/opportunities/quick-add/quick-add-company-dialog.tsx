@@ -16,11 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog"
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from "~/components/ui/field"
+import { Field, FieldGroup, FieldLabel } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
 import { createCompany } from "~/lib/api/resources/companies"
@@ -72,7 +68,10 @@ export function QuickAddCompanyDialog({
         onOpenChange(false)
       } catch (err) {
         setFormError(
-          apiFormErrorFromUnknown(err, t("opportunities.quick_add_create_company_error"))
+          apiFormErrorFromUnknown(
+            err,
+            t("opportunities.quick_add_create_company_error")
+          )
         )
       } finally {
         setSubmitting(false)
@@ -92,16 +91,24 @@ export function QuickAddCompanyDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md overflow-hidden p-0 sm:max-w-md" showCloseButton>
-        <form onSubmit={(ev) => void handleSubmit(ev)} className="flex flex-col">
+      <DialogContent
+        className="max-w-md overflow-hidden p-0 sm:max-w-md"
+        showCloseButton
+      >
+        <form
+          onSubmit={(ev) => void handleSubmit(ev)}
+          className="flex flex-col"
+        >
           <DialogHeader className="shrink-0 px-4 pt-4 pb-2">
             <DialogTitle>{t("company.new_title")}</DialogTitle>
-            <DialogDescription>{t("opportunities.quick_add_company_desc")}</DialogDescription>
+            <DialogDescription>
+              {t("opportunities.quick_add_company_desc")}
+            </DialogDescription>
           </DialogHeader>
           <div className="max-h-[min(70vh,480px)] overflow-y-auto px-4 pt-2 pb-6">
             <FieldGroup>
               {formError ? (
-                <p role="alert" className="text-destructive text-sm">
+                <p role="alert" className="text-sm text-destructive">
                   {formError}
                 </p>
               ) : null}
@@ -126,7 +133,9 @@ export function QuickAddCompanyDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qac-desc">{t("shared.description")}</FieldLabel>
+                <FieldLabel htmlFor="qac-desc">
+                  {t("shared.description")}
+                </FieldLabel>
                 <Textarea
                   id="qac-desc"
                   value={description}

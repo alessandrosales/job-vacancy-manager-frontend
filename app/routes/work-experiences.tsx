@@ -66,12 +66,12 @@ function apiErrorText(err: unknown, fallback: string): string {
 
 export default function WorkExperiencesPage() {
   const { t } = useTranslation(pagesI18nNs)
-  const [workExperiences, setWorkExperiences] = React.useState<ApiWorkExperience[]>(
-    []
-  )
-  const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
-    "loading"
-  )
+  const [workExperiences, setWorkExperiences] = React.useState<
+    ApiWorkExperience[]
+  >([])
+  const [loadState, setLoadState] = React.useState<
+    "idle" | "loading" | "error"
+  >("loading")
   const [listError, setListError] = React.useState<string | null>(null)
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
   const [deleteSubmitting, setDeleteSubmitting] = React.useState(false)
@@ -232,7 +232,9 @@ export default function WorkExperiencesPage() {
                     <TableCell className="max-w-xs truncate text-muted-foreground">
                       {row.description?.trim() ? row.description : "—"}
                     </TableCell>
-                    <TableCell>{row.is_remote ? t("shared.yes") : t("shared.no")}</TableCell>
+                    <TableCell>
+                      {row.is_remote ? t("shared.yes") : t("shared.no")}
+                    </TableCell>
                     <TableCell className="text-muted-foreground">
                       {row.date_from ?? "—"}
                     </TableCell>
@@ -270,7 +272,9 @@ export default function WorkExperiencesPage() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>{t("work_experience.delete_title")}</AlertDialogTitle>
+              <AlertDialogTitle>
+                {t("work_experience.delete_title")}
+              </AlertDialogTitle>
               <AlertDialogDescription>
                 {t("work_experience.delete_desc")}
               </AlertDialogDescription>

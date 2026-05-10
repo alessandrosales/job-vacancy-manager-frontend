@@ -14,11 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card"
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from "~/components/ui/field"
+import { Field, FieldGroup, FieldLabel } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 import { ApiError } from "~/lib/api/errors"
@@ -123,7 +119,9 @@ export default function CertificationPage() {
     }
   }
 
-  const pageTitle = isEdit ? t("certification.edit_title") : t("certification.new_title")
+  const pageTitle = isEdit
+    ? t("certification.edit_title")
+    : t("certification.new_title")
   const crumbAction = isEdit ? t("shared.crumb_edit") : t("shared.crumb_new")
   const breadcrumbs = [
     { label: tc("breadcrumb_dashboard"), to: "/dashboard" },
@@ -133,8 +131,13 @@ export default function CertificationPage() {
 
   if (isEdit && loadState === "loading") {
     return (
-      <AppLayout title={t("certification.edit_title")} breadcrumbs={breadcrumbs}>
-        <p className="text-muted-foreground">{t("certification.load_loading")}</p>
+      <AppLayout
+        title={t("certification.edit_title")}
+        breadcrumbs={breadcrumbs}
+      >
+        <p className="text-muted-foreground">
+          {t("certification.load_loading")}
+        </p>
       </AppLayout>
     )
   }
@@ -146,7 +149,9 @@ export default function CertificationPage() {
           <CardHeader>
             <CardTitle>{pageTitle}</CardTitle>
             <CardDescription>
-              {isEdit ? t("certification.card_desc_edit") : t("certification.card_desc_new")}
+              {isEdit
+                ? t("certification.card_desc_edit")
+                : t("certification.card_desc_new")}
             </CardDescription>
           </CardHeader>
           <form
@@ -161,7 +166,9 @@ export default function CertificationPage() {
                   </p>
                 ) : null}
                 <Field>
-                  <FieldLabel htmlFor="cert-name">{t("shared.name")}</FieldLabel>
+                  <FieldLabel htmlFor="cert-name">
+                    {t("shared.name")}
+                  </FieldLabel>
                   <Input
                     id="cert-name"
                     value={name}
@@ -171,7 +178,9 @@ export default function CertificationPage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="cert-from">{t("certification.date_from")}</FieldLabel>
+                  <FieldLabel htmlFor="cert-from">
+                    {t("certification.date_from")}
+                  </FieldLabel>
                   <Input
                     id="cert-from"
                     type="date"
@@ -181,7 +190,9 @@ export default function CertificationPage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="cert-to">{t("certification.date_to")}</FieldLabel>
+                  <FieldLabel htmlFor="cert-to">
+                    {t("certification.date_to")}
+                  </FieldLabel>
                   <Input
                     id="cert-to"
                     type="date"
@@ -202,7 +213,11 @@ export default function CertificationPage() {
                 {t("shared.cancel")}
               </Button>
               <Button type="submit" disabled={submitting}>
-                {submitting ? t("shared.saving") : isEdit ? t("shared.save_changes") : t("shared.save")}
+                {submitting
+                  ? t("shared.saving")
+                  : isEdit
+                    ? t("shared.save_changes")
+                    : t("shared.save")}
               </Button>
             </CardFooter>
           </form>

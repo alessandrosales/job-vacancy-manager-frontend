@@ -2,11 +2,7 @@
 
 import * as React from "react"
 import { useTranslation } from "react-i18next"
-import {
-  GoogleAuthProvider,
-  signInWithPopup,
-  type User,
-} from "firebase/auth"
+import { GoogleAuthProvider, signInWithPopup, type User } from "firebase/auth"
 import { Link, useNavigate } from "react-router"
 
 import { cn } from "~/lib/utils"
@@ -179,13 +175,15 @@ export function RegisterForm({
                   />
                   <Label
                     htmlFor="register-accept-policies"
-                    className="cursor-pointer font-normal leading-snug text-muted-foreground"
+                    className="cursor-pointer leading-snug font-normal text-muted-foreground"
                   >
                     {t("auth.accept_register_label")}
                   </Label>
                 </div>
                 {!acceptedPolicies ? (
-                  <FieldDescription>{t("auth.accept_policy_hint")}</FieldDescription>
+                  <FieldDescription>
+                    {t("auth.accept_policy_hint")}
+                  </FieldDescription>
                 ) : null}
               </Field>
               <Field>
@@ -208,7 +206,9 @@ export function RegisterForm({
                 {t("auth.separator_or_email")}
               </FieldSeparator>
               <Field>
-                <FieldLabel htmlFor="register-name">{t("shared.name")}</FieldLabel>
+                <FieldLabel htmlFor="register-name">
+                  {t("shared.name")}
+                </FieldLabel>
                 <Input
                   id="register-name"
                   type="text"
@@ -227,7 +227,9 @@ export function RegisterForm({
                 ) : null}
               </Field>
               <Field>
-                <FieldLabel htmlFor="register-email">{t("shared.email")}</FieldLabel>
+                <FieldLabel htmlFor="register-email">
+                  {t("shared.email")}
+                </FieldLabel>
                 <Input
                   id="register-email"
                   type="email"
@@ -246,7 +248,9 @@ export function RegisterForm({
                 ) : null}
               </Field>
               <Field>
-                <FieldLabel htmlFor="register-password">{t("shared.password")}</FieldLabel>
+                <FieldLabel htmlFor="register-password">
+                  {t("shared.password")}
+                </FieldLabel>
                 <Input
                   id="register-password"
                   type="password"
@@ -286,11 +290,10 @@ export function RegisterForm({
                 ) : null}
               </Field>
               <Field>
-                <Button
-                  type="submit"
-                  disabled={pending || !acceptedPolicies}
-                >
-                  {pending ? t("auth.creating_account") : t("auth.create_account")}
+                <Button type="submit" disabled={pending || !acceptedPolicies}>
+                  {pending
+                    ? t("auth.creating_account")
+                    : t("auth.create_account")}
                 </Button>
                 <FieldDescription className="text-center">
                   {t("auth.has_account")}{" "}

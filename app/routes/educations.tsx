@@ -63,9 +63,9 @@ function apiErrorText(err: unknown, fallback: string): string {
 export default function EducationsPage() {
   const { t } = useTranslation(pagesI18nNs)
   const [education, setEducation] = React.useState<ApiEducation[]>([])
-  const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
-    "loading"
-  )
+  const [loadState, setLoadState] = React.useState<
+    "idle" | "loading" | "error"
+  >("loading")
   const [listError, setListError] = React.useState<string | null>(null)
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
   const [deleteSubmitting, setDeleteSubmitting] = React.useState(false)
@@ -219,7 +219,9 @@ export default function EducationsPage() {
                         </Button>
                       </div>
                     </TableCell>
-                    <TableCell className="font-medium">{row.institution_name}</TableCell>
+                    <TableCell className="font-medium">
+                      {row.institution_name}
+                    </TableCell>
                     <TableCell>{row.degree ?? "—"}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {row.field_of_study ?? "—"}
@@ -258,7 +260,9 @@ export default function EducationsPage() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>{t("educations.delete_title")}</AlertDialogTitle>
+              <AlertDialogTitle>
+                {t("educations.delete_title")}
+              </AlertDialogTitle>
               <AlertDialogDescription>
                 {t("educations.delete_desc")}
               </AlertDialogDescription>

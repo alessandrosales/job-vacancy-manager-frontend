@@ -24,7 +24,10 @@ import {
   DialogDescription,
 } from "~/components/ui/dialog"
 import { ApiError } from "~/lib/api/errors"
-import { compileResumeMarkdown, type ApiResume } from "~/lib/api/resources/resumes"
+import {
+  compileResumeMarkdown,
+  type ApiResume,
+} from "~/lib/api/resources/resumes"
 import { pagesI18nNs } from "~/lib/i18n/config"
 
 const COMPILE_STAGE_INTERVAL_MS = 1800
@@ -50,7 +53,7 @@ function CompileNeonRing({
       <p className="sr-only">{statusText}</p>
       <div className="relative flex size-[8rem] items-center justify-center overflow-visible">
         <div
-          className="pointer-events-none absolute inset-[-22%] motion-safe:animate-[compile-halo_3.2s_ease-in-out_infinite] rounded-full bg-[conic-gradient(from_200deg,var(--neon-emerald),var(--neon-cyan),var(--neon-violet),var(--neon-emerald))] opacity-[0.14] blur-2xl dark:opacity-[0.26]"
+          className="pointer-events-none absolute inset-[-22%] rounded-full bg-[conic-gradient(from_200deg,var(--neon-emerald),var(--neon-cyan),var(--neon-violet),var(--neon-emerald))] opacity-[0.14] blur-2xl motion-safe:animate-[compile-halo_3.2s_ease-in-out_infinite] dark:opacity-[0.26]"
           style={{
             ["--neon-emerald" as string]: "rgb(52 211 153)",
             ["--neon-cyan" as string]: "rgb(34 211 238)",
@@ -65,12 +68,24 @@ function CompileNeonRing({
           aria-hidden
         >
           <defs>
-            <linearGradient id={gradPrimary} x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient
+              id={gradPrimary}
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
               <stop offset="0%" stopColor="#059669" />
               <stop offset="45%" stopColor="#0891b2" />
               <stop offset="100%" stopColor="#7c3aed" />
             </linearGradient>
-            <filter id={filterGlow} x="-55%" y="-55%" width="210%" height="210%">
+            <filter
+              id={filterGlow}
+              x="-55%"
+              y="-55%"
+              width="210%"
+              height="210%"
+            >
               <feGaussianBlur stdDeviation="2.4" result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
@@ -127,7 +142,7 @@ function CompileNeonRing({
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div
             key={statusText}
-            className="rounded-full bg-muted/80 p-2.5 shadow-sm ring-1 ring-border backdrop-blur-sm duration-300 animate-in fade-in zoom-in-95 dark:bg-background/45 dark:shadow-[0_0_28px_rgba(52,211,153,0.22),0_0_42px_rgba(34,211,238,0.12)] dark:ring-emerald-400/45"
+            className="animate-in rounded-full bg-muted/80 p-2.5 shadow-sm ring-1 ring-border backdrop-blur-sm duration-300 zoom-in-95 fade-in dark:bg-background/45 dark:shadow-[0_0_28px_rgba(52,211,153,0.22),0_0_42px_rgba(34,211,238,0.12)] dark:ring-emerald-400/45"
           >
             <StageIcon
               className="size-8 text-primary dark:text-emerald-100 dark:drop-shadow-[0_0_12px_rgba(52,211,153,0.65)]"
@@ -141,7 +156,7 @@ function CompileNeonRing({
       <div className="flex max-w-xs flex-col gap-1 text-center">
         <p
           key={statusText}
-          className="text-foreground text-sm font-medium tracking-tight duration-300 animate-in fade-in slide-in-from-bottom-1 dark:text-emerald-100 dark:drop-shadow-[0_0_12px_rgba(52,211,153,0.35)]"
+          className="animate-in text-sm font-medium tracking-tight text-foreground duration-300 fade-in slide-in-from-bottom-1 dark:text-emerald-100 dark:drop-shadow-[0_0_12px_rgba(52,211,153,0.35)]"
         >
           {statusText}
         </p>
@@ -274,13 +289,17 @@ export function ResumeCompileMarkdownDialog({
             {autoStart ? (
               <>
                 {t("resume.compile_markdown.desc_auto_before")}
-                <span className="text-foreground font-medium">{resumeTitle}</span>
+                <span className="font-medium text-foreground">
+                  {resumeTitle}
+                </span>
                 {t("resume.compile_markdown.desc_auto_after")}
               </>
             ) : (
               <>
                 {t("resume.compile_markdown.desc_manual_before")}
-                <span className="text-foreground font-medium">{resumeTitle}</span>
+                <span className="font-medium text-foreground">
+                  {resumeTitle}
+                </span>
                 {t("resume.compile_markdown.desc_manual_after")}
               </>
             )}
@@ -313,7 +332,7 @@ export function ResumeCompileMarkdownDialog({
         </div>
 
         {error ? (
-          <p className="text-destructive text-sm" role="alert">
+          <p className="text-sm text-destructive" role="alert">
             {error}
           </p>
         ) : null}
@@ -335,7 +354,10 @@ export function ResumeCompileMarkdownDialog({
             >
               {compiling ? (
                 <>
-                  <Loader2Icon className="size-4 animate-spin" data-icon="inline-start" />
+                  <Loader2Icon
+                    className="size-4 animate-spin"
+                    data-icon="inline-start"
+                  />
                   {t("resume.compile_markdown.generating")}
                 </>
               ) : (

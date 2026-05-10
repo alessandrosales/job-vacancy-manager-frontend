@@ -21,7 +21,10 @@ export interface ApiSessionUser {
   updated_at: string
 }
 
-function optionalApiString(o: Record<string, unknown>, key: string): string | null {
+function optionalApiString(
+  o: Record<string, unknown>,
+  key: string
+): string | null {
   const v = o[key]
   if (v === undefined || v === null) return null
   if (typeof v !== "string") throw invalidResponseError()

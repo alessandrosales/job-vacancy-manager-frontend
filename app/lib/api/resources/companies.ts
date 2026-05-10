@@ -1,8 +1,5 @@
 import { apiRequestJson, apiRequestNoContent } from "~/lib/api/client"
-import type {
-  ApiIndexParams,
-  PaginatedEnvelope,
-} from "~/lib/api/pagination"
+import type { ApiIndexParams, PaginatedEnvelope } from "~/lib/api/pagination"
 import { toIndexQuery } from "~/lib/api/pagination"
 
 export interface ApiCompany {
@@ -24,9 +21,11 @@ export type ApiCompanyWrite = Pick<
 export async function listCompanies(params: {
   paginated: false
 }): Promise<ApiCompany[]>
-export async function listCompanies(
-  params?: { paginated?: true; page?: number; per_page?: number }
-): Promise<PaginatedEnvelope<ApiCompany>>
+export async function listCompanies(params?: {
+  paginated?: true
+  page?: number
+  per_page?: number
+}): Promise<PaginatedEnvelope<ApiCompany>>
 export async function listCompanies(
   params?: ApiIndexParams
 ): Promise<PaginatedEnvelope<ApiCompany> | ApiCompany[]> {

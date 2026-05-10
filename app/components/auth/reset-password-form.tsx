@@ -138,7 +138,9 @@ export function ResetPasswordForm({
                 </Field>
               ) : null}
               <Field>
-                <FieldLabel htmlFor="reset-password">{t("shared.new_password")}</FieldLabel>
+                <FieldLabel htmlFor="reset-password">
+                  {t("shared.new_password")}
+                </FieldLabel>
                 <Input
                   id="reset-password"
                   type="password"
@@ -203,7 +205,10 @@ export function ResetPasswordForm({
       </Card>
       <FieldDescription className="px-6 text-center">
         {t("auth.reset_footer")}{" "}
-        <Link to="/recover-password" className="underline-offset-4 hover:underline">
+        <Link
+          to="/recover-password"
+          className="underline-offset-4 hover:underline"
+        >
           {t("auth.reset_footer_link")}
         </Link>
         .

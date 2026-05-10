@@ -60,7 +60,9 @@ function formErrorMessage(err: unknown, fallback: string): string {
   return fallback
 }
 
-function parseAgeInput(raw: string): { ok: true; value: number | null } | { ok: false } {
+function parseAgeInput(
+  raw: string
+): { ok: true; value: number | null } | { ok: false } {
   const trimmed = raw.trim()
   if (!trimmed) return { ok: true, value: null }
   const n = Number(trimmed)
@@ -170,13 +172,13 @@ export default function MyDataPage() {
         <Card className="max-w-xl">
           <CardHeader>
             <CardTitle>{tc("my_data_title")}</CardTitle>
-            <CardDescription>
-              {tp("my_data.card_description")}
-            </CardDescription>
+            <CardDescription>{tp("my_data.card_description")}</CardDescription>
           </CardHeader>
           {loadingProfile ? (
             <CardContent>
-              <p className="text-muted-foreground text-sm">{tp("my_data.loading_profile")}</p>
+              <p className="text-sm text-muted-foreground">
+                {tp("my_data.loading_profile")}
+              </p>
             </CardContent>
           ) : (
             <form
@@ -196,7 +198,9 @@ export default function MyDataPage() {
                     </Field>
                   ) : null}
                   <Field>
-                    <FieldLabel htmlFor="profile-name">{tp("my_data.full_name")}</FieldLabel>
+                    <FieldLabel htmlFor="profile-name">
+                      {tp("my_data.full_name")}
+                    </FieldLabel>
                     <Input
                       id="profile-name"
                       value={name}
@@ -207,7 +211,9 @@ export default function MyDataPage() {
                     />
                   </Field>
                   <Field>
-                    <FieldLabel htmlFor="profile-email">{tp("my_data.email")}</FieldLabel>
+                    <FieldLabel htmlFor="profile-email">
+                      {tp("my_data.email")}
+                    </FieldLabel>
                     <Input
                       id="profile-email"
                       type="email"
@@ -219,20 +225,33 @@ export default function MyDataPage() {
                     />
                   </Field>
                   <Field>
-                    <FieldLabel htmlFor="profile-preferred-language">{tp("my_data.preferred_language")}</FieldLabel>
+                    <FieldLabel htmlFor="profile-preferred-language">
+                      {tp("my_data.preferred_language")}
+                    </FieldLabel>
                     <Select
                       value={preferredLanguage}
                       onValueChange={setPreferredLanguage}
                       disabled={submitting}
                     >
-                      <SelectTrigger id="profile-preferred-language" className="w-full">
-                        <SelectValue placeholder={tp("my_data.language_placeholder")} />
+                      <SelectTrigger
+                        id="profile-preferred-language"
+                        className="w-full"
+                      >
+                        <SelectValue
+                          placeholder={tp("my_data.language_placeholder")}
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          <SelectItem value="en">{tp("my_data.lang_en")}</SelectItem>
-                          <SelectItem value="pt_br">{tp("my_data.lang_pt_br")}</SelectItem>
-                          <SelectItem value="es">{tp("my_data.lang_es")}</SelectItem>
+                          <SelectItem value="en">
+                            {tp("my_data.lang_en")}
+                          </SelectItem>
+                          <SelectItem value="pt_br">
+                            {tp("my_data.lang_pt_br")}
+                          </SelectItem>
+                          <SelectItem value="es">
+                            {tp("my_data.lang_es")}
+                          </SelectItem>
                         </SelectGroup>
                       </SelectContent>
                     </Select>
@@ -262,7 +281,9 @@ export default function MyDataPage() {
                     />
                     <FieldDescription>
                       {tp("my_data.openai_desc")}
-                      {user.ai_token_configured ? tp("my_data.key_saved_suffix") : ""}
+                      {user.ai_token_configured
+                        ? tp("my_data.key_saved_suffix")
+                        : ""}
                     </FieldDescription>
                     {user.ai_token_configured ? (
                       <label className="flex cursor-pointer items-center gap-2 text-sm">
@@ -281,7 +302,9 @@ export default function MyDataPage() {
                     ) : null}
                   </Field>
                   <Field>
-                    <FieldLabel htmlFor="profile-phone">{tp("my_data.phone")}</FieldLabel>
+                    <FieldLabel htmlFor="profile-phone">
+                      {tp("my_data.phone")}
+                    </FieldLabel>
                     <Input
                       id="profile-phone"
                       type="tel"
@@ -292,7 +315,9 @@ export default function MyDataPage() {
                     />
                   </Field>
                   <Field>
-                    <FieldLabel htmlFor="profile-avatar">{tp("my_data.avatar_url")}</FieldLabel>
+                    <FieldLabel htmlFor="profile-avatar">
+                      {tp("my_data.avatar_url")}
+                    </FieldLabel>
                     <Input
                       id="profile-avatar"
                       type="url"
@@ -306,7 +331,9 @@ export default function MyDataPage() {
                     </FieldDescription>
                   </Field>
                   <Field>
-                    <FieldLabel htmlFor="profile-bio">{tp("my_data.bio")}</FieldLabel>
+                    <FieldLabel htmlFor="profile-bio">
+                      {tp("my_data.bio")}
+                    </FieldLabel>
                     <Textarea
                       id="profile-bio"
                       value={bio}
@@ -317,7 +344,9 @@ export default function MyDataPage() {
                     />
                   </Field>
                   <Field>
-                    <FieldLabel htmlFor="profile-age">{tp("my_data.age")}</FieldLabel>
+                    <FieldLabel htmlFor="profile-age">
+                      {tp("my_data.age")}
+                    </FieldLabel>
                     <Input
                       id="profile-age"
                       inputMode="numeric"
@@ -329,7 +358,9 @@ export default function MyDataPage() {
                     />
                   </Field>
                   <Field>
-                    <FieldLabel htmlFor="profile-address">{tp("my_data.full_address")}</FieldLabel>
+                    <FieldLabel htmlFor="profile-address">
+                      {tp("my_data.full_address")}
+                    </FieldLabel>
                     <Textarea
                       id="profile-address"
                       value={fullAddress}
@@ -353,7 +384,9 @@ export default function MyDataPage() {
                     />
                   </Field>
                   <Field>
-                    <FieldLabel htmlFor="profile-gender">{tp("my_data.gender")}</FieldLabel>
+                    <FieldLabel htmlFor="profile-gender">
+                      {tp("my_data.gender")}
+                    </FieldLabel>
                     <Input
                       id="profile-gender"
                       value={gender}

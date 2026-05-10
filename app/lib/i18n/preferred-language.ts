@@ -1,6 +1,10 @@
 export type UiLanguageCode = "en" | "pt_br" | "es"
 
-export const UI_LANGUAGE_CODES: readonly UiLanguageCode[] = ["en", "pt_br", "es"]
+export const UI_LANGUAGE_CODES: readonly UiLanguageCode[] = [
+  "en",
+  "pt_br",
+  "es",
+]
 
 /** Alinhado a `parseApiSessionUser`: `en` | `pt_br` | `es` + legado `pt-br`. */
 export function normalizeUiLanguage(raw: string): UiLanguageCode {
@@ -15,7 +19,9 @@ export function preferredLanguageToHtmlLang(code: UiLanguageCode): string {
 }
 
 /** Inverso de `preferredLanguageToHtmlLang` para alinhar o cliente ao `<html lang>`. */
-export function htmlLangToUiLanguage(htmlLang: string | null | undefined): UiLanguageCode {
+export function htmlLangToUiLanguage(
+  htmlLang: string | null | undefined
+): UiLanguageCode {
   if (!htmlLang?.trim()) return "en"
   const lang = htmlLang.trim().toLowerCase()
   if (lang.startsWith("pt")) return "pt_br"

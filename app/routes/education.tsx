@@ -14,11 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card"
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from "~/components/ui/field"
+import { Field, FieldGroup, FieldLabel } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 import { ApiError } from "~/lib/api/errors"
@@ -133,7 +129,9 @@ export default function EducationPage() {
     }
   }
 
-  const pageTitle = isEdit ? t("education.edit_title") : t("education.new_title")
+  const pageTitle = isEdit
+    ? t("education.edit_title")
+    : t("education.new_title")
   const crumbAction = isEdit ? t("shared.crumb_edit") : t("shared.crumb_new")
   const breadcrumbs = [
     { label: tc("breadcrumb_dashboard"), to: "/dashboard" },
@@ -156,7 +154,9 @@ export default function EducationPage() {
           <CardHeader>
             <CardTitle>{pageTitle}</CardTitle>
             <CardDescription>
-              {isEdit ? t("education.card_desc_edit") : t("education.card_desc_new")}
+              {isEdit
+                ? t("education.card_desc_edit")
+                : t("education.card_desc_new")}
             </CardDescription>
           </CardHeader>
           <form
@@ -171,7 +171,9 @@ export default function EducationPage() {
                   </p>
                 ) : null}
                 <Field>
-                  <FieldLabel htmlFor="edu-inst">{t("education.institution_name")}</FieldLabel>
+                  <FieldLabel htmlFor="edu-inst">
+                    {t("education.institution_name")}
+                  </FieldLabel>
                   <Input
                     id="edu-inst"
                     value={institutionName}
@@ -181,7 +183,9 @@ export default function EducationPage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="edu-degree">{t("shared.degree")}</FieldLabel>
+                  <FieldLabel htmlFor="edu-degree">
+                    {t("shared.degree")}
+                  </FieldLabel>
                   <Input
                     id="edu-degree"
                     value={degree}
@@ -191,7 +195,9 @@ export default function EducationPage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="edu-field">{t("shared.field_of_study")}</FieldLabel>
+                  <FieldLabel htmlFor="edu-field">
+                    {t("shared.field_of_study")}
+                  </FieldLabel>
                   <Input
                     id="edu-field"
                     value={fieldOfStudy}
@@ -232,7 +238,11 @@ export default function EducationPage() {
                 {t("shared.cancel")}
               </Button>
               <Button type="submit" disabled={submitting}>
-                {submitting ? t("shared.saving") : isEdit ? t("shared.save_changes") : t("shared.save")}
+                {submitting
+                  ? t("shared.saving")
+                  : isEdit
+                    ? t("shared.save_changes")
+                    : t("shared.save")}
               </Button>
             </CardFooter>
           </form>

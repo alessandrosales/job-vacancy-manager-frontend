@@ -69,7 +69,10 @@ export function QuickAddEducationDialog({
       onOpenChange(false)
     } catch (err) {
       setFormError(
-        apiFormErrorFromUnknown(err, t("resume.quick_add_create_education_error"))
+        apiFormErrorFromUnknown(
+          err,
+          t("resume.quick_add_create_education_error")
+        )
       )
     } finally {
       setSubmitting(false)
@@ -78,21 +81,31 @@ export function QuickAddEducationDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md overflow-hidden p-0 sm:max-w-md" showCloseButton>
-        <form onSubmit={(ev) => void handleSubmit(ev)} className="flex flex-col">
+      <DialogContent
+        className="max-w-md overflow-hidden p-0 sm:max-w-md"
+        showCloseButton
+      >
+        <form
+          onSubmit={(ev) => void handleSubmit(ev)}
+          className="flex flex-col"
+        >
           <DialogHeader className="shrink-0 px-4 pt-4 pb-2">
             <DialogTitle>{t("education.new_title")}</DialogTitle>
-            <DialogDescription>{t("resume.quick_add_edu_desc")}</DialogDescription>
+            <DialogDescription>
+              {t("resume.quick_add_edu_desc")}
+            </DialogDescription>
           </DialogHeader>
           <div className="max-h-[min(70vh,520px)] overflow-y-auto px-4 pt-2 pb-6">
             <FieldGroup>
               {formError ? (
-                <p role="alert" className="text-destructive text-sm">
+                <p role="alert" className="text-sm text-destructive">
                   {formError}
                 </p>
               ) : null}
               <Field>
-                <FieldLabel htmlFor="qae-inst">{t("education.institution_name")}</FieldLabel>
+                <FieldLabel htmlFor="qae-inst">
+                  {t("education.institution_name")}
+                </FieldLabel>
                 <Input
                   id="qae-inst"
                   value={institutionName}
@@ -103,7 +116,9 @@ export function QuickAddEducationDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qae-degree">{t("shared.degree")}</FieldLabel>
+                <FieldLabel htmlFor="qae-degree">
+                  {t("shared.degree")}
+                </FieldLabel>
                 <Input
                   id="qae-degree"
                   value={degree}
@@ -113,7 +128,9 @@ export function QuickAddEducationDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qae-field">{t("shared.field_of_study")}</FieldLabel>
+                <FieldLabel htmlFor="qae-field">
+                  {t("shared.field_of_study")}
+                </FieldLabel>
                 <Input
                   id="qae-field"
                   value={fieldOfStudy}
@@ -123,7 +140,9 @@ export function QuickAddEducationDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qae-from">{t("certification.date_from")}</FieldLabel>
+                <FieldLabel htmlFor="qae-from">
+                  {t("certification.date_from")}
+                </FieldLabel>
                 <Input
                   id="qae-from"
                   type="date"
@@ -133,7 +152,9 @@ export function QuickAddEducationDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qae-to">{t("certification.date_to")}</FieldLabel>
+                <FieldLabel htmlFor="qae-to">
+                  {t("certification.date_to")}
+                </FieldLabel>
                 <Input
                   id="qae-to"
                   type="date"

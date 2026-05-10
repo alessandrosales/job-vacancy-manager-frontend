@@ -1,8 +1,5 @@
 import { apiRequestJson, apiRequestNoContent } from "~/lib/api/client"
-import type {
-  ApiIndexParams,
-  PaginatedEnvelope,
-} from "~/lib/api/pagination"
+import type { ApiIndexParams, PaginatedEnvelope } from "~/lib/api/pagination"
 import { toIndexQuery } from "~/lib/api/pagination"
 
 export interface ApiRole {
@@ -23,9 +20,11 @@ export type ApiRoleWrite = Pick<
 export async function listRoles(params: {
   paginated: false
 }): Promise<ApiRole[]>
-export async function listRoles(
-  params?: { paginated?: true; page?: number; per_page?: number }
-): Promise<PaginatedEnvelope<ApiRole>>
+export async function listRoles(params?: {
+  paginated?: true
+  page?: number
+  per_page?: number
+}): Promise<PaginatedEnvelope<ApiRole>>
 export async function listRoles(
   params?: ApiIndexParams
 ): Promise<PaginatedEnvelope<ApiRole> | ApiRole[]> {

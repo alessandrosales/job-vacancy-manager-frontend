@@ -41,7 +41,9 @@ export function ListingPageHeader({
         </div>
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
-      <div className="flex shrink-0 self-end sm:self-start sm:pt-0.5">{action}</div>
+      <div className="flex shrink-0 self-end sm:self-start sm:pt-0.5">
+        {action}
+      </div>
     </div>
   )
 }

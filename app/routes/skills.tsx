@@ -37,7 +37,10 @@ import {
 } from "~/lib/api/resources/skills"
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
-function filterSkillsBySearch(rows: readonly ApiSkill[], needle: string): ApiSkill[] {
+function filterSkillsBySearch(
+  rows: readonly ApiSkill[],
+  needle: string
+): ApiSkill[] {
   if (!needle) return [...rows]
   const q = needle.toLowerCase()
   return rows.filter((s) =>
@@ -58,9 +61,9 @@ function apiErrorText(err: unknown, fallback: string): string {
 export default function SkillsPage() {
   const { t } = useTranslation(pagesI18nNs)
   const [skills, setSkills] = React.useState<ApiSkill[]>([])
-  const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
-    "loading"
-  )
+  const [loadState, setLoadState] = React.useState<
+    "idle" | "loading" | "error"
+  >("loading")
   const [listError, setListError] = React.useState<string | null>(null)
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
   const [deleteSubmitting, setDeleteSubmitting] = React.useState(false)
@@ -162,7 +165,12 @@ export default function SkillsPage() {
                   <TableCell colSpan={3}>
                     <div className="flex flex-wrap items-center gap-3">
                       <span className="text-destructive">{listError}</span>
-                      <Button type="button" variant="outline" size="sm" onClick={() => void fetchSkills()}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void fetchSkills()}
+                      >
                         {t("shared.try_again")}
                       </Button>
                     </div>

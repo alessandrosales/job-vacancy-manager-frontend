@@ -12,7 +12,9 @@ export function markOpenAiOnboardingHandledThisSession(): void {
 
 export function shouldAutoOpenOpenAiOnboardingThisSession(): boolean {
   try {
-    return sessionStorage.getItem(OPENAI_ONBOARDING_AFTER_LOGIN_SESSION_KEY) !== "1"
+    return (
+      sessionStorage.getItem(OPENAI_ONBOARDING_AFTER_LOGIN_SESSION_KEY) !== "1"
+    )
   } catch {
     return true
   }

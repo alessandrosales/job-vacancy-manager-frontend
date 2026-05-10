@@ -10,5 +10,7 @@ import {
  */
 export function resolveRequestUiLanguage(request: Request): UiLanguageCode {
   const cookieLang = parseUiLangFromCookieHeader(request.headers.get("Cookie"))
-  return cookieLang ?? acceptLanguageToUi(request.headers.get("Accept-Language"))
+  return (
+    cookieLang ?? acceptLanguageToUi(request.headers.get("Accept-Language"))
+  )
 }

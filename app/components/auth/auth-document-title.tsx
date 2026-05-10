@@ -11,7 +11,11 @@ export type AuthDocumentTitleKey =
   | "auth.doc_title_recover"
   | "auth.doc_title_reset"
 
-export function AuthDocumentTitle({ titleKey }: { titleKey: AuthDocumentTitleKey }) {
+export function AuthDocumentTitle({
+  titleKey,
+}: {
+  titleKey: AuthDocumentTitleKey
+}) {
   const { t } = useTranslation(pagesI18nNs)
   React.useEffect(() => {
     document.title = `${t(titleKey)} · ${t("home.title")}`

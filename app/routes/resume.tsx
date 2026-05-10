@@ -71,7 +71,13 @@ import { listSkills } from "~/lib/api/resources/skills"
 import type { ApiWorkExperience } from "~/lib/api/resources/work-experiences"
 import { listWorkExperiences } from "~/lib/api/resources/work-experiences"
 import { apiRoleToRole } from "~/lib/opportunity-api-mappers"
-import { CheckIcon, Loader2Icon, PlusIcon, SparklesIcon, XIcon } from "lucide-react"
+import {
+  CheckIcon,
+  Loader2Icon,
+  PlusIcon,
+  SparklesIcon,
+  XIcon,
+} from "lucide-react"
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 import { pagesI18nNs } from "~/lib/i18n/config"
 import {
@@ -91,7 +97,9 @@ function apiErrorText(err: unknown, fallback: string): string {
   return fallback
 }
 
-function apiWorkExperienceToWorkExperience(w: ApiWorkExperience): WorkExperience {
+function apiWorkExperienceToWorkExperience(
+  w: ApiWorkExperience
+): WorkExperience {
   return {
     id: w.id,
     title: w.title,
@@ -140,7 +148,10 @@ function normalizeEntityId(raw: string): string {
  * Alinha o id vindo do currículo ao valor exato de `roles` (Radix Select exige match estrito).
  * Sem match na lista → string vazia (evita `value` inválido no Select).
  */
-function canonicalRoleIdFromRolesList(roles: readonly Role[], resumeRoleId: string): string {
+function canonicalRoleIdFromRolesList(
+  roles: readonly Role[],
+  resumeRoleId: string
+): string {
   const trimmed = resumeRoleId.trim()
   if (!trimmed) return ""
   const needle = normalizeEntityId(trimmed)
@@ -173,8 +184,12 @@ export default function ResumeDocumentPage() {
   const isEdit = Boolean(id)
 
   const [roles, setRoles] = React.useState<Role[]>([])
-  const [workExperiences, setWorkExperiences] = React.useState<WorkExperience[]>([])
-  const [certifications, setCertifications] = React.useState<Certification[]>([])
+  const [workExperiences, setWorkExperiences] = React.useState<
+    WorkExperience[]
+  >([])
+  const [certifications, setCertifications] = React.useState<Certification[]>(
+    []
+  )
   const [education, setEducation] = React.useState<Education[]>([])
   const [skills, setSkills] = React.useState<Skill[]>([])
 
@@ -183,14 +198,15 @@ export default function ResumeDocumentPage() {
   >("loading")
   const [pageError, setPageError] = React.useState<string | null>(null)
 
-  const [editDocument, setEditDocument] = React.useState<ResumeDocument | null>(null)
+  const [editDocument, setEditDocument] = React.useState<ResumeDocument | null>(
+    null
+  )
 
   const [title, setTitle] = React.useState("")
   const [description, setDescription] = React.useState("")
   const [roleId, setRoleId] = React.useState("")
-  const [preferredLanguage, setPreferredLanguage] = React.useState<ResumePreferredLanguage>(
-    DEFAULT_RESUME_PREFERRED_LANGUAGE
-  )
+  const [preferredLanguage, setPreferredLanguage] =
+    React.useState<ResumePreferredLanguage>(DEFAULT_RESUME_PREFERRED_LANGUAGE)
   const [workExperienceIds, setWorkExperienceIds] = React.useState<string[]>([])
   const [certificationIds, setCertificationIds] = React.useState<string[]>([])
   const [educationIds, setEducationIds] = React.useState<string[]>([])
@@ -209,12 +225,17 @@ export default function ResumeDocumentPage() {
   const [compileDialogOpen, setCompileDialogOpen] = React.useState(false)
   const [compileAutoStart, setCompileAutoStart] = React.useState(false)
 
-  const handleResumeMarkdownCompiled = React.useCallback((api: ApiResume) => {
-    setEditDocument((prev) =>
-      prev ? { ...prev, compiled_markdown: api.compiled_markdown ?? null } : prev
-    )
-    navigate("/resumes")
-  }, [navigate])
+  const handleResumeMarkdownCompiled = React.useCallback(
+    (api: ApiResume) => {
+      setEditDocument((prev) =>
+        prev
+          ? { ...prev, compiled_markdown: api.compiled_markdown ?? null }
+          : prev
+      )
+      navigate("/resumes")
+    },
+    [navigate]
+  )
 
   const reloadReferenceLists = React.useCallback(async () => {
     const [rolesApi, weApi, certApi, eduApi, skApi] = await Promise.all([
@@ -268,7 +289,9 @@ export default function ResumeDocumentPage() {
         setEditDocument(doc)
         setTitle(doc.title)
         setDescription(doc.description)
-        setPreferredLanguage(normalizeResumePreferredLanguage(doc.preferred_language))
+        setPreferredLanguage(
+          normalizeResumePreferredLanguage(doc.preferred_language)
+        )
         setRoleId(doc.role_id ?? "")
         setWorkExperienceIds([...doc.work_experience_ids])
         setCertificationIds([...doc.certification_ids])
@@ -293,7 +316,11 @@ export default function ResumeDocumentPage() {
   }, [id, retryNonce, reloadReferenceLists, t])
 
   const rolesIdSignature = React.useMemo(
-    () => roles.map((r) => r.id).sort().join("\0"),
+    () =>
+      roles
+        .map((r) => r.id)
+        .sort()
+        .join("\0"),
     [roles]
   )
 
@@ -338,10 +365,7 @@ export default function ResumeDocumentPage() {
     const corePayload = {
       title: title.trim(),
       description: trimmedDesc === "" ? null : trimmedDesc,
-      role_id:
-        roles.length === 0
-          ? ""
-          : resolvedSelectRoleId,
+      role_id: roles.length === 0 ? "" : resolvedSelectRoleId,
       preferred_language: preferredLanguage,
     }
 
@@ -375,7 +399,8 @@ export default function ResumeDocumentPage() {
   const certificationRows = certifications.map((c) => ({
     id: c.id,
     primary: c.name,
-    secondary: c.date_from && c.date_to ? `${c.date_from} → ${c.date_to}` : undefined,
+    secondary:
+      c.date_from && c.date_to ? `${c.date_from} → ${c.date_to}` : undefined,
   }))
   const educationRows = education.map((ed) => ({
     id: ed.id,
@@ -383,13 +408,12 @@ export default function ResumeDocumentPage() {
     secondary: `${ed.degree} — ${ed.field_of_study}`,
   }))
 
-  const hasValidRole =
-    roles.length === 0 || resolvedSelectRoleId !== ""
+  const hasValidRole = roles.length === 0 || resolvedSelectRoleId !== ""
   const canSave = hasValidRole && !saving
 
   const aiContext = React.useMemo((): ResumeDescriptionAiContext => {
     const roleName = resolvedSelectRoleId
-      ? roles.find((r) => r.id === resolvedSelectRoleId)?.name ?? null
+      ? (roles.find((r) => r.id === resolvedSelectRoleId)?.name ?? null)
       : null
     const workExperienceSummaries = workExperienceIds
       .map((wid) => workExperiences.find((w) => w.id === wid))
@@ -441,7 +465,9 @@ export default function ResumeDocumentPage() {
           { label: crumbAction },
         ]}
       >
-        <p className="text-muted-foreground py-12 text-center text-sm">{t("resume.loading")}</p>
+        <p className="py-12 text-center text-sm text-muted-foreground">
+          {t("resume.loading")}
+        </p>
       </AppLayout>
     )
   }
@@ -456,12 +482,12 @@ export default function ResumeDocumentPage() {
           { label: crumbAction },
         ]}
       >
-        <p className="text-destructive px-1 text-sm" role="alert">
+        <p className="px-1 text-sm text-destructive" role="alert">
           {pageError ?? t("resume.something_wrong")}{" "}
           <Button
             type="button"
             variant="link"
-            className="text-destructive h-auto p-0 align-baseline underline"
+            className="h-auto p-0 align-baseline text-destructive underline"
             onClick={() => setRetryNonce((n) => n + 1)}
           >
             {t("shared.retry")}
@@ -484,9 +510,7 @@ export default function ResumeDocumentPage() {
         <Card className="max-w-lg">
           <CardHeader>
             <CardTitle>{t("resume.not_found_title")}</CardTitle>
-            <CardDescription>
-              {t("resume.not_found_body")}
-            </CardDescription>
+            <CardDescription>{t("resume.not_found_body")}</CardDescription>
           </CardHeader>
           <CardFooter>
             <Button asChild>
@@ -509,7 +533,7 @@ export default function ResumeDocumentPage() {
     >
       <div className="min-h-0 flex-1 overflow-y-auto">
         {saveError ? (
-          <p className="text-destructive mb-4 text-sm" role="alert">
+          <p className="mb-4 text-sm text-destructive" role="alert">
             {saveError}
           </p>
         ) : null}
@@ -520,11 +544,16 @@ export default function ResumeDocumentPage() {
               {isEdit ? t("resume.card_desc_edit") : t("resume.card_desc_new")}
             </CardDescription>
           </CardHeader>
-          <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
+          <form
+            onSubmit={(e) => void handleSubmit(e)}
+            className="flex flex-col gap-4"
+          >
             <CardContent>
               <FieldGroup>
                 <Field>
-                  <FieldLabel htmlFor="resume-preferred-lang">{t("resume.field_preferred_language")}</FieldLabel>
+                  <FieldLabel htmlFor="resume-preferred-lang">
+                    {t("resume.field_preferred_language")}
+                  </FieldLabel>
                   <Select
                     key={`resume-preferred-lang-${id ?? "new"}`}
                     value={normalizeResumePreferredLanguage(preferredLanguage)}
@@ -533,8 +562,13 @@ export default function ResumeDocumentPage() {
                     }
                     disabled={saving}
                   >
-                    <SelectTrigger id="resume-preferred-lang" className="w-full">
-                      <SelectValue placeholder={t("resume.placeholder_preferred_language")} />
+                    <SelectTrigger
+                      id="resume-preferred-lang"
+                      className="w-full"
+                    >
+                      <SelectValue
+                        placeholder={t("resume.placeholder_preferred_language")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
@@ -551,7 +585,9 @@ export default function ResumeDocumentPage() {
                   </FieldDescription>
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="resume-title">{t("shared.title")}</FieldLabel>
+                  <FieldLabel htmlFor="resume-title">
+                    {t("shared.title")}
+                  </FieldLabel>
                   <Input
                     id="resume-title"
                     value={title}
@@ -585,19 +621,28 @@ export default function ResumeDocumentPage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="resume-role">{t("shared.role")}</FieldLabel>
+                  <FieldLabel htmlFor="resume-role">
+                    {t("shared.role")}
+                  </FieldLabel>
                   <div className="flex min-w-0 flex-row items-stretch gap-2">
                     {roles.length > 0 ? (
                       <Select
                         key={`${id ?? "new"}-${rolesIdSignature}`}
                         value={
-                          resolvedSelectRoleId === "" ? undefined : resolvedSelectRoleId
+                          resolvedSelectRoleId === ""
+                            ? undefined
+                            : resolvedSelectRoleId
                         }
                         onValueChange={setRoleId}
                         required
                       >
-                        <SelectTrigger id="resume-role" className="w-full min-w-0 flex-1">
-                          <SelectValue placeholder={t("resume.role_placeholder")} />
+                        <SelectTrigger
+                          id="resume-role"
+                          className="w-full min-w-0 flex-1"
+                        >
+                          <SelectValue
+                            placeholder={t("resume.role_placeholder")}
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
@@ -612,7 +657,7 @@ export default function ResumeDocumentPage() {
                     ) : (
                       <p
                         id="resume-role"
-                        className="text-muted-foreground flex min-h-8 flex-1 items-center text-sm"
+                        className="flex min-h-8 flex-1 items-center text-sm text-muted-foreground"
                       >
                         {t("resume.no_roles")}
                       </p>
@@ -713,17 +758,29 @@ export default function ResumeDocumentPage() {
                 type="submit"
                 size="sm"
                 className="max-sm:size-9 max-sm:min-h-9 max-sm:min-w-9 max-sm:justify-center max-sm:gap-0 max-sm:!px-0 max-sm:!ps-0 max-sm:!pe-0"
-                aria-label={isEdit ? t("resume.save_aria_edit") : t("resume.save_aria_new")}
+                aria-label={
+                  isEdit
+                    ? t("resume.save_aria_edit")
+                    : t("resume.save_aria_new")
+                }
                 disabled={!canSave}
               >
                 {saving ? (
                   <>
-                    <Loader2Icon className="size-4 shrink-0 animate-spin" aria-hidden />
-                    <span className="max-sm:sr-only">{t("resume.saving_sr")}</span>
+                    <Loader2Icon
+                      className="size-4 shrink-0 animate-spin"
+                      aria-hidden
+                    />
+                    <span className="max-sm:sr-only">
+                      {t("resume.saving_sr")}
+                    </span>
                   </>
                 ) : (
                   <>
-                    <CheckIcon className="size-4 shrink-0 sm:hidden" aria-hidden />
+                    <CheckIcon
+                      className="size-4 shrink-0 sm:hidden"
+                      aria-hidden
+                    />
                     <span className="max-sm:sr-only">
                       {isEdit ? t("shared.save_changes") : t("shared.save")}
                     </span>
@@ -790,7 +847,9 @@ export default function ResumeDocumentPage() {
           open={eduDialogOpen}
           onOpenChange={setEduDialogOpen}
           onAdded={(newId) => {
-            setEducationIds((prev) => (prev.includes(newId) ? prev : [...prev, newId]))
+            setEducationIds((prev) =>
+              prev.includes(newId) ? prev : [...prev, newId]
+            )
           }}
           onPersistedViaApi={() => reloadReferenceLists()}
         />
@@ -798,7 +857,9 @@ export default function ResumeDocumentPage() {
           open={skillDialogOpen}
           onOpenChange={setSkillDialogOpen}
           onAdded={(newId) => {
-            setSkillIds((prev) => (prev.includes(newId) ? prev : [...prev, newId]))
+            setSkillIds((prev) =>
+              prev.includes(newId) ? prev : [...prev, newId]
+            )
           }}
           onPersistedViaApi={() => reloadReferenceLists()}
         />

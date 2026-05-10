@@ -40,7 +40,10 @@ import {
 import type { InterestLevel } from "~/lib/labels"
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
-function filterRolesBySearch(rows: readonly ApiRole[], needle: string): ApiRole[] {
+function filterRolesBySearch(
+  rows: readonly ApiRole[],
+  needle: string
+): ApiRole[] {
   if (!needle) return [...rows]
   const q = needle.toLowerCase()
   return rows.filter((r) =>
@@ -63,17 +66,19 @@ function apiErrorText(err: unknown, fallback: string): string {
 export default function RolesPage() {
   const { t } = useTranslation(pagesI18nNs)
   const [roles, setRoles] = React.useState<ApiRole[]>([])
-  const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
-    "loading"
-  )
+  const [loadState, setLoadState] = React.useState<
+    "idle" | "loading" | "error"
+  >("loading")
   const [listError, setListError] = React.useState<string | null>(null)
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
   const [deleteSubmitting, setDeleteSubmitting] = React.useState(false)
   const [deleteError, setDeleteError] = React.useState<string | null>(null)
-  const [interestPatchId, setInterestPatchId] = React.useState<string | null>(null)
-  const [interestPatchError, setInterestPatchError] = React.useState<string | null>(
+  const [interestPatchId, setInterestPatchId] = React.useState<string | null>(
     null
   )
+  const [interestPatchError, setInterestPatchError] = React.useState<
+    string | null
+  >(null)
   const [searchQuery, setSearchQuery] = React.useState("")
   const searchNeedle = searchQuery.trim()
 
@@ -249,13 +254,19 @@ export default function RolesPage() {
                       </TableCell>
                       <TableCell>
                         <div
-                          className={disabledStars ? "pointer-events-none opacity-60" : undefined}
+                          className={
+                            disabledStars
+                              ? "pointer-events-none opacity-60"
+                              : undefined
+                          }
                         >
                           <InterestLevelStarPicker
                             value={role.interest_level as InterestLevel}
                             size="sm"
                             showValueLabel={false}
-                            onChange={(nextLevel) => void patchInterestLevel(role, nextLevel)}
+                            onChange={(nextLevel) =>
+                              void patchInterestLevel(role, nextLevel)
+                            }
                           />
                         </div>
                       </TableCell>

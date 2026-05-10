@@ -36,9 +36,12 @@ export function InfiniteScrollSentinelRow({
     <TableRow ref={sentinelRef} className="hover:bg-transparent">
       <TableCell colSpan={colSpan} className="py-4 text-center align-middle">
         {hasMore ? (
-          <span className="inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-muted-foreground text-xs">
+          <span className="inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-2">
-              <Loader2Icon className="size-4 shrink-0 animate-spin" aria-hidden />
+              <Loader2Icon
+                className="size-4 shrink-0 animate-spin"
+                aria-hidden
+              />
               <span>
                 {t("infinite_scroll.scroll_hint", {
                   loaded: loadedCount,
@@ -57,7 +60,7 @@ export function InfiniteScrollSentinelRow({
             </Button>
           </span>
         ) : (
-          <span className="text-muted-foreground text-xs">
+          <span className="text-xs text-muted-foreground">
             {totalCount === 1
               ? t("infinite_scroll.end_of_list_one", { count: totalCount })
               : t("infinite_scroll.end_of_list_other", { count: totalCount })}

@@ -43,7 +43,10 @@ import {
   SelectValue,
 } from "~/components/ui/select"
 import { ApiError } from "~/lib/api/errors"
-import { importResumeFromPdf, type ApiResume } from "~/lib/api/resources/resumes"
+import {
+  importResumeFromPdf,
+  type ApiResume,
+} from "~/lib/api/resources/resumes"
 import {
   DEFAULT_RESUME_PREFERRED_LANGUAGE,
   RESUME_PREFERRED_LANGUAGE_OPTIONS,
@@ -84,7 +87,7 @@ function PdfImportNeonUploadRing({
       <p className="sr-only">{statusText}</p>
       <div className="relative flex size-[8rem] items-center justify-center overflow-visible">
         <div
-          className="pointer-events-none absolute inset-[-22%] motion-safe:animate-[pdf-import-halo_3.2s_ease-in-out_infinite] rounded-full bg-[conic-gradient(from_200deg,var(--neon-cyan),var(--neon-magenta),var(--neon-violet),var(--neon-cyan))] opacity-[0.14] blur-2xl dark:opacity-[0.26]"
+          className="pointer-events-none absolute inset-[-22%] rounded-full bg-[conic-gradient(from_200deg,var(--neon-cyan),var(--neon-magenta),var(--neon-violet),var(--neon-cyan))] opacity-[0.14] blur-2xl motion-safe:animate-[pdf-import-halo_3.2s_ease-in-out_infinite] dark:opacity-[0.26]"
           style={{
             ["--neon-cyan" as string]: "rgb(34 211 238)",
             ["--neon-magenta" as string]: "rgb(232 121 249)",
@@ -100,13 +103,25 @@ function PdfImportNeonUploadRing({
           aria-hidden
         >
           <defs>
-            <linearGradient id={gradPrimary} x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient
+              id={gradPrimary}
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
               {/* Saturação média: legível no light mode; ainda vibrante no dark */}
               <stop offset="0%" stopColor="#0891b2" />
               <stop offset="45%" stopColor="#c026d3" />
               <stop offset="100%" stopColor="#7c3aed" />
             </linearGradient>
-            <filter id={filterGlow} x="-55%" y="-55%" width="210%" height="210%">
+            <filter
+              id={filterGlow}
+              x="-55%"
+              y="-55%"
+              width="210%"
+              height="210%"
+            >
               <feGaussianBlur stdDeviation="2.4" result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
@@ -164,7 +179,7 @@ function PdfImportNeonUploadRing({
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div
             key={statusText}
-            className="rounded-full bg-muted/80 p-2.5 shadow-sm ring-1 ring-border backdrop-blur-sm duration-300 animate-in fade-in zoom-in-95 dark:bg-background/45 dark:shadow-[0_0_28px_rgba(34,211,238,0.22),0_0_42px_rgba(232,121,249,0.12)] dark:ring-cyan-400/45"
+            className="animate-in rounded-full bg-muted/80 p-2.5 shadow-sm ring-1 ring-border backdrop-blur-sm duration-300 zoom-in-95 fade-in dark:bg-background/45 dark:shadow-[0_0_28px_rgba(34,211,238,0.22),0_0_42px_rgba(232,121,249,0.12)] dark:ring-cyan-400/45"
           >
             <StageIcon
               className="size-8 text-primary dark:text-cyan-100 dark:drop-shadow-[0_0_12px_rgba(34,211,238,0.65)]"
@@ -178,13 +193,13 @@ function PdfImportNeonUploadRing({
       <div className="flex max-w-xs flex-col gap-1 text-center">
         <p
           key={statusText}
-          className="text-foreground text-sm font-medium tracking-tight duration-300 animate-in fade-in slide-in-from-bottom-1 dark:text-cyan-100 dark:drop-shadow-[0_0_12px_rgba(34,211,238,0.35)]"
+          className="animate-in text-sm font-medium tracking-tight text-foreground duration-300 fade-in slide-in-from-bottom-1 dark:text-cyan-100 dark:drop-shadow-[0_0_12px_rgba(34,211,238,0.35)]"
         >
           {statusText}
         </p>
         {fileName ? (
-          <p className="text-muted-foreground text-xs leading-relaxed">
-            <span className="text-foreground/80 font-medium">{fileName}</span>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            <span className="font-medium text-foreground/80">{fileName}</span>
           </p>
         ) : null}
       </div>
@@ -258,9 +273,8 @@ export function ResumeImportPdfDialog({
   const [isDragging, setIsDragging] = React.useState(false)
   const [submitting, setSubmitting] = React.useState(false)
   const [pdfImportStageIndex, setPdfImportStageIndex] = React.useState(0)
-  const [preferredLanguage, setPreferredLanguage] = React.useState<ResumePreferredLanguage>(
-    DEFAULT_RESUME_PREFERRED_LANGUAGE
-  )
+  const [preferredLanguage, setPreferredLanguage] =
+    React.useState<ResumePreferredLanguage>(DEFAULT_RESUME_PREFERRED_LANGUAGE)
 
   React.useEffect(() => {
     if (!open) return
@@ -357,7 +371,9 @@ export function ResumeImportPdfDialog({
   }
 
   const hasRoles = roles.length > 0
-  const canImport = Boolean(selectedFile && roleId.trim() && hasRoles && !submitting)
+  const canImport = Boolean(
+    selectedFile && roleId.trim() && hasRoles && !submitting
+  )
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -380,11 +396,18 @@ export function ResumeImportPdfDialog({
             </FieldLabel>
             <Select
               value={preferredLanguage}
-              onValueChange={(v) => setPreferredLanguage(v as ResumePreferredLanguage)}
+              onValueChange={(v) =>
+                setPreferredLanguage(v as ResumePreferredLanguage)
+              }
               disabled={submitting}
             >
-              <SelectTrigger id="resume-import-preferred-lang" className="w-full">
-                <SelectValue placeholder={t("resume.placeholder_preferred_language")} />
+              <SelectTrigger
+                id="resume-import-preferred-lang"
+                className="w-full"
+              >
+                <SelectValue
+                  placeholder={t("resume.placeholder_preferred_language")}
+                />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
@@ -396,11 +419,15 @@ export function ResumeImportPdfDialog({
                 </SelectGroup>
               </SelectContent>
             </Select>
-            <FieldDescription>{t("resume.pdf_import.preferred_lang_hint")}</FieldDescription>
+            <FieldDescription>
+              {t("resume.pdf_import.preferred_lang_hint")}
+            </FieldDescription>
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="resume-import-role">{t("shared.role")}</FieldLabel>
+            <FieldLabel htmlFor="resume-import-role">
+              {t("shared.role")}
+            </FieldLabel>
             {hasRoles ? (
               <Select
                 value={roleId === "" ? undefined : roleId}
@@ -408,7 +435,9 @@ export function ResumeImportPdfDialog({
                 disabled={submitting}
               >
                 <SelectTrigger id="resume-import-role" className="w-full">
-                  <SelectValue placeholder={t("resume.pdf_import.role_placeholder")} />
+                  <SelectValue
+                    placeholder={t("resume.pdf_import.role_placeholder")}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -421,34 +450,43 @@ export function ResumeImportPdfDialog({
                 </SelectContent>
               </Select>
             ) : (
-              <p className="text-muted-foreground text-sm">
+              <p className="text-sm text-muted-foreground">
                 {t("resume.pdf_import.no_roles_before")}{" "}
-                <Link to="/roles/role" className="text-primary underline-offset-4 hover:underline">
+                <Link
+                  to="/roles/role"
+                  className="text-primary underline-offset-4 hover:underline"
+                >
                   {t("resume.pdf_import.no_roles_link")}
                 </Link>{" "}
                 {t("resume.pdf_import.no_roles_after")}
               </p>
             )}
-            <FieldDescription>{t("resume.pdf_import.role_attached_hint")}</FieldDescription>
+            <FieldDescription>
+              {t("resume.pdf_import.role_attached_hint")}
+            </FieldDescription>
           </Field>
 
           <div className="flex flex-col gap-2">
-            <FieldLabel className="text-foreground">{t("resume.pdf_import.pdf_file_label")}</FieldLabel>
+            <FieldLabel className="text-foreground">
+              {t("resume.pdf_import.pdf_file_label")}
+            </FieldLabel>
             <div
               role="button"
               tabIndex={submitting ? -1 : 0}
               aria-label={t("resume.pdf_import.drop_zone_aria")}
               aria-disabled={submitting}
               className={cn(
-                "border-muted-foreground/35 bg-muted/25 text-muted-foreground flex min-h-[11rem] flex-col items-center justify-center gap-3 rounded-lg border border-dashed px-4 py-8 text-center outline-none transition-colors",
+                "flex min-h-[11rem] flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-muted-foreground/35 bg-muted/25 px-4 py-8 text-center text-muted-foreground transition-colors outline-none",
                 submitting &&
                   "relative overflow-visible border-primary/45 bg-muted/50 shadow-sm dark:border-cyan-500/40 dark:bg-[radial-gradient(ellipse_85%_70%_at_50%_42%,rgba(232,121,249,0.09),transparent_72%),radial-gradient(ellipse_90%_55%_at_50%_38%,rgba(34,211,238,0.06),transparent_70%)] dark:shadow-[0_0_32px_-12px_rgba(34,211,238,0.35)]",
                 !submitting &&
-                  "hover:border-muted-foreground/55 hover:bg-muted/35 cursor-pointer",
+                  "cursor-pointer hover:border-muted-foreground/55 hover:bg-muted/35",
                 !submitting &&
                   "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 submitting && "cursor-wait opacity-100",
-                isDragging && !submitting && "border-primary/60 bg-primary/5 text-foreground"
+                isDragging &&
+                  !submitting &&
+                  "border-primary/60 bg-primary/5 text-foreground"
               )}
               onClick={openFilePicker}
               onKeyDown={(e) => {
@@ -475,26 +513,30 @@ export function ResumeImportPdfDialog({
                     <p className="text-sm font-medium text-foreground">
                       {t("resume.pdf_import.drop_main")}
                     </p>
-                    <p className="text-xs leading-relaxed">{t("resume.pdf_import.drop_sub")}</p>
+                    <p className="text-xs leading-relaxed">
+                      {t("resume.pdf_import.drop_sub")}
+                    </p>
                   </div>
                 </>
               )}
             </div>
             {rejectMessage ? (
-              <p className="text-destructive text-sm" role="alert">
+              <p className="text-sm text-destructive" role="alert">
                 {rejectMessage}
               </p>
             ) : null}
             {!submitting && selectedFile ? (
-              <p className="text-muted-foreground text-sm">
+              <p className="text-sm text-muted-foreground">
                 {t("resume.pdf_import.selected_prefix")}{" "}
-                <span className="text-foreground font-medium">{selectedFile.name}</span>
+                <span className="font-medium text-foreground">
+                  {selectedFile.name}
+                </span>
               </p>
             ) : null}
           </div>
 
           {submitError ? (
-            <p className="text-destructive text-sm" role="alert">
+            <p className="text-sm text-destructive" role="alert">
               {submitError}
             </p>
           ) : null}
@@ -508,10 +550,17 @@ export function ResumeImportPdfDialog({
           >
             {t("shared.close")}
           </Button>
-          <Button type="button" disabled={!canImport} onClick={() => void handleImport()}>
+          <Button
+            type="button"
+            disabled={!canImport}
+            onClick={() => void handleImport()}
+          >
             {submitting ? (
               <>
-                <Loader2Icon className="size-4 animate-spin" data-icon="inline-start" />
+                <Loader2Icon
+                  className="size-4 animate-spin"
+                  data-icon="inline-start"
+                />
                 {t("resume.pdf_import.importing")}
               </>
             ) : (

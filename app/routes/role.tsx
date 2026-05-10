@@ -14,22 +14,14 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card"
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from "~/components/ui/field"
+import { Field, FieldGroup, FieldLabel } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
 import { InterestLevelStarPicker } from "~/components/shared/interest-level-star-picker"
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 import { ApiError } from "~/lib/api/errors"
 import { pagesI18nNs } from "~/lib/i18n/config"
-import {
-  createRole,
-  getRole,
-  updateRole,
-} from "~/lib/api/resources/roles"
+import { createRole, getRole, updateRole } from "~/lib/api/resources/roles"
 import type { InterestLevel } from "~/lib/labels"
 
 function formErrorMessage(err: unknown, fallback: string): string {
@@ -99,7 +91,8 @@ export default function RolePage() {
     e.stopPropagation()
     setFormError(null)
     const nameTrim = name.trim()
-    const descriptionValue = description.trim() === "" ? null : description.trim()
+    const descriptionValue =
+      description.trim() === "" ? null : description.trim()
 
     setSubmitting(true)
     try {
@@ -163,7 +156,9 @@ export default function RolePage() {
                   </p>
                 ) : null}
                 <Field>
-                  <FieldLabel htmlFor="role-name">{t("shared.name")}</FieldLabel>
+                  <FieldLabel htmlFor="role-name">
+                    {t("shared.name")}
+                  </FieldLabel>
                   <Input
                     id="role-name"
                     value={name}
@@ -173,7 +168,9 @@ export default function RolePage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="role-desc">{t("shared.description")}</FieldLabel>
+                  <FieldLabel htmlFor="role-desc">
+                    {t("shared.description")}
+                  </FieldLabel>
                   <Textarea
                     id="role-desc"
                     value={description}

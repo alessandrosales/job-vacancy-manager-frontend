@@ -1,8 +1,5 @@
 import { apiRequestJson, apiRequestNoContent } from "~/lib/api/client"
-import type {
-  ApiIndexParams,
-  PaginatedEnvelope,
-} from "~/lib/api/pagination"
+import type { ApiIndexParams, PaginatedEnvelope } from "~/lib/api/pagination"
 import { toIndexQuery } from "~/lib/api/pagination"
 
 export type LanguageLevel = "beginner" | "intermediate" | "advanced" | "native"
@@ -21,9 +18,11 @@ export type ApiLanguageWrite = Pick<ApiLanguage, "name" | "level">
 export async function listLanguages(params: {
   paginated: false
 }): Promise<ApiLanguage[]>
-export async function listLanguages(
-  params?: { paginated?: true; page?: number; per_page?: number }
-): Promise<PaginatedEnvelope<ApiLanguage>>
+export async function listLanguages(params?: {
+  paginated?: true
+  page?: number
+  per_page?: number
+}): Promise<PaginatedEnvelope<ApiLanguage>>
 export async function listLanguages(
   params?: ApiIndexParams
 ): Promise<PaginatedEnvelope<ApiLanguage> | ApiLanguage[]> {

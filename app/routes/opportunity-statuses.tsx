@@ -38,9 +38,18 @@ import {
   type ApiOpportunityStatus,
 } from "~/lib/api/resources/opportunity-statuses"
 import type { StatusBadgeVariant } from "~/lib/labels"
-import { ChevronDownIcon, ChevronUpIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  PencilIcon,
+  PlusIcon,
+  Trash2Icon,
+} from "lucide-react"
 
-function filterBySearch(rows: readonly ApiOpportunityStatus[], needle: string): ApiOpportunityStatus[] {
+function filterBySearch(
+  rows: readonly ApiOpportunityStatus[],
+  needle: string
+): ApiOpportunityStatus[] {
   if (!needle) return [...rows]
   const q = needle.toLowerCase()
   return rows.filter(
@@ -65,9 +74,9 @@ function apiErrorText(err: unknown, fallback: string): string {
 export default function OpportunityStatusesPage() {
   const { t } = useTranslation(pagesI18nNs)
   const [statuses, setStatuses] = React.useState<ApiOpportunityStatus[]>([])
-  const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
-    "loading"
-  )
+  const [loadState, setLoadState] = React.useState<
+    "idle" | "loading" | "error"
+  >("loading")
   const [listError, setListError] = React.useState<string | null>(null)
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
   const [deleteSubmitting, setDeleteSubmitting] = React.useState(false)
@@ -78,10 +87,7 @@ export default function OpportunityStatusesPage() {
   const searchNeedle = searchQuery.trim()
 
   const sortedAll = React.useMemo(
-    () =>
-      [...statuses].sort(
-        (a, b) => (a.position ?? 0) - (b.position ?? 0)
-      ),
+    () => [...statuses].sort((a, b) => (a.position ?? 0) - (b.position ?? 0)),
     [statuses]
   )
 
@@ -330,7 +336,9 @@ export default function OpportunityStatusesPage() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>{t("opportunity_statuses.delete_title")}</AlertDialogTitle>
+              <AlertDialogTitle>
+                {t("opportunity_statuses.delete_title")}
+              </AlertDialogTitle>
               <AlertDialogDescription>
                 {t("opportunity_statuses.delete_desc")}
               </AlertDialogDescription>

@@ -110,7 +110,7 @@ export function ResumeLinkedMultiFieldset({
               type="button"
               variant="ghost"
               size="xs"
-              className="text-muted-foreground h-6 px-1.5 font-normal"
+              className="h-6 px-1.5 font-normal text-muted-foreground"
               onClick={() => onSelectedIdsChange(rows.map((r) => r.id))}
               disabled={rows.every((r) => selectedSet.has(r.id))}
             >
@@ -120,7 +120,7 @@ export function ResumeLinkedMultiFieldset({
               type="button"
               variant="ghost"
               size="xs"
-              className="text-muted-foreground h-6 px-1.5 font-normal"
+              className="h-6 px-1.5 font-normal text-muted-foreground"
               onClick={() => onSelectedIdsChange([])}
               disabled={selectedIds.length === 0}
             >
@@ -132,7 +132,7 @@ export function ResumeLinkedMultiFieldset({
       <div className="max-h-48 overflow-y-auto rounded-md border border-border p-2">
         {rows.length === 0 ? (
           onAddNew ? (
-            <div className="text-muted-foreground flex min-h-8 flex-row items-stretch gap-2">
+            <div className="flex min-h-8 flex-row items-stretch gap-2 text-muted-foreground">
               <p className="flex flex-1 items-center text-sm">{emptyBody}</p>
               <Button
                 type="button"
@@ -149,10 +149,10 @@ export function ResumeLinkedMultiFieldset({
               </Button>
             </div>
           ) : (
-            <p className="text-muted-foreground text-sm">{emptyBody}</p>
+            <p className="text-sm text-muted-foreground">{emptyBody}</p>
           )
         ) : filtered.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
+          <p className="text-sm text-muted-foreground">
             {t("resume.linked_fieldset.no_matches")}
           </p>
         ) : (
@@ -161,10 +161,13 @@ export function ResumeLinkedMultiFieldset({
               const inputId = `${idPrefix}-${encodeURIComponent(row.id)}`
               return (
                 <Field key={row.id} orientation="horizontal">
-                  <FieldLabel htmlFor={inputId} className="min-w-0 flex-1 font-normal">
+                  <FieldLabel
+                    htmlFor={inputId}
+                    className="min-w-0 flex-1 font-normal"
+                  >
                     <span className="block truncate">{row.primary}</span>
                     {row.secondary ? (
-                      <span className="text-muted-foreground block truncate text-xs font-normal">
+                      <span className="block truncate text-xs font-normal text-muted-foreground">
                         {row.secondary}
                       </span>
                     ) : null}
@@ -175,7 +178,7 @@ export function ResumeLinkedMultiFieldset({
                     role="checkbox"
                     checked={selectedSet.has(row.id)}
                     onChange={(e) => toggle(row.id, e.target.checked)}
-                    className="size-4 shrink-0 rounded border border-input bg-background accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
+                    className="size-4 shrink-0 rounded border border-input bg-background accent-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 </Field>
               )

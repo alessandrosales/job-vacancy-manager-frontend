@@ -30,11 +30,11 @@ export function themeBootstrapInlineScript(): string {
   const k = JSON.stringify(THEME_STORAGE_KEY)
   return (
     "(function(){try{" +
-      `var t=localStorage.getItem(${k});` +
-      'if(t==="dark")document.documentElement.classList.add("dark");' +
-      'else if(t==="light")document.documentElement.classList.remove("dark");' +
-      "else{var p=location.pathname||\"\";" +
-      'if(p==="/"||p==="")document.documentElement.classList.add("dark");}' +
-      "}catch(e){}})();"
+    `var t=localStorage.getItem(${k});` +
+    'if(t==="dark")document.documentElement.classList.add("dark");' +
+    'else if(t==="light")document.documentElement.classList.remove("dark");' +
+    'else{var p=location.pathname||"";' +
+    'if(p==="/"||p==="")document.documentElement.classList.add("dark");}' +
+    "}catch(e){}})();"
   )
 }

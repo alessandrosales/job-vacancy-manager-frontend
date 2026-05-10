@@ -138,9 +138,9 @@ export default function OpportunitiesPage() {
     OpportunityStatusDefinition[]
   >([])
 
-  const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
-    "loading"
-  )
+  const [loadState, setLoadState] = React.useState<
+    "idle" | "loading" | "error"
+  >("loading")
   const [listError, setListError] = React.useState<string | null>(null)
 
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
@@ -154,9 +154,9 @@ export default function OpportunitiesPage() {
   const [searchQuery, setSearchQuery] = React.useState("")
   const searchNeedle = searchQuery.trim()
 
-  const [interestPatchError, setInterestPatchError] = React.useState<string | null>(
-    null
-  )
+  const [interestPatchError, setInterestPatchError] = React.useState<
+    string | null
+  >(null)
 
   const referenceLists = React.useMemo(
     () => ({
@@ -213,7 +213,10 @@ export default function OpportunitiesPage() {
       setViewMode(mode)
       if (!sessionUserId) return
       try {
-        localStorage.setItem(opportunitiesViewModeStorageKey(sessionUserId), mode)
+        localStorage.setItem(
+          opportunitiesViewModeStorageKey(sessionUserId),
+          mode
+        )
       } catch {
         /* ignore localStorage failures */
       }
@@ -258,9 +261,7 @@ export default function OpportunitiesPage() {
     async (id: string, patch: Partial<ApiOpportunityWrite>) => {
       const optimisticTs = new Date().toISOString()
       setOpportunities((prev) =>
-        prev.map((o) =>
-          o.id === id ? { ...o, updated_at: optimisticTs } : o
-        )
+        prev.map((o) => (o.id === id ? { ...o, updated_at: optimisticTs } : o))
       )
       const updated = await updateOpportunityApi(id, patch)
       const next = apiOpportunityToOpportunity(updated)
@@ -321,7 +322,10 @@ export default function OpportunitiesPage() {
     }
   }
 
-  async function patchInterestLevel(opp: Opportunity, nextLevel: InterestLevel) {
+  async function patchInterestLevel(
+    opp: Opportunity,
+    nextLevel: InterestLevel
+  ) {
     setInterestPatchError(null)
     try {
       await patchOpportunityOnServer(opp.id, { interest_level: nextLevel })
@@ -374,12 +378,12 @@ export default function OpportunitiesPage() {
         />
 
         {loadState === "error" ? (
-          <p className="text-destructive px-1 text-sm" role="alert">
+          <p className="px-1 text-sm text-destructive" role="alert">
             {listError ?? t("shared.could_not_load_data")}{" "}
             <Button
               type="button"
               variant="link"
-              className="text-destructive h-auto p-0 align-baseline underline"
+              className="h-auto p-0 align-baseline text-destructive underline"
               onClick={() => void fetchAll()}
             >
               {t("shared.retry")}
@@ -411,13 +415,13 @@ export default function OpportunitiesPage() {
           searchPlaceholder={t("opportunities.search_placeholder")}
         >
           {loadState === "loading" ? (
-            <p className="text-muted-foreground py-8 text-center text-sm">
+            <p className="py-8 text-center text-sm text-muted-foreground">
               {t("opportunities.loading_list")}
             </p>
           ) : viewMode === "kanban" ? (
             opportunityStatuses.length === 0 ? (
               <div className="flex flex-col items-center gap-4 py-10 text-center">
-                <p className="text-muted-foreground max-w-md text-sm">
+                <p className="max-w-md text-sm text-muted-foreground">
                   {t("opportunities.kanban_empty_statuses_intro")}
                 </p>
                 <Button
@@ -429,11 +433,11 @@ export default function OpportunitiesPage() {
                 </Button>
               </div>
             ) : opportunities.length === 0 ? (
-              <p className="text-muted-foreground py-8 text-center text-sm">
+              <p className="py-8 text-center text-sm text-muted-foreground">
                 {t("opportunities.empty_list")}
               </p>
             ) : filteredOpportunities.length === 0 ? (
-              <p className="text-muted-foreground py-8 text-center text-sm">
+              <p className="py-8 text-center text-sm text-muted-foreground">
                 {t("shared.no_matches_search")}
               </p>
             ) : (
@@ -447,7 +451,9 @@ export default function OpportunitiesPage() {
                   onAddColumn={addKanbanColumn}
                   updateOpportunity={handleKanbanUpdate}
                   onRequestDelete={setDeleteId}
-                  onOpportunityDoubleClick={(oppId: string) => setDialogOppId(oppId)}
+                  onOpportunityDoubleClick={(oppId: string) =>
+                    setDialogOppId(oppId)
+                  }
                   statusColumnsOnly
                   companies={companies}
                   roles={roles}
@@ -473,7 +479,7 @@ export default function OpportunitiesPage() {
               <TableBody>
                 {interestPatchError ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-destructive text-sm">
+                    <TableCell colSpan={9} className="text-sm text-destructive">
                       {interestPatchError}
                     </TableCell>
                   </TableRow>
@@ -544,10 +550,10 @@ export default function OpportunitiesPage() {
                             <span className="text-muted-foreground">—</span>
                           )}
                         </TableCell>
-                        <TableCell className="text-muted-foreground whitespace-nowrap text-sm">
+                        <TableCell className="text-sm whitespace-nowrap text-muted-foreground">
                           {formatOpportunityHourlyRate(opp.hourly_rate)}
                         </TableCell>
-                        <TableCell className="text-muted-foreground whitespace-nowrap text-sm">
+                        <TableCell className="text-sm whitespace-nowrap text-muted-foreground">
                           {formatOpportunityAnnualSalary(opp.annual_salary)}
                         </TableCell>
                         <TableCell>
@@ -563,7 +569,9 @@ export default function OpportunitiesPage() {
                             }
                             size="sm"
                             showValueLabel={false}
-                            onChange={(nextLevel) => void patchInterestLevel(opp, nextLevel)}
+                            onChange={(nextLevel) =>
+                              void patchInterestLevel(opp, nextLevel)
+                            }
                           />
                         </TableCell>
                       </TableRow>
@@ -591,13 +599,15 @@ export default function OpportunitiesPage() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>{t("opportunities.delete_title")}</AlertDialogTitle>
+              <AlertDialogTitle>
+                {t("opportunities.delete_title")}
+              </AlertDialogTitle>
               <AlertDialogDescription>
                 {t("opportunities.delete_desc")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             {deleteError ? (
-              <p className="text-destructive text-sm" role="alert">
+              <p className="text-sm text-destructive" role="alert">
                 {deleteError}
               </p>
             ) : null}

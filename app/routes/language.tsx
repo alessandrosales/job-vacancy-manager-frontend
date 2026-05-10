@@ -14,11 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card"
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from "~/components/ui/field"
+import { Field, FieldGroup, FieldLabel } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import {
   Select,
@@ -154,7 +150,9 @@ export default function LanguagePage() {
           <CardHeader>
             <CardTitle>{pageTitle}</CardTitle>
             <CardDescription>
-              {isEdit ? t("language.card_desc_edit") : t("language.card_desc_new")}
+              {isEdit
+                ? t("language.card_desc_edit")
+                : t("language.card_desc_new")}
             </CardDescription>
           </CardHeader>
           <form
@@ -169,7 +167,9 @@ export default function LanguagePage() {
                   </p>
                 ) : null}
                 <Field>
-                  <FieldLabel htmlFor="lang-name">{t("shared.name")}</FieldLabel>
+                  <FieldLabel htmlFor="lang-name">
+                    {t("shared.name")}
+                  </FieldLabel>
                   <Input
                     id="lang-name"
                     value={name}
@@ -180,14 +180,18 @@ export default function LanguagePage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="lang-level">{t("language.proficiency")}</FieldLabel>
+                  <FieldLabel htmlFor="lang-level">
+                    {t("language.proficiency")}
+                  </FieldLabel>
                   <Select
                     value={level}
                     onValueChange={(v) => setLevel(v as LanguageLevel)}
                     disabled={submitting}
                   >
                     <SelectTrigger id="lang-level" className="w-full">
-                      <SelectValue placeholder={t("language.placeholder_level")} />
+                      <SelectValue
+                        placeholder={t("language.placeholder_level")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
@@ -212,7 +216,11 @@ export default function LanguagePage() {
                 {t("shared.cancel")}
               </Button>
               <Button type="submit" disabled={submitting}>
-                {submitting ? t("shared.saving") : isEdit ? t("shared.save_changes") : t("shared.save")}
+                {submitting
+                  ? t("shared.saving")
+                  : isEdit
+                    ? t("shared.save_changes")
+                    : t("shared.save")}
               </Button>
             </CardFooter>
           </form>

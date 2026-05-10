@@ -14,11 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card"
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from "~/components/ui/field"
+import { Field, FieldGroup, FieldLabel } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
 import { InterestLevelStarPicker } from "~/components/shared/interest-level-star-picker"
@@ -104,7 +100,8 @@ export default function CompanyPage() {
     setFormError(null)
     const nameTrim = name.trim()
     const urlTrim = url.trim()
-    const descriptionValue = description.trim() === "" ? null : description.trim()
+    const descriptionValue =
+      description.trim() === "" ? null : description.trim()
 
     setSubmitting(true)
     try {
@@ -155,7 +152,9 @@ export default function CompanyPage() {
           <CardHeader>
             <CardTitle>{title}</CardTitle>
             <CardDescription>
-              {isEdit ? t("company.card_desc_edit") : t("company.card_desc_new")}
+              {isEdit
+                ? t("company.card_desc_edit")
+                : t("company.card_desc_new")}
             </CardDescription>
           </CardHeader>
           <form
@@ -191,7 +190,9 @@ export default function CompanyPage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="co-desc">{t("shared.description")}</FieldLabel>
+                  <FieldLabel htmlFor="co-desc">
+                    {t("shared.description")}
+                  </FieldLabel>
                   <Textarea
                     id="co-desc"
                     value={description}

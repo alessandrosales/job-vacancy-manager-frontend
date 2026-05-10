@@ -15,11 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog"
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from "~/components/ui/field"
+import { Field, FieldGroup, FieldLabel } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import {
   Select,
@@ -31,7 +27,10 @@ import {
 } from "~/components/ui/select"
 import { Textarea } from "~/components/ui/textarea"
 import { createOpportunityStatus } from "~/lib/api/resources/opportunity-statuses"
-import type { OpportunityStatusDefinition, StatusBadgeVariant } from "~/lib/labels"
+import type {
+  OpportunityStatusDefinition,
+  StatusBadgeVariant,
+} from "~/lib/labels"
 import { pagesI18nNs } from "~/lib/i18n/config"
 
 const BADGE_VARIANTS: StatusBadgeVariant[] = [
@@ -83,7 +82,10 @@ export function QuickAddOpportunityStatusDialog({
         onOpenChange(false)
       } catch (err) {
         setFormError(
-          apiFormErrorFromUnknown(err, t("opportunities.quick_add_create_status_error"))
+          apiFormErrorFromUnknown(
+            err,
+            t("opportunities.quick_add_create_status_error")
+          )
         )
       } finally {
         setSubmitting(false)
@@ -103,16 +105,24 @@ export function QuickAddOpportunityStatusDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md overflow-hidden p-0 sm:max-w-md" showCloseButton>
-        <form onSubmit={(ev) => void handleSubmit(ev)} className="flex flex-col">
+      <DialogContent
+        className="max-w-md overflow-hidden p-0 sm:max-w-md"
+        showCloseButton
+      >
+        <form
+          onSubmit={(ev) => void handleSubmit(ev)}
+          className="flex flex-col"
+        >
           <DialogHeader className="shrink-0 px-4 pt-4 pb-2">
             <DialogTitle>{t("opportunities.new_status")}</DialogTitle>
-            <DialogDescription>{t("opportunities.quick_add_status_pipeline_desc")}</DialogDescription>
+            <DialogDescription>
+              {t("opportunities.quick_add_status_pipeline_desc")}
+            </DialogDescription>
           </DialogHeader>
           <div className="max-h-[min(70vh,420px)] overflow-y-auto px-4 pt-2 pb-6">
             <FieldGroup>
               {formError ? (
-                <p role="alert" className="text-destructive text-sm">
+                <p role="alert" className="text-sm text-destructive">
                   {formError}
                 </p>
               ) : null}
@@ -127,7 +137,9 @@ export function QuickAddOpportunityStatusDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qas-desc">{t("shared.description")}</FieldLabel>
+                <FieldLabel htmlFor="qas-desc">
+                  {t("shared.description")}
+                </FieldLabel>
                 <Textarea
                   id="qas-desc"
                   value={description}
@@ -136,7 +148,9 @@ export function QuickAddOpportunityStatusDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qas-variant">{t("opportunity_status.badge_style")}</FieldLabel>
+                <FieldLabel htmlFor="qas-variant">
+                  {t("opportunity_status.badge_style")}
+                </FieldLabel>
                 <Select
                   value={variant}
                   onValueChange={(v) => setVariant(v as StatusBadgeVariant)}

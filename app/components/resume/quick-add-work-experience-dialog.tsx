@@ -101,7 +101,10 @@ export function QuickAddWorkExperienceDialog({
       onOpenChange(false)
     } catch (err) {
       setFormError(
-        apiFormErrorFromUnknown(err, t("work_experience.quick_add_create_error"))
+        apiFormErrorFromUnknown(
+          err,
+          t("work_experience.quick_add_create_error")
+        )
       )
     } finally {
       setSubmitting(false)
@@ -110,21 +113,31 @@ export function QuickAddWorkExperienceDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md overflow-hidden p-0 sm:max-w-md" showCloseButton>
-        <form onSubmit={(ev) => void handleSubmit(ev)} className="flex flex-col">
+      <DialogContent
+        className="max-w-md overflow-hidden p-0 sm:max-w-md"
+        showCloseButton
+      >
+        <form
+          onSubmit={(ev) => void handleSubmit(ev)}
+          className="flex flex-col"
+        >
           <DialogHeader className="shrink-0 px-4 pt-4 pb-2">
             <DialogTitle>{t("work_experience.new_title")}</DialogTitle>
-            <DialogDescription>{t("work_experience.quick_add_dialog_desc")}</DialogDescription>
+            <DialogDescription>
+              {t("work_experience.quick_add_dialog_desc")}
+            </DialogDescription>
           </DialogHeader>
           <div className="max-h-[min(70vh,560px)] overflow-y-auto px-4 pt-2 pb-6">
             <FieldGroup>
               {formError ? (
-                <p role="alert" className="text-destructive text-sm">
+                <p role="alert" className="text-sm text-destructive">
                   {formError}
                 </p>
               ) : null}
               <Field>
-                <FieldLabel htmlFor="qawe-title">{t("work_experience.field_title")}</FieldLabel>
+                <FieldLabel htmlFor="qawe-title">
+                  {t("work_experience.field_title")}
+                </FieldLabel>
                 <Input
                   id="qawe-title"
                   value={title}
@@ -135,7 +148,9 @@ export function QuickAddWorkExperienceDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qawe-company">{t("work_experience.company_name")}</FieldLabel>
+                <FieldLabel htmlFor="qawe-company">
+                  {t("work_experience.company_name")}
+                </FieldLabel>
                 <Input
                   id="qawe-company"
                   value={companyName}
@@ -145,19 +160,25 @@ export function QuickAddWorkExperienceDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qawe-description">{t("shared.description")}</FieldLabel>
+                <FieldLabel htmlFor="qawe-description">
+                  {t("shared.description")}
+                </FieldLabel>
                 <Textarea
                   id="qawe-description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder={t("work_experience.quick_add_description_placeholder")}
+                  placeholder={t(
+                    "work_experience.quick_add_description_placeholder"
+                  )}
                   disabled={submitting}
                   rows={3}
                   className="min-h-[72px] resize-y"
                 />
               </Field>
               <Field orientation="horizontal">
-                <FieldLabel htmlFor="qawe-remote">{t("shared.remote")}</FieldLabel>
+                <FieldLabel htmlFor="qawe-remote">
+                  {t("shared.remote")}
+                </FieldLabel>
                 <Switch
                   id="qawe-remote"
                   checked={isRemote}
@@ -166,7 +187,9 @@ export function QuickAddWorkExperienceDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qawe-from">{t("certification.date_from")}</FieldLabel>
+                <FieldLabel htmlFor="qawe-from">
+                  {t("certification.date_from")}
+                </FieldLabel>
                 <Input
                   id="qawe-from"
                   type="date"
@@ -176,7 +199,9 @@ export function QuickAddWorkExperienceDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="qawe-to">{t("certification.date_to")}</FieldLabel>
+                <FieldLabel htmlFor="qawe-to">
+                  {t("certification.date_to")}
+                </FieldLabel>
                 <Input
                   id="qawe-to"
                   type="date"

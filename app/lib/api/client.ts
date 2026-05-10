@@ -1,10 +1,6 @@
 import { getApiBaseUrl } from "~/lib/api-base-url"
 import { getAuthToken } from "~/lib/auth-token"
-import {
-  ApiError,
-  apiErrorFromResponse,
-  parseJsonBody,
-} from "~/lib/api/errors"
+import { ApiError, apiErrorFromResponse, parseJsonBody } from "~/lib/api/errors"
 
 export type HttpMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE"
 
@@ -65,7 +61,9 @@ function buildHeaders(options: ApiRequestOptions): Headers {
   return headers
 }
 
-function buildBlobHeaders(options: ApiRequestOptions & { accept?: string }): Headers {
+function buildBlobHeaders(
+  options: ApiRequestOptions & { accept?: string }
+): Headers {
   const headers = new Headers(options.headers)
   headers.set("Accept", options.accept ?? "*/*")
   const sendAuth = options.auth !== false
@@ -118,8 +116,7 @@ export async function apiRequestBlob(
   const res = await fetch(url, {
     method,
     headers,
-    body:
-      options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
     signal: options.signal,
   })
 
@@ -138,7 +135,9 @@ export async function apiRequestBlob(
  * Requisição JSON genérica: retorna o corpo parseado em sucesso (2xx).
  * Erros Rails (`{ errors: { ... } }`) viram {@link ApiError}.
  */
-export async function apiRequestJson<T>(options: ApiRequestOptions): Promise<T> {
+export async function apiRequestJson<T>(
+  options: ApiRequestOptions
+): Promise<T> {
   const method = options.method ?? "GET"
   const url = buildUrl(options.path, options.query)
   const headers = buildHeaders(options)
@@ -146,8 +145,7 @@ export async function apiRequestJson<T>(options: ApiRequestOptions): Promise<T> 
   const res = await fetch(url, {
     method,
     headers,
-    body:
-      options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
     signal: options.signal,
   })
 
@@ -198,7 +196,9 @@ export async function apiRequestMultipartJson<T>(options: {
 }
 
 /** Para respostas sem corpo (`204 No Content` ou corpo vazio). */
-export async function apiRequestNoContent(options: ApiRequestOptions): Promise<void> {
+export async function apiRequestNoContent(
+  options: ApiRequestOptions
+): Promise<void> {
   const method = options.method ?? "GET"
   const url = buildUrl(options.path, options.query)
   const headers = buildHeaders(options)
@@ -206,8 +206,7 @@ export async function apiRequestNoContent(options: ApiRequestOptions): Promise<v
   const res = await fetch(url, {
     method,
     headers,
-    body:
-      options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
     signal: options.signal,
   })
 

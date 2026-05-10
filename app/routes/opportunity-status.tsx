@@ -14,11 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card"
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from "~/components/ui/field"
+import { Field, FieldGroup, FieldLabel } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
 import {
@@ -172,19 +168,29 @@ export default function OpportunityStatusPage() {
     }
   }
 
-  const title = isEdit ? t("opportunity_status.edit_title") : t("opportunity_status.new_title")
+  const title = isEdit
+    ? t("opportunity_status.edit_title")
+    : t("opportunity_status.new_title")
   const crumbAction = isEdit ? t("shared.crumb_edit") : t("shared.crumb_new")
   const breadcrumbs = [
     { label: tc("breadcrumb_dashboard"), to: "/dashboard" },
     { label: tc("nav_opportunities"), to: "/opportunities" },
-    { label: t("opportunity_status.crumb_statuses"), to: "/opportunities/statuses" },
+    {
+      label: t("opportunity_status.crumb_statuses"),
+      to: "/opportunities/statuses",
+    },
     { label: crumbAction },
   ]
 
   if (isEdit && loadState === "loading") {
     return (
-      <AppLayout title={t("opportunity_status.edit_title")} breadcrumbs={breadcrumbs}>
-        <p className="text-muted-foreground">{t("opportunity_status.load_loading")}</p>
+      <AppLayout
+        title={t("opportunity_status.edit_title")}
+        breadcrumbs={breadcrumbs}
+      >
+        <p className="text-muted-foreground">
+          {t("opportunity_status.load_loading")}
+        </p>
       </AppLayout>
     )
   }
@@ -198,7 +204,9 @@ export default function OpportunityStatusPage() {
           <CardHeader>
             <CardTitle>{title}</CardTitle>
             <CardDescription>
-              {isEdit ? t("opportunity_status.card_desc_edit") : t("opportunity_status.card_desc_new")}
+              {isEdit
+                ? t("opportunity_status.card_desc_edit")
+                : t("opportunity_status.card_desc_new")}
             </CardDescription>
           </CardHeader>
           <form
@@ -213,7 +221,9 @@ export default function OpportunityStatusPage() {
                   </p>
                 ) : null}
                 <Field>
-                  <FieldLabel htmlFor="os-label">{t("opportunity_status.field_label")}</FieldLabel>
+                  <FieldLabel htmlFor="os-label">
+                    {t("opportunity_status.field_label")}
+                  </FieldLabel>
                   <Input
                     id="os-label"
                     value={label}
@@ -224,18 +234,24 @@ export default function OpportunityStatusPage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="os-description">{t("opportunity_status.field_description")}</FieldLabel>
+                  <FieldLabel htmlFor="os-description">
+                    {t("opportunity_status.field_description")}
+                  </FieldLabel>
                   <Textarea
                     id="os-description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder={t("opportunity_status.placeholder_description")}
+                    placeholder={t(
+                      "opportunity_status.placeholder_description"
+                    )}
                     rows={3}
                     disabled={submitting}
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="os-variant">{t("opportunity_status.badge_style")}</FieldLabel>
+                  <FieldLabel htmlFor="os-variant">
+                    {t("opportunity_status.badge_style")}
+                  </FieldLabel>
                   <Select
                     value={variant}
                     onValueChange={(v) =>
@@ -244,7 +260,9 @@ export default function OpportunityStatusPage() {
                     disabled={submitting}
                   >
                     <SelectTrigger id="os-variant" className="w-full min-w-0">
-                      <SelectValue placeholder={t("opportunity_status.placeholder_style")} />
+                      <SelectValue
+                        placeholder={t("opportunity_status.placeholder_style")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
@@ -269,7 +287,11 @@ export default function OpportunityStatusPage() {
                 {t("shared.cancel")}
               </Button>
               <Button type="submit" disabled={saveDisabled}>
-                {submitting ? t("shared.saving") : isEdit ? t("shared.save_changes") : t("shared.save")}
+                {submitting
+                  ? t("shared.saving")
+                  : isEdit
+                    ? t("shared.save_changes")
+                    : t("shared.save")}
               </Button>
             </CardFooter>
           </form>

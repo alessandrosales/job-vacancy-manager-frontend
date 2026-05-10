@@ -5,7 +5,12 @@ import { useTranslation } from "react-i18next"
 import { Link } from "react-router"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { ExternalLinkIcon, PencilIcon, StarIcon, Trash2Icon } from "lucide-react"
+import {
+  ExternalLinkIcon,
+  PencilIcon,
+  StarIcon,
+  Trash2Icon,
+} from "lucide-react"
 
 import { useAppData } from "~/components/providers/app-data-provider"
 import type {
@@ -61,7 +66,9 @@ export function KanbanJobCardContent({
   const companies = companiesProp ?? appData.companies
   const roles = rolesProp ?? appData.roles
   const compensationLine = formatOpportunityCompensationSummary(opp)
-  const columnId = badgeColumnUsesStatusOnly ? opp.status : getEffectiveColumnId(opp)
+  const columnId = badgeColumnUsesStatusOnly
+    ? opp.status
+    : getEffectiveColumnId(opp)
   const badge = getColumnBadgeProps(
     columnId,
     opportunityStatuses,
@@ -78,11 +85,16 @@ export function KanbanJobCardContent({
       <CardContent className="flex flex-col gap-1.5 px-3 py-2">
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center justify-between gap-2">
-            <p className="min-w-0 flex-1 truncate font-medium leading-snug text-foreground">
+            <p className="min-w-0 flex-1 truncate leading-snug font-medium text-foreground">
               {opportunityCompanyName(opp, companies)}
             </p>
             {opp.url ? (
-              <Button variant="ghost" size="icon" className="size-7 shrink-0" asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-7 shrink-0"
+                asChild
+              >
                 <a
                   href={opp.url}
                   target="_blank"
@@ -96,17 +108,17 @@ export function KanbanJobCardContent({
               </Button>
             ) : null}
           </div>
-          <p className="text-muted-foreground text-sm leading-snug">
+          <p className="text-sm leading-snug text-muted-foreground">
             {opportunityRoleName(opp, roles)}
           </p>
         </div>
         {opp.description ? (
-          <p className="text-muted-foreground line-clamp-2 text-xs leading-snug">
+          <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
             {opp.description}
           </p>
         ) : null}
         {compensationLine ? (
-          <p className="text-muted-foreground line-clamp-1 text-xs leading-snug">
+          <p className="line-clamp-1 text-xs leading-snug text-muted-foreground">
             {compensationLine}
           </p>
         ) : null}
@@ -186,11 +198,17 @@ export function KanbanJobCard({
   roles,
   badgeColumnUsesStatusOnly,
 }: KanbanJobCardProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({
-      id: opp.id,
-      data: { type: "card" as const, opp },
-    })
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: opp.id,
+    data: { type: "card" as const, opp },
+  })
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -202,7 +220,7 @@ export function KanbanJobCard({
     <div
       ref={setNodeRef}
       style={style}
-      className="touch-none cursor-grab active:cursor-grabbing"
+      className="cursor-grab touch-none active:cursor-grabbing"
       onDoubleClick={(e) => {
         e.stopPropagation()
         onOpportunityDoubleClick?.(opp.id)

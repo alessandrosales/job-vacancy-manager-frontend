@@ -29,7 +29,9 @@ export function OpenAiKeyOnboardingDialog() {
   const [open, setOpen] = React.useState(false)
 
   const userId = useSessionUserStore((s) => s.user.id)
-  const ai_token_configured = useSessionUserStore((s) => s.user.ai_token_configured)
+  const ai_token_configured = useSessionUserStore(
+    (s) => s.user.ai_token_configured
+  )
   const me_synced_for_token = useSessionUserStore((s) => s.me_synced_for_token)
 
   React.useEffect(() => {
@@ -66,13 +68,17 @@ export function OpenAiKeyOnboardingDialog() {
         <DialogContent className="sm:max-w-lg" showCloseButton>
           <DialogHeader>
             <DialogTitle>{t("openai_onboarding.title")}</DialogTitle>
-            <DialogDescription>{t("openai_onboarding.description")}</DialogDescription>
+            <DialogDescription>
+              {t("openai_onboarding.description")}
+            </DialogDescription>
           </DialogHeader>
 
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <p className="font-medium text-foreground">{t("openai_onboarding.steps_heading")}</p>
-              <ol className="flex flex-col gap-3 ps-5 text-muted-foreground [list-style-type:decimal]">
+              <p className="font-medium text-foreground">
+                {t("openai_onboarding.steps_heading")}
+              </p>
+              <ol className="flex [list-style-type:decimal] flex-col gap-3 ps-5 text-muted-foreground">
                 <li>{t("openai_onboarding.step1")}</li>
                 <li>{t("openai_onboarding.step2")}</li>
                 <li>{t("openai_onboarding.step3")}</li>

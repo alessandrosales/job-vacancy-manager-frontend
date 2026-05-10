@@ -1,4 +1,8 @@
-import type { Company, Opportunity, Role } from "~/components/providers/app-data-provider"
+import type {
+  Company,
+  Opportunity,
+  Role,
+} from "~/components/providers/app-data-provider"
 
 const hourlyCompFmt = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -20,7 +24,9 @@ export function formatOpportunityHourlyRate(value: number | undefined): string {
 }
 
 /** Display annual total compensation, or em dash if unset. */
-export function formatOpportunityAnnualSalary(value: number | undefined): string {
+export function formatOpportunityAnnualSalary(
+  value: number | undefined
+): string {
   if (value == null || !Number.isFinite(value)) return "—"
   return `${annualCompFmt.format(value)}/yr`
 }

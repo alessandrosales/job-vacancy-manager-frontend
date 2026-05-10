@@ -81,7 +81,7 @@ export function FloatingAgentAssistant() {
             aria-expanded={open}
             aria-label={t("agent.fab_aria")}
             className={cn(
-              "fixed bottom-20 end-4 z-40 size-11 rounded-full shadow-lg sm:bottom-6 sm:end-6 sm:size-14",
+              "fixed end-4 bottom-20 z-40 size-11 rounded-full shadow-lg sm:end-6 sm:bottom-6 sm:size-14",
               "ring-2 ring-background/80 hover:shadow-md"
             )}
             onClick={() => setOpen(true)}
@@ -114,7 +114,7 @@ export function FloatingAgentAssistant() {
             aria-relevant="additions"
           >
             {messages.length === 0 ? (
-              <p className="text-muted-foreground text-sm leading-relaxed">
+              <p className="text-sm leading-relaxed text-muted-foreground">
                 {t("agent.empty_thread")}
               </p>
             ) : (
@@ -135,7 +135,7 @@ export function FloatingAgentAssistant() {
                     )}
                   >
                     {msg.role === "assistant" ? (
-                      <span className="text-xs font-medium text-muted-foreground block pb-1">
+                      <span className="block pb-1 text-xs font-medium text-muted-foreground">
                         {t("agent.reply_label")}
                       </span>
                     ) : null}
@@ -145,8 +145,11 @@ export function FloatingAgentAssistant() {
               ))
             )}
             {pending ? (
-              <div className="text-muted-foreground flex items-center gap-2 text-xs">
-                <Loader2Icon className="size-3.5 shrink-0 animate-spin" aria-hidden />
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Loader2Icon
+                  className="size-3.5 shrink-0 animate-spin"
+                  aria-hidden
+                />
                 {t("agent.replying")}
               </div>
             ) : null}
@@ -182,7 +185,11 @@ export function FloatingAgentAssistant() {
                 onClick={() => void sendMessage()}
               >
                 {pending ? (
-                  <Loader2Icon className="size-4 animate-spin" data-icon="inline-start" aria-hidden />
+                  <Loader2Icon
+                    className="size-4 animate-spin"
+                    data-icon="inline-start"
+                    aria-hidden
+                  />
                 ) : (
                   <SendIcon data-icon="inline-start" aria-hidden />
                 )}

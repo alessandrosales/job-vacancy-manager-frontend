@@ -64,7 +64,9 @@ export function ResumeDescriptionAiDialog({
       setDraft(next)
     } catch (e) {
       setGenerateError(
-        e instanceof Error ? e.message : t("resume.ai_description.error_fallback")
+        e instanceof Error
+          ? e.message
+          : t("resume.ai_description.error_fallback")
       )
     } finally {
       setIsGenerating(false)
@@ -85,10 +87,12 @@ export function ResumeDescriptionAiDialog({
         <div className="flex flex-col gap-4 p-4 pb-0">
           <DialogHeader>
             <DialogTitle>{t("resume.ai_description.title")}</DialogTitle>
-            <DialogDescription>{t("resume.ai_description.description")}</DialogDescription>
+            <DialogDescription>
+              {t("resume.ai_description.description")}
+            </DialogDescription>
           </DialogHeader>
           {generateError ? (
-            <p className="text-destructive text-sm" role="alert">
+            <p className="text-sm text-destructive" role="alert">
               {generateError}
             </p>
           ) : null}
@@ -111,8 +115,12 @@ export function ResumeDescriptionAiDialog({
             </Field>
           </FieldGroup>
         </div>
-        <DialogFooter className="mx-0 mb-0 mt-0 shrink-0 gap-2 rounded-b-xl border-t bg-muted/30 px-4 py-3 sm:justify-end">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+        <DialogFooter className="mx-0 mt-0 mb-0 shrink-0 gap-2 rounded-b-xl border-t bg-muted/30 px-4 py-3 sm:justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
             {t("shared.cancel")}
           </Button>
           <Button
@@ -122,7 +130,11 @@ export function ResumeDescriptionAiDialog({
             onClick={() => void handleGenerate()}
           >
             {isGenerating ? (
-              <Loader2Icon className="animate-spin" data-icon="inline-start" aria-hidden />
+              <Loader2Icon
+                className="animate-spin"
+                data-icon="inline-start"
+                aria-hidden
+              />
             ) : (
               <SparklesIcon data-icon="inline-start" aria-hidden />
             )}

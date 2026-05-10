@@ -1,4 +1,7 @@
-import type { KanbanCustomColumn, Opportunity } from "~/components/providers/app-data-provider"
+import type {
+  KanbanCustomColumn,
+  Opportunity,
+} from "~/components/providers/app-data-provider"
 import type { OpportunityStatusDefinition } from "~/lib/labels"
 
 export const COLUMN_DROPPABLE_PREFIX = "column:" as const
@@ -81,7 +84,10 @@ export function getColumnBadgeProps(
   columnId: string,
   opportunityStatuses: readonly OpportunityStatusDefinition[],
   customColumns: readonly KanbanCustomColumn[]
-): { label: string; variant: "secondary" | "outline" | "default" | "destructive" } {
+): {
+  label: string
+  variant: "secondary" | "outline" | "default" | "destructive"
+} {
   const st = opportunityStatuses.find((s) => s.id === columnId)
   if (st) {
     return { label: st.label, variant: st.variant }
@@ -129,8 +135,7 @@ export function itemsByColumnFromOpportunities(
   for (const id of columnIds) {
     next[id] = []
   }
-  const fallback =
-    columnIds[0] ?? opportunityStatuses[0]?.id ?? ""
+  const fallback = columnIds[0] ?? opportunityStatuses[0]?.id ?? ""
   for (const o of sortedRows) {
     const col = options?.assignColumnByStatusOnly
       ? o.status
@@ -162,7 +167,10 @@ export function resolveOverColumn(
   items: Record<string, string[]>
 ): string | undefined {
   const fromDroppable = parseColumnDroppableId(overId)
-  if (fromDroppable && Object.prototype.hasOwnProperty.call(items, fromDroppable)) {
+  if (
+    fromDroppable &&
+    Object.prototype.hasOwnProperty.call(items, fromDroppable)
+  ) {
     return fromDroppable
   }
   return findColumnForItemId(overId, items)

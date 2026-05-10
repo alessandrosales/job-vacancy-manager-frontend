@@ -47,7 +47,7 @@ export function LandingCookieBanner() {
       <div className="border-t border-border/60 bg-background/95 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] backdrop-blur-md">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-x-6 sm:gap-y-2 sm:px-6 sm:py-3.5 lg:px-8">
           {/* icon + text — largura total no mobile */}
-          <div className="flex min-w-0 w-full items-start gap-3 sm:flex-1 sm:items-center">
+          <div className="flex w-full min-w-0 items-start gap-3 sm:flex-1 sm:items-center">
             <span className="mt-0.5 flex shrink-0 text-muted-foreground sm:mt-0">
               <CookieIcon className="size-4.5" />
             </span>

@@ -7,7 +7,10 @@ import {
   OpportunityFormFields,
   type OpportunityFormReferenceLists,
 } from "~/components/opportunities/opportunity-form-fields"
-import { useAppData, type Opportunity } from "~/components/providers/app-data-provider"
+import {
+  useAppData,
+  type Opportunity,
+} from "~/components/providers/app-data-provider"
 import { Button } from "~/components/ui/button"
 import {
   Dialog,
@@ -77,9 +80,7 @@ function applyOpportunityToFormState(
   }
 ) {
   setters.setCompanyId(
-    o.company_id != null && o.company_id !== ""
-      ? String(o.company_id)
-      : ""
+    o.company_id != null && o.company_id !== "" ? String(o.company_id) : ""
   )
   setters.setRoleId(
     o.role_id != null && o.role_id !== "" ? String(o.role_id) : ""
@@ -87,7 +88,9 @@ function applyOpportunityToFormState(
   setters.setDescription(o.description)
   setters.setUrl(o.url)
   setters.setHourlyRate(
-    o.hourly_rate != null && Number.isFinite(o.hourly_rate) ? o.hourly_rate : undefined
+    o.hourly_rate != null && Number.isFinite(o.hourly_rate)
+      ? o.hourly_rate
+      : undefined
   )
   setters.setAnnualSalary(
     o.annual_salary != null && Number.isFinite(o.annual_salary)
@@ -131,8 +134,12 @@ export function OpportunityDialog({
   const [roleId, setRoleId] = React.useState("")
   const [description, setDescription] = React.useState("")
   const [url, setUrl] = React.useState("")
-  const [hourlyRate, setHourlyRate] = React.useState<number | undefined>(undefined)
-  const [annualSalary, setAnnualSalary] = React.useState<number | undefined>(undefined)
+  const [hourlyRate, setHourlyRate] = React.useState<number | undefined>(
+    undefined
+  )
+  const [annualSalary, setAnnualSalary] = React.useState<number | undefined>(
+    undefined
+  )
   const [status, setStatus] = React.useState<OpportunityStatus>("")
   const [interestLevel, setInterestLevel] = React.useState<InterestLevel>(0)
 
@@ -152,7 +159,9 @@ export function OpportunityDialog({
     setRemoteOpp(null)
     void (async () => {
       try {
-        const api = await getOpportunityApi(opportunityId, { signal: ac.signal })
+        const api = await getOpportunityApi(opportunityId, {
+          signal: ac.signal,
+        })
         if (ac.signal.aborted) return
         setRemoteOpp(apiOpportunityToOpportunity(api))
         setRemoteLoadState("idle")
@@ -269,10 +278,16 @@ export function OpportunityDialog({
     open &&
     !isCreate &&
     Boolean(opportunityId) &&
-    (useApi ? remoteLoadState === "idle" && remoteOpp != null : Boolean(existingLocal))
+    (useApi
+      ? remoteLoadState === "idle" && remoteOpp != null
+      : Boolean(existingLocal))
 
   const showEditLoading =
-    open && useApi && !isCreate && Boolean(opportunityId) && remoteLoadState === "loading"
+    open &&
+    useApi &&
+    !isCreate &&
+    Boolean(opportunityId) &&
+    remoteLoadState === "loading"
 
   const showNotFound =
     open &&
@@ -288,7 +303,7 @@ export function OpportunityDialog({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         {showEditLoading ? (
-          <div className="text-muted-foreground p-6 text-sm">
+          <div className="p-6 text-sm text-muted-foreground">
             {t("opportunities.loading_record")}
           </div>
         ) : null}
@@ -300,7 +315,9 @@ export function OpportunityDialog({
           >
             <DialogHeader className="shrink-0 px-4 pt-4 pb-2">
               <DialogTitle>
-                {showCreateForm ? t("opportunities.new_title") : t("opportunities.edit_title")}
+                {showCreateForm
+                  ? t("opportunities.new_title")
+                  : t("opportunities.edit_title")}
               </DialogTitle>
               <DialogDescription>
                 {showCreateForm
@@ -312,7 +329,7 @@ export function OpportunityDialog({
               {formError ? (
                 <p
                   role="alert"
-                  className="border-destructive/50 bg-destructive/10 text-destructive mb-3 rounded-md border px-3 py-2 text-sm"
+                  className="mb-3 rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive"
                 >
                   {formError}
                 </p>
@@ -361,8 +378,12 @@ export function OpportunityDialog({
         {showNotFound ? (
           <div className="p-4">
             <DialogHeader>
-              <DialogTitle>{t("opportunities.dialog_not_found_title")}</DialogTitle>
-              <DialogDescription>{t("opportunities.dialog_not_found_desc")}</DialogDescription>
+              <DialogTitle>
+                {t("opportunities.dialog_not_found_title")}
+              </DialogTitle>
+              <DialogDescription>
+                {t("opportunities.dialog_not_found_desc")}
+              </DialogDescription>
             </DialogHeader>
             <DialogFooter className="mx-0 mb-0 rounded-none bg-transparent px-0 pt-4 pb-0">
               <Button type="button" onClick={() => onOpenChange(false)}>

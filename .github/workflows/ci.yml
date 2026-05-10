@@ -1,0 +1,51 @@
+# CI contínua: formatação, tipos e build (integração contínua).
+# Sintaxe e conceitos: https://docs.github.com/en/actions/get-started/continuous-integration
+# Workflow syntax: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax
+
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Qualidade do código
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Instalar pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - name: Instalar dependências
+        run: pnpm install --frozen-lockfile
+
+      - name: Verificar formatação (Prettier)
+        run: pnpm run format:check
+
+      - name: Verificar tipos (TypeScript)
+        run: pnpm run typecheck
+
+      - name: Build de produção
+        run: pnpm run build

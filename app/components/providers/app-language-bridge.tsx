@@ -27,7 +27,9 @@ function guestLanguageFromNavigator(): UiLanguageCode {
 export function AppLanguageBridge() {
   const token = useAuthStore((s) => s.token)
   const userId = useSessionUserStore((s) => s.user.id)
-  const preferredLanguage = useSessionUserStore((s) => s.user.preferred_language)
+  const preferredLanguage = useSessionUserStore(
+    (s) => s.user.preferred_language
+  )
 
   React.useLayoutEffect(() => {
     const ac = new AbortController()

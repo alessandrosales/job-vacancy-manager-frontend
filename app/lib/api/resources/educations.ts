@@ -1,8 +1,5 @@
 import { apiRequestJson, apiRequestNoContent } from "~/lib/api/client"
-import type {
-  ApiIndexParams,
-  PaginatedEnvelope,
-} from "~/lib/api/pagination"
+import type { ApiIndexParams, PaginatedEnvelope } from "~/lib/api/pagination"
 import { toIndexQuery } from "~/lib/api/pagination"
 
 export interface ApiEducation {
@@ -25,9 +22,11 @@ export type ApiEducationWrite = Pick<
 export async function listEducations(params: {
   paginated: false
 }): Promise<ApiEducation[]>
-export async function listEducations(
-  params?: { paginated?: true; page?: number; per_page?: number }
-): Promise<PaginatedEnvelope<ApiEducation>>
+export async function listEducations(params?: {
+  paginated?: true
+  page?: number
+  per_page?: number
+}): Promise<PaginatedEnvelope<ApiEducation>>
 export async function listEducations(
   params?: ApiIndexParams
 ): Promise<PaginatedEnvelope<ApiEducation> | ApiEducation[]> {

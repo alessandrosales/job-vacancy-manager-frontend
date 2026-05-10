@@ -51,7 +51,9 @@ export function InterestLevelStarPicker({
             >
               <StarIcon
                 className={cn(
-                  size === "sm" ? "size-3.5 transition-colors" : "size-5 transition-colors",
+                  size === "sm"
+                    ? "size-3.5 transition-colors"
+                    : "size-5 transition-colors",
                   starValue <= previewStars
                     ? "fill-current text-amber-500"
                     : "text-muted-foreground/35"
@@ -62,7 +64,9 @@ export function InterestLevelStarPicker({
         })}
       </div>
       {showValueLabel ? (
-        <span className="text-muted-foreground text-xs tabular-nums">{value}/5</span>
+        <span className="text-xs text-muted-foreground tabular-nums">
+          {value}/5
+        </span>
       ) : null}
     </div>
   )

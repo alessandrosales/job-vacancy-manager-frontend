@@ -91,7 +91,9 @@ export function RecoverPasswordForm({
                 </Field>
               ) : null}
               <Field>
-                <FieldLabel htmlFor="recover-email">{t("shared.email")}</FieldLabel>
+                <FieldLabel htmlFor="recover-email">
+                  {t("shared.email")}
+                </FieldLabel>
                 <Input
                   id="recover-email"
                   type="email"
@@ -106,7 +108,9 @@ export function RecoverPasswordForm({
               </Field>
               <Field>
                 <Button type="submit" disabled={pending || success}>
-                  {pending ? t("auth.recover_sending") : t("auth.recover_send_link")}
+                  {pending
+                    ? t("auth.recover_sending")
+                    : t("auth.recover_send_link")}
                 </Button>
                 <FieldDescription className="text-center">
                   <Link

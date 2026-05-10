@@ -1,7 +1,8 @@
 /** Alinhado ao backend: `Resume::PREFERRED_LANGUAGES` e `db.mermaid` (resumes). */
 export const RESUME_PREFERRED_LANGUAGE_CODES = ["en", "pt_br", "es"] as const
 
-export type ResumePreferredLanguage = (typeof RESUME_PREFERRED_LANGUAGE_CODES)[number]
+export type ResumePreferredLanguage =
+  (typeof RESUME_PREFERRED_LANGUAGE_CODES)[number]
 
 export const DEFAULT_RESUME_PREFERRED_LANGUAGE: ResumePreferredLanguage = "en"
 
@@ -15,7 +16,9 @@ export const RESUME_PREFERRED_LANGUAGE_OPTIONS: ReadonlyArray<{
 ]
 
 /** Normaliza códigos vindos da API / legado (hífen, camelCase, caixa). */
-export function normalizeResumePreferredLanguage(raw: unknown): ResumePreferredLanguage {
+export function normalizeResumePreferredLanguage(
+  raw: unknown
+): ResumePreferredLanguage {
   let s =
     typeof raw === "string"
       ? raw.trim()

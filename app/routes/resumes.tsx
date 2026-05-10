@@ -93,9 +93,9 @@ export default function ResumesPage() {
   const navigate = useNavigate()
   const [resumes, setResumes] = React.useState<ResumeDocument[]>([])
   const [roles, setRoles] = React.useState<Role[]>([])
-  const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
-    "loading"
-  )
+  const [loadState, setLoadState] = React.useState<
+    "idle" | "loading" | "error"
+  >("loading")
   const [listError, setListError] = React.useState<string | null>(null)
 
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
@@ -198,12 +198,12 @@ export default function ResumesPage() {
         />
 
         {loadState === "error" ? (
-          <p className="text-destructive px-1 text-sm" role="alert">
+          <p className="px-1 text-sm text-destructive" role="alert">
             {listError ?? t("shared.could_not_load_data")}{" "}
             <Button
               type="button"
               variant="link"
-              className="text-destructive h-auto p-0 align-baseline underline"
+              className="h-auto p-0 align-baseline text-destructive underline"
               onClick={() => void fetchAll()}
             >
               {t("shared.retry")}
@@ -227,28 +227,36 @@ export default function ResumesPage() {
           searchPlaceholder={t("resumes.search_placeholder")}
         >
           {loadState === "loading" ? (
-            <p className="text-muted-foreground py-8 text-center text-sm">
+            <p className="py-8 text-center text-sm text-muted-foreground">
               {t("resumes.loading")}
             </p>
           ) : resumes.length === 0 ? (
-            <div className="text-muted-foreground flex flex-1 flex-col items-center justify-center gap-2 py-16 text-center text-sm">
+            <div className="flex flex-1 flex-col items-center justify-center gap-2 py-16 text-center text-sm text-muted-foreground">
               <p>{t("resumes.empty")}</p>
               <Button asChild variant="outline" size="sm">
                 <Link to="/resumes/resume">{t("resumes.add_first")}</Link>
               </Button>
             </div>
           ) : filtered.length === 0 ? (
-            <p className="text-muted-foreground py-12 text-center text-sm">
+            <p className="py-12 text-center text-sm text-muted-foreground">
               {t("shared.no_matches_search")}
             </p>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {filtered.map((r) => {
-                const roleLabel = r.role_id ? roleNameById.get(r.role_id) : undefined
+                const roleLabel = r.role_id
+                  ? roleNameById.get(r.role_id)
+                  : undefined
                 const summaryParts = [
-                  t("resumes.work_exp_count", { count: r.work_experience_ids.length }),
-                  t("resumes.cert_count", { count: r.certification_ids.length }),
-                  t("resumes.edu_count_singular", { count: r.education_ids.length }),
+                  t("resumes.work_exp_count", {
+                    count: r.work_experience_ids.length,
+                  }),
+                  t("resumes.cert_count", {
+                    count: r.certification_ids.length,
+                  }),
+                  t("resumes.edu_count_singular", {
+                    count: r.education_ids.length,
+                  }),
                   t("resumes.skill_count_label", { count: r.skill_ids.length }),
                 ]
                 return (
@@ -258,15 +266,16 @@ export default function ResumesPage() {
                         {r.title}
                       </CardTitle>
                       <CardDescription>
-                        {t("resumes.updated_prefix")} {formatUpdated(r.updated_at)}
+                        {t("resumes.updated_prefix")}{" "}
+                        {formatUpdated(r.updated_at)}
                         {roleLabel ? ` · ${roleLabel}` : null}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="flex flex-1 flex-col gap-2">
-                      <p className="text-muted-foreground text-xs leading-relaxed">
+                      <p className="text-xs leading-relaxed text-muted-foreground">
                         {summaryParts.join(" · ")}
                       </p>
-                      <p className="text-muted-foreground line-clamp-4 text-sm leading-relaxed">
+                      <p className="line-clamp-4 text-sm leading-relaxed text-muted-foreground">
                         {r.description}
                       </p>
                     </CardContent>
@@ -275,26 +284,37 @@ export default function ResumesPage() {
                         variant="outline"
                         size="sm"
                         className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive max-sm:size-9 max-sm:min-h-9 max-sm:min-w-9 max-sm:justify-center max-sm:gap-0 max-sm:!px-0 max-sm:!ps-0 max-sm:!pe-0"
-                        aria-label={t("resumes.delete_aria", { title: r.title })}
+                        aria-label={t("resumes.delete_aria", {
+                          title: r.title,
+                        })}
                         onClick={() => setDeleteId(r.id)}
                       >
                         <Trash2Icon className="size-4 shrink-0" aria-hidden />
-                        <span className="max-sm:sr-only">{t("shared.delete")}</span>
+                        <span className="max-sm:sr-only">
+                          {t("shared.delete")}
+                        </span>
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         className="max-sm:size-9 max-sm:min-h-9 max-sm:min-w-9 max-sm:justify-center max-sm:gap-0 max-sm:!px-0 max-sm:!ps-0 max-sm:!pe-0"
-                        aria-label={t("resumes.duplicate_aria", { title: r.title })}
+                        aria-label={t("resumes.duplicate_aria", {
+                          title: r.title,
+                        })}
                         disabled={duplicatingId !== null}
                         onClick={() => void duplicateResume(r.id)}
                       >
                         {duplicatingId === r.id ? (
-                          <Loader2Icon className="size-4 shrink-0 animate-spin" aria-hidden />
+                          <Loader2Icon
+                            className="size-4 shrink-0 animate-spin"
+                            aria-hidden
+                          />
                         ) : (
                           <CopyIcon className="size-4 shrink-0" aria-hidden />
                         )}
-                        <span className="max-sm:sr-only">{t("resumes.duplicate_label")}</span>
+                        <span className="max-sm:sr-only">
+                          {t("resumes.duplicate_label")}
+                        </span>
                       </Button>
                       <ResumeCompiledDownloadMenu
                         resumeId={r.id}
@@ -309,10 +329,14 @@ export default function ResumesPage() {
                       >
                         <Link
                           to={`/resumes/resume/${encodeURIComponent(r.id)}`}
-                          aria-label={t("resumes.edit_aria", { title: r.title })}
+                          aria-label={t("resumes.edit_aria", {
+                            title: r.title,
+                          })}
                         >
                           <PencilIcon className="size-4 shrink-0" aria-hidden />
-                          <span className="max-sm:sr-only">{t("shared.crumb_edit")}</span>
+                          <span className="max-sm:sr-only">
+                            {t("shared.crumb_edit")}
+                          </span>
                         </Link>
                       </Button>
                     </CardFooter>
@@ -357,7 +381,7 @@ export default function ResumesPage() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             {deleteError ? (
-              <p className="text-destructive text-sm" role="alert">
+              <p className="text-sm text-destructive" role="alert">
                 {deleteError}
               </p>
             ) : null}

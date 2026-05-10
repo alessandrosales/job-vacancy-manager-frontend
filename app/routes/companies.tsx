@@ -66,17 +66,19 @@ function apiErrorText(err: unknown, fallback: string): string {
 export default function CompaniesPage() {
   const { t } = useTranslation(pagesI18nNs)
   const [companies, setCompanies] = React.useState<ApiCompany[]>([])
-  const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
-    "loading"
-  )
+  const [loadState, setLoadState] = React.useState<
+    "idle" | "loading" | "error"
+  >("loading")
   const [listError, setListError] = React.useState<string | null>(null)
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
   const [deleteSubmitting, setDeleteSubmitting] = React.useState(false)
   const [deleteError, setDeleteError] = React.useState<string | null>(null)
-  const [interestPatchId, setInterestPatchId] = React.useState<string | null>(null)
-  const [interestPatchError, setInterestPatchError] = React.useState<string | null>(
+  const [interestPatchId, setInterestPatchId] = React.useState<string | null>(
     null
   )
+  const [interestPatchError, setInterestPatchError] = React.useState<
+    string | null
+  >(null)
   const [searchQuery, setSearchQuery] = React.useState("")
   const searchNeedle = searchQuery.trim()
 
@@ -126,14 +128,19 @@ export default function CompaniesPage() {
     }
   }
 
-  async function patchInterestLevel(company: ApiCompany, nextLevel: InterestLevel) {
+  async function patchInterestLevel(
+    company: ApiCompany,
+    nextLevel: InterestLevel
+  ) {
     setInterestPatchError(null)
     setInterestPatchId(company.id)
     try {
       const updated = await updateCompanyRequest(company.id, {
         interest_level: nextLevel,
       })
-      setCompanies((prev) => prev.map((c) => (c.id === updated.id ? updated : c)))
+      setCompanies((prev) =>
+        prev.map((c) => (c.id === updated.id ? updated : c))
+      )
     } catch (e) {
       setInterestPatchError(apiErrorText(e, t("companies.interest_error")))
     } finally {
@@ -247,7 +254,9 @@ export default function CompaniesPage() {
                           </Button>
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium">{company.name}</TableCell>
+                      <TableCell className="font-medium">
+                        {company.name}
+                      </TableCell>
                       <TableCell>
                         {company.url ? (
                           <a
@@ -267,7 +276,11 @@ export default function CompaniesPage() {
                       </TableCell>
                       <TableCell>
                         <div
-                          className={disabledStars ? "pointer-events-none opacity-60" : undefined}
+                          className={
+                            disabledStars
+                              ? "pointer-events-none opacity-60"
+                              : undefined
+                          }
                         >
                           <InterestLevelStarPicker
                             value={company.interest_level as InterestLevel}

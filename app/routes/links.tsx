@@ -68,9 +68,9 @@ function apiErrorText(err: unknown, fallback: string): string {
 export default function LinksPage() {
   const { t } = useTranslation(pagesI18nNs)
   const [links, setLinks] = React.useState<ApiReferenceLink[]>([])
-  const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
-    "loading"
-  )
+  const [loadState, setLoadState] = React.useState<
+    "idle" | "loading" | "error"
+  >("loading")
   const [listError, setListError] = React.useState<string | null>(null)
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
   const [deleteSubmitting, setDeleteSubmitting] = React.useState(false)

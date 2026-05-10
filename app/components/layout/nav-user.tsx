@@ -4,11 +4,7 @@ import * as React from "react"
 import { useTranslation } from "react-i18next"
 import { Link } from "react-router"
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "~/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -26,7 +22,12 @@ import {
 } from "~/components/ui/sidebar"
 import { applyTheme, getStoredTheme, type ThemeMode } from "~/lib/theme"
 import { clearAuthSession } from "~/stores/clear-auth-session"
-import { ChevronsUpDownIcon, LogOutIcon, MoonIcon, UserRoundIcon } from "lucide-react"
+import {
+  ChevronsUpDownIcon,
+  LogOutIcon,
+  MoonIcon,
+  UserRoundIcon,
+} from "lucide-react"
 import { defaultI18nNs } from "~/lib/i18n/config"
 
 function initialsFromName(name: string): string {

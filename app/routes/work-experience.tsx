@@ -15,11 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card"
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from "~/components/ui/field"
+import { Field, FieldGroup, FieldLabel } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { Switch } from "~/components/ui/switch"
 import { Textarea } from "~/components/ui/textarea"
@@ -177,7 +173,9 @@ export default function WorkExperiencePage() {
     }
   }
 
-  const pageTitle = isEdit ? t("work_experience.edit_title") : t("work_experience.new_title")
+  const pageTitle = isEdit
+    ? t("work_experience.edit_title")
+    : t("work_experience.new_title")
   const crumbAction = isEdit ? t("shared.crumb_edit") : t("shared.crumb_new")
   const breadcrumbs = [
     { label: tc("breadcrumb_dashboard"), to: "/dashboard" },
@@ -187,8 +185,13 @@ export default function WorkExperiencePage() {
 
   if (isEdit && loadState === "loading") {
     return (
-      <AppLayout title={t("work_experience.edit_title")} breadcrumbs={breadcrumbs}>
-        <p className="text-muted-foreground">{t("work_experience.load_loading")}</p>
+      <AppLayout
+        title={t("work_experience.edit_title")}
+        breadcrumbs={breadcrumbs}
+      >
+        <p className="text-muted-foreground">
+          {t("work_experience.load_loading")}
+        </p>
       </AppLayout>
     )
   }
@@ -200,7 +203,9 @@ export default function WorkExperiencePage() {
           <CardHeader>
             <CardTitle>{pageTitle}</CardTitle>
             <CardDescription>
-              {isEdit ? t("work_experience.card_desc_edit") : t("work_experience.card_desc_new")}
+              {isEdit
+                ? t("work_experience.card_desc_edit")
+                : t("work_experience.card_desc_new")}
             </CardDescription>
           </CardHeader>
           <form
@@ -215,7 +220,9 @@ export default function WorkExperiencePage() {
                   </p>
                 ) : null}
                 <Field>
-                  <FieldLabel htmlFor="we-title">{t("work_experience.field_title")}</FieldLabel>
+                  <FieldLabel htmlFor="we-title">
+                    {t("work_experience.field_title")}
+                  </FieldLabel>
                   <Input
                     id="we-title"
                     value={title}
@@ -225,7 +232,9 @@ export default function WorkExperiencePage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="we-company">{t("work_experience.company_name")}</FieldLabel>
+                  <FieldLabel htmlFor="we-company">
+                    {t("work_experience.company_name")}
+                  </FieldLabel>
                   <Input
                     id="we-company"
                     value={companyName}
@@ -235,19 +244,25 @@ export default function WorkExperiencePage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="we-description">{t("shared.description")}</FieldLabel>
+                  <FieldLabel htmlFor="we-description">
+                    {t("shared.description")}
+                  </FieldLabel>
                   <Textarea
                     id="we-description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder={t("work_experience.responsibilities_placeholder")}
+                    placeholder={t(
+                      "work_experience.responsibilities_placeholder"
+                    )}
                     disabled={submitting}
                     rows={5}
                     className="min-h-[120px] resize-y"
                   />
                 </Field>
                 <Field orientation="horizontal">
-                  <FieldLabel htmlFor="we-remote">{t("shared.remote")}</FieldLabel>
+                  <FieldLabel htmlFor="we-remote">
+                    {t("shared.remote")}
+                  </FieldLabel>
                   <Switch
                     id="we-remote"
                     checked={isRemote}
@@ -276,7 +291,9 @@ export default function WorkExperiencePage() {
                   />
                 </Field>
                 {skillsLoading ? (
-                  <p className="text-sm text-muted-foreground">{t("work_experience.loading_skills")}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("work_experience.loading_skills")}
+                  </p>
                 ) : (
                   <WorkExperienceSkillFieldset
                     idPrefix="we-page"
@@ -297,7 +314,11 @@ export default function WorkExperiencePage() {
                 {t("shared.cancel")}
               </Button>
               <Button type="submit" disabled={submitting || skillsLoading}>
-                {submitting ? t("shared.saving") : isEdit ? t("shared.save_changes") : t("shared.save")}
+                {submitting
+                  ? t("shared.saving")
+                  : isEdit
+                    ? t("shared.save_changes")
+                    : t("shared.save")}
               </Button>
             </CardFooter>
           </form>

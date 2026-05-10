@@ -97,7 +97,9 @@ export function firebaseAuthErrorCode(error: unknown): string | null {
  * Credenciais rejeitadas ou usuário ausente no Firebase — vale tentar login por senha na API
  * (contas criadas só no Rails não existem no Firebase).
  */
-export function firebaseCredentialErrorMayRetryWithApi(error: unknown): boolean {
+export function firebaseCredentialErrorMayRetryWithApi(
+  error: unknown
+): boolean {
   const code = firebaseAuthErrorCode(error)
   return (
     code === "auth/user-not-found" ||

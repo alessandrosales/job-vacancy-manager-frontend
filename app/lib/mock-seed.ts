@@ -213,7 +213,12 @@ export function generateMockCertifications(count: number): Certification[] {
 }
 
 const DEGREES = ["B.Sc.", "M.Sc.", "B.A.", "MBA", "Tech."] as const
-const FIELDS = ["Computer Science", "Information Systems", "Design", "Business"] as const
+const FIELDS = [
+  "Computer Science",
+  "Information Systems",
+  "Design",
+  "Business",
+] as const
 const INSTITUTIONS = [
   "State University",
   "Institute of Technology",
@@ -246,7 +251,11 @@ const RESUME_LABELS = [
   "Academic + industry",
 ] as const
 
-function pickDistinctFrom<T>(source: readonly T[], count: number, seed: number): T[] {
+function pickDistinctFrom<T>(
+  source: readonly T[],
+  count: number,
+  seed: number
+): T[] {
   if (source.length === 0 || count <= 0) return []
   const out: T[] = []
   let k = 0
@@ -283,9 +292,10 @@ export function generateMockResumes(
       id: `seed-res-${i}`,
       title: `${pick(RESUME_LABELS, i)}${i >= RESUME_LABELS.length ? ` #${i + 1}` : ""}`,
       description: `Snapshot #${i + 1}: headline, highlights, and keywords tailored for applications. Edit from the card actions or detail form.`,
-      preferred_language: RESUME_PREFERRED_LANGUAGE_CODES[
-        i % RESUME_PREFERRED_LANGUAGE_CODES.length
-      ]!,
+      preferred_language:
+        RESUME_PREFERRED_LANGUAGE_CODES[
+          i % RESUME_PREFERRED_LANGUAGE_CODES.length
+        ]!,
       compiled_markdown: null,
       updated_at: `${y}-${pad(m)}-${pad(d)}`,
       role_id: roleIds[i % roleIds.length] ?? "",
@@ -299,9 +309,11 @@ export function generateMockResumes(
 }
 
 export function generateLargeMockDataset() {
-  const opportunity_statuses = DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS.map((s) => ({
-    ...s,
-  }))
+  const opportunity_statuses = DEFAULT_OPPORTUNITY_STATUS_DEFINITIONS.map(
+    (s) => ({
+      ...s,
+    })
+  )
   const statusIds = opportunity_statuses.map((s) => s.id)
   const companies = generateMockCompanies(MOCK_SEED_TOTALS.companies)
   const roles = generateMockRoles(MOCK_SEED_TOTALS.roles)
@@ -311,7 +323,9 @@ export function generateLargeMockDataset() {
     skills,
     companies
   )
-  const certifications = generateMockCertifications(MOCK_SEED_TOTALS.certifications)
+  const certifications = generateMockCertifications(
+    MOCK_SEED_TOTALS.certifications
+  )
   const education = generateMockEducation(MOCK_SEED_TOTALS.education)
   const resumes = generateMockResumes(MOCK_SEED_TOTALS.resumes, {
     work_experiences,

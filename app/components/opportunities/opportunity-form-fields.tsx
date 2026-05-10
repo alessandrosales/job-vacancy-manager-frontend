@@ -166,11 +166,15 @@ export function OpportunityFormFields({
       />
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor={`${idPrefix}-company`}>{t("opportunities.form_company")}</FieldLabel>
+          <FieldLabel htmlFor={`${idPrefix}-company`}>
+            {t("opportunities.form_company")}
+          </FieldLabel>
           <div className="flex min-w-0 flex-row items-stretch gap-2">
             {companies.length > 0 ? (
               <Select
-                key={companyId === "" ? "company-empty" : `company-${companyId}`}
+                key={
+                  companyId === "" ? "company-empty" : `company-${companyId}`
+                }
                 value={companyId === "" ? undefined : companyId}
                 onValueChange={onCompanyIdChange}
               >
@@ -178,7 +182,9 @@ export function OpportunityFormFields({
                   id={`${idPrefix}-company`}
                   className="min-w-0 flex-1"
                 >
-                  <SelectValue placeholder={t("opportunities.form_select_company")} />
+                  <SelectValue
+                    placeholder={t("opportunities.form_select_company")}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -193,7 +199,7 @@ export function OpportunityFormFields({
             ) : (
               <p
                 id={`${idPrefix}-company`}
-                className="text-muted-foreground flex min-h-8 flex-1 items-center text-sm"
+                className="flex min-h-8 flex-1 items-center text-sm text-muted-foreground"
               >
                 {t("opportunities.form_empty_companies")}
               </p>
@@ -210,11 +216,15 @@ export function OpportunityFormFields({
             </Button>
           </div>
           {companies.length === 0 ? (
-            <FieldDescription>{t("opportunities.form_company_empty_hint")}</FieldDescription>
+            <FieldDescription>
+              {t("opportunities.form_company_empty_hint")}
+            </FieldDescription>
           ) : null}
         </Field>
         <Field>
-          <FieldLabel htmlFor={`${idPrefix}-role`}>{t("opportunities.form_role")}</FieldLabel>
+          <FieldLabel htmlFor={`${idPrefix}-role`}>
+            {t("opportunities.form_role")}
+          </FieldLabel>
           <div className="flex min-w-0 flex-row items-stretch gap-2">
             {roles.length > 0 ? (
               <Select
@@ -222,8 +232,13 @@ export function OpportunityFormFields({
                 value={roleId === "" ? undefined : roleId}
                 onValueChange={onRoleIdChange}
               >
-                <SelectTrigger id={`${idPrefix}-role`} className="min-w-0 flex-1">
-                  <SelectValue placeholder={t("opportunities.form_select_role")} />
+                <SelectTrigger
+                  id={`${idPrefix}-role`}
+                  className="min-w-0 flex-1"
+                >
+                  <SelectValue
+                    placeholder={t("opportunities.form_select_role")}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -238,7 +253,7 @@ export function OpportunityFormFields({
             ) : (
               <p
                 id={`${idPrefix}-role`}
-                className="text-muted-foreground flex min-h-8 flex-1 items-center text-sm"
+                className="flex min-h-8 flex-1 items-center text-sm text-muted-foreground"
               >
                 {t("opportunities.form_empty_roles")}
               </p>
@@ -255,11 +270,15 @@ export function OpportunityFormFields({
             </Button>
           </div>
           {roles.length === 0 ? (
-            <FieldDescription>{t("opportunities.form_role_empty_hint")}</FieldDescription>
+            <FieldDescription>
+              {t("opportunities.form_role_empty_hint")}
+            </FieldDescription>
           ) : null}
         </Field>
         <Field>
-          <FieldLabel htmlFor={`${idPrefix}-desc`}>{t("shared.description")}</FieldLabel>
+          <FieldLabel htmlFor={`${idPrefix}-desc`}>
+            {t("shared.description")}
+          </FieldLabel>
           <Textarea
             id={`${idPrefix}-desc`}
             value={description}
@@ -277,10 +296,14 @@ export function OpportunityFormFields({
             onChange={(e) => onUrlChange(e.target.value)}
             placeholder={t("company.url_placeholder")}
           />
-          <FieldDescription>{t("opportunities.form_url_optional_hint")}</FieldDescription>
+          <FieldDescription>
+            {t("opportunities.form_url_optional_hint")}
+          </FieldDescription>
         </Field>
         <Field>
-          <FieldLabel htmlFor={`${idPrefix}-hourly-rate`}>{t("shared.hourly_rate")}</FieldLabel>
+          <FieldLabel htmlFor={`${idPrefix}-hourly-rate`}>
+            {t("shared.hourly_rate")}
+          </FieldLabel>
           <Input
             id={`${idPrefix}-hourly-rate`}
             type="number"
@@ -298,10 +321,14 @@ export function OpportunityFormFields({
             }}
             placeholder={t("opportunities.form_hourly_example")}
           />
-          <FieldDescription>{t("opportunities.form_hourly_hint")}</FieldDescription>
+          <FieldDescription>
+            {t("opportunities.form_hourly_hint")}
+          </FieldDescription>
         </Field>
         <Field>
-          <FieldLabel htmlFor={`${idPrefix}-annual-salary`}>{t("shared.annual_salary")}</FieldLabel>
+          <FieldLabel htmlFor={`${idPrefix}-annual-salary`}>
+            {t("shared.annual_salary")}
+          </FieldLabel>
           <Input
             id={`${idPrefix}-annual-salary`}
             type="number"
@@ -319,10 +346,14 @@ export function OpportunityFormFields({
             }}
             placeholder={t("opportunities.form_salary_example")}
           />
-          <FieldDescription>{t("opportunities.form_salary_hint")}</FieldDescription>
+          <FieldDescription>
+            {t("opportunities.form_salary_hint")}
+          </FieldDescription>
         </Field>
         <Field>
-          <FieldLabel htmlFor={`${idPrefix}-status`}>{t("opportunities.form_opportunity_status")}</FieldLabel>
+          <FieldLabel htmlFor={`${idPrefix}-status`}>
+            {t("opportunities.form_opportunity_status")}
+          </FieldLabel>
           <div className="flex min-w-0 flex-row items-stretch gap-2">
             {opportunityStatuses.length > 0 ? (
               <Select
@@ -330,8 +361,13 @@ export function OpportunityFormFields({
                 value={status === "" ? undefined : status}
                 onValueChange={(v) => onStatusChange(v as OpportunityStatus)}
               >
-                <SelectTrigger id={`${idPrefix}-status`} className="min-w-0 flex-1">
-                  <SelectValue placeholder={t("opportunities.form_select_status")} />
+                <SelectTrigger
+                  id={`${idPrefix}-status`}
+                  className="min-w-0 flex-1"
+                >
+                  <SelectValue
+                    placeholder={t("opportunities.form_select_status")}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -346,7 +382,7 @@ export function OpportunityFormFields({
             ) : (
               <p
                 id={`${idPrefix}-status`}
-                className="text-muted-foreground flex min-h-8 flex-1 items-center text-sm"
+                className="flex min-h-8 flex-1 items-center text-sm text-muted-foreground"
               >
                 {t("opportunities.form_empty_statuses")}
               </p>
@@ -363,7 +399,9 @@ export function OpportunityFormFields({
             </Button>
           </div>
           {opportunityStatuses.length === 0 ? (
-            <FieldDescription>{t("opportunities.form_status_empty_hint")}</FieldDescription>
+            <FieldDescription>
+              {t("opportunities.form_status_empty_hint")}
+            </FieldDescription>
           ) : null}
         </Field>
         <Field>

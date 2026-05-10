@@ -58,7 +58,7 @@ export function LandingMobileNavDrawer() {
 
         <div className="flex flex-col gap-6 overflow-y-auto px-4 py-6">
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
               {tp("auth.ui_language")}
             </span>
             <AuthUiLanguageSelect
@@ -73,7 +73,11 @@ export function LandingMobileNavDrawer() {
 
           <div className="flex flex-col gap-2">
             <SheetClose asChild>
-              <Button variant="outline" className="w-full justify-center" asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-center"
+                asChild
+              >
                 <Link to="/login">{t("nav.sign_in")}</Link>
               </Button>
             </SheetClose>

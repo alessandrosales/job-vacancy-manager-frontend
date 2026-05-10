@@ -16,7 +16,7 @@ export default function handleRequest(
   responseStatusCode: number,
   responseHeaders: Headers,
   routerContext: EntryContext,
-  loadContext: AppLoadContext,
+  loadContext: AppLoadContext
 ) {
   if (request.method.toUpperCase() === "HEAD") {
     return new Response(null, {
@@ -40,7 +40,7 @@ export default function handleRequest(
 
       let timeoutId: ReturnType<typeof setTimeout> | undefined = setTimeout(
         () => abort(),
-        streamTimeout + 1_000,
+        streamTimeout + 1_000
       )
 
       const { pipe, abort } = renderToPipeableStream(
@@ -65,7 +65,7 @@ export default function handleRequest(
               new Response(stream, {
                 headers: responseHeaders,
                 status: responseStatusCode,
-              }),
+              })
             )
           },
           onShellError(error: unknown) {
@@ -77,7 +77,7 @@ export default function handleRequest(
               console.error(error)
             }
           },
-        },
+        }
       )
     })
   })()

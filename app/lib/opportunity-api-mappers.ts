@@ -88,7 +88,8 @@ export function opportunityFormToApiWrite(params: {
     company_id: params.company_id,
     role_id: params.role_id,
     status_id: params.status_id,
-    description: params.description.trim() === "" ? null : params.description.trim(),
+    description:
+      params.description.trim() === "" ? null : params.description.trim(),
     url: params.url.trim() === "" ? null : params.url.trim(),
     interest_level: params.interest_level,
     hourly_rate: params.hourly_rate ?? null,

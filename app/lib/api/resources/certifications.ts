@@ -1,8 +1,5 @@
 import { apiRequestJson, apiRequestNoContent } from "~/lib/api/client"
-import type {
-  ApiIndexParams,
-  PaginatedEnvelope,
-} from "~/lib/api/pagination"
+import type { ApiIndexParams, PaginatedEnvelope } from "~/lib/api/pagination"
 import { toIndexQuery } from "~/lib/api/pagination"
 
 export interface ApiCertification {
@@ -23,9 +20,11 @@ export type ApiCertificationWrite = Pick<
 export async function listCertifications(params: {
   paginated: false
 }): Promise<ApiCertification[]>
-export async function listCertifications(
-  params?: { paginated?: true; page?: number; per_page?: number }
-): Promise<PaginatedEnvelope<ApiCertification>>
+export async function listCertifications(params?: {
+  paginated?: true
+  page?: number
+  per_page?: number
+}): Promise<PaginatedEnvelope<ApiCertification>>
 export async function listCertifications(
   params?: ApiIndexParams
 ): Promise<PaginatedEnvelope<ApiCertification> | ApiCertification[]> {

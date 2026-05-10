@@ -10,7 +10,7 @@ void awaitI18nReady().then(() => {
       document,
       <StrictMode>
         <HydratedRouter />
-      </StrictMode>,
+      </StrictMode>
     )
   })
 })

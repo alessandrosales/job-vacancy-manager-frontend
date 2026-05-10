@@ -44,17 +44,17 @@ const LANGUAGE_LEVEL_KEYS = [
   "native",
 ] as const
 
-function languageLevelLabel(
-  t: (key: string) => string,
-  level: string
-): string {
+function languageLevelLabel(t: (key: string) => string, level: string): string {
   if ((LANGUAGE_LEVEL_KEYS as readonly string[]).includes(level)) {
     return t(`language_level.${level}`)
   }
   return level
 }
 
-function filterLanguagesBySearch(rows: readonly ApiLanguage[], needle: string): ApiLanguage[] {
+function filterLanguagesBySearch(
+  rows: readonly ApiLanguage[],
+  needle: string
+): ApiLanguage[] {
   if (!needle) return [...rows]
   const q = needle.toLowerCase()
   return rows.filter((row) =>
@@ -75,9 +75,9 @@ function apiErrorText(err: unknown, fallback: string): string {
 export default function LanguagesPage() {
   const { t } = useTranslation(pagesI18nNs)
   const [languages, setLanguages] = React.useState<ApiLanguage[]>([])
-  const [loadState, setLoadState] = React.useState<"idle" | "loading" | "error">(
-    "loading"
-  )
+  const [loadState, setLoadState] = React.useState<
+    "idle" | "loading" | "error"
+  >("loading")
   const [listError, setListError] = React.useState<string | null>(null)
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
   const [deleteSubmitting, setDeleteSubmitting] = React.useState(false)

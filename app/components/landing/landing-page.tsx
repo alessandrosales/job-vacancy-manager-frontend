@@ -26,12 +26,7 @@ import {
 } from "~/components/ui/accordion"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
 import { Separator } from "~/components/ui/separator"
 import { landingI18nNs, pagesI18nNs } from "~/lib/i18n/config"
 
@@ -231,7 +226,12 @@ export function LandingPage() {
             />
             <div className="flex h-8 shrink-0 flex-wrap items-center justify-end gap-2">
               <LandingThemeToggle />
-              <Button asChild variant="ghost" size="sm" className="shrink-0 px-2.5">
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="shrink-0 px-2.5"
+              >
                 <Link to="/login">{t("nav.sign_in")}</Link>
               </Button>
               <Button asChild size="sm" className="shrink-0">
@@ -503,17 +503,17 @@ export function LandingPage() {
                 className="pointer-events-none absolute inset-0 bg-background/88 dark:bg-background/92"
                 aria-hidden
               />
-              <CardHeader className="relative z-10 border-b border-border/50 px-5 pb-4 pt-5 dark:border-b-white/[0.06] sm:px-6 sm:pt-6">
+              <CardHeader className="relative z-10 border-b border-border/50 px-5 pt-5 pb-4 sm:px-6 sm:pt-6 dark:border-b-white/[0.06]">
                 <CardTitle className="text-base font-semibold text-foreground/70 sm:text-lg">
                   {t("compare.col_chaos")}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="relative z-10 flex flex-1 flex-col gap-0 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
+              <CardContent className="relative z-10 flex flex-1 flex-col gap-0 px-5 pt-4 pb-5 sm:px-6 sm:pb-6">
                 <ul className="m-0 flex list-none flex-col gap-3.5 p-0">
                   {compareRows.map((row, rowIndex) => (
                     <li
                       key={`compare-chaos-${String(rowIndex)}`}
-                      className="text-pretty text-sm leading-relaxed text-foreground/72 line-through decoration-foreground/35"
+                      className="text-sm leading-relaxed text-pretty text-foreground/72 line-through decoration-foreground/35"
                     >
                       {row.chaos}
                     </li>
@@ -532,17 +532,17 @@ export function LandingPage() {
                 className="pointer-events-none absolute inset-0 bg-background/78 dark:bg-background/85"
                 aria-hidden
               />
-              <CardHeader className="relative z-10 border-b border-primary/20 bg-primary/10 px-5 pb-4 pt-5 backdrop-blur-[2px] dark:border-b-primary/12 dark:bg-primary/8 sm:px-6 sm:pt-6">
+              <CardHeader className="relative z-10 border-b border-primary/20 bg-primary/10 px-5 pt-5 pb-4 backdrop-blur-[2px] sm:px-6 sm:pt-6 dark:border-b-primary/12 dark:bg-primary/8">
                 <CardTitle className="text-base font-semibold text-foreground sm:text-lg">
                   {t("compare.col_hireest")}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="relative z-10 flex flex-1 flex-col gap-0 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
+              <CardContent className="relative z-10 flex flex-1 flex-col gap-0 px-5 pt-4 pb-5 sm:px-6 sm:pb-6">
                 <ul className="m-0 flex list-none flex-col gap-3.5 p-0">
                   {compareRows.map((row, rowIndex) => (
                     <li
                       key={`compare-hireest-${String(rowIndex)}`}
-                      className="text-pretty text-sm font-medium leading-relaxed text-foreground"
+                      className="text-sm leading-relaxed font-medium text-pretty text-foreground"
                     >
                       {row.hireest}
                     </li>
@@ -574,7 +574,7 @@ export function LandingPage() {
                   <Icon className="size-5" aria-hidden />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <p className="text-base font-semibold leading-snug">
+                  <p className="text-base leading-snug font-semibold">
                     {t(`features.${k}.title`)}
                   </p>
                   <p className="text-sm leading-relaxed text-muted-foreground">
@@ -604,7 +604,7 @@ export function LandingPage() {
             <h2 className="mt-4 max-w-3xl text-3xl font-semibold tracking-tight text-balance sm:mt-5 sm:text-4xl">
               {t("assistant_section.title")}
             </h2>
-            <p className="mt-4 max-w-2xl text-pretty text-base leading-relaxed text-muted-foreground sm:mt-5 sm:text-lg">
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-pretty text-muted-foreground sm:mt-5 sm:text-lg">
               {t("assistant_section.intro")}
             </p>
 
@@ -612,7 +612,7 @@ export function LandingPage() {
               {assistantBullets.map((line) => (
                 <li
                   key={line}
-                  className="flex gap-3 rounded-xl border border-border/60 bg-background/80 p-5 text-start shadow-sm dark:border-white/[0.06] dark:bg-card/50 dark:shadow-none dark:ring-1 dark:ring-inset dark:ring-foreground/[0.04]"
+                  className="flex gap-3 rounded-xl border border-border/60 bg-background/80 p-5 text-start shadow-sm dark:border-white/[0.06] dark:bg-card/50 dark:shadow-none dark:ring-1 dark:ring-foreground/[0.04] dark:ring-inset"
                 >
                   <span
                     className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary"
@@ -647,18 +647,18 @@ export function LandingPage() {
             <ul className="m-0 grid list-none grid-cols-1 gap-5 p-0 md:grid-cols-3 md:gap-6">
               {testimonials.map((item) => (
                 <li key={`${item.name}-${item.role}`}>
-                  <figure className="flex h-full flex-col rounded-2xl border border-border/60 bg-background/90 p-6 shadow-sm ring-1 ring-foreground/[0.03] dark:border-white/[0.06] dark:bg-card/60 dark:shadow-none dark:ring-inset dark:ring-white/[0.04]">
+                  <figure className="flex h-full flex-col rounded-2xl border border-border/60 bg-background/90 p-6 shadow-sm ring-1 ring-foreground/[0.03] dark:border-white/[0.06] dark:bg-card/60 dark:shadow-none dark:ring-white/[0.04] dark:ring-inset">
                     <QuoteIcon
                       className="size-8 shrink-0 text-primary/35 dark:text-primary/40"
                       aria-hidden
                     />
                     <blockquote className="mt-4 flex flex-1 flex-col">
-                      <p className="text-pretty text-sm leading-relaxed text-foreground/90">
+                      <p className="text-sm leading-relaxed text-pretty text-foreground/90">
                         “{item.quote}”
                       </p>
                     </blockquote>
                     <figcaption className="mt-6 border-t border-border/50 pt-5 dark:border-white/[0.06]">
-                      <cite className="text-sm font-semibold not-italic text-foreground">
+                      <cite className="text-sm font-semibold text-foreground not-italic">
                         {item.name}
                       </cite>
                       <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
@@ -754,7 +754,7 @@ export function LandingPage() {
                 className="hidden h-[2.925rem] w-auto max-w-[min(15.6rem,91vw)] object-contain sm:h-[3.25rem] dark:block"
               />
             </Link>
-            <p className="max-w-xl text-pretty text-sm font-medium text-foreground sm:text-base">
+            <p className="max-w-xl text-sm font-medium text-pretty text-foreground sm:text-base">
               {t("footer.tagline")}
             </p>
           </div>
@@ -811,7 +811,7 @@ export function LandingPage() {
             >
               {t("footer.link_terms")}
             </Link>
-            <span aria-hidden className="select-none text-border">
+            <span aria-hidden className="text-border select-none">
               ·
             </span>
             <Link

@@ -42,16 +42,16 @@ export function ListingTableCard({
         className
       )}
     >
-      <CardContent className="flex min-h-0 flex-1 flex-col gap-0 overflow-hidden px-0 pb-0 pt-0">
+      <CardContent className="flex min-h-0 flex-1 flex-col gap-0 overflow-hidden px-0 pt-0 pb-0">
         {showToolbar ? (
           <div className="flex shrink-0 flex-col gap-3 border-b border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-            <div className="text-muted-foreground flex min-h-5 items-center text-xs sm:text-sm">
+            <div className="flex min-h-5 items-center text-xs text-muted-foreground sm:text-sm">
               {stats}
             </div>
             {onSearchChange != null ? (
               <div className="relative w-full shrink-0 sm:max-w-xs">
                 <SearchIcon
-                  className="text-muted-foreground pointer-events-none absolute start-3 top-1/2 z-10 size-4 -translate-y-1/2"
+                  className="pointer-events-none absolute start-3 top-1/2 z-10 size-4 -translate-y-1/2 text-muted-foreground"
                   aria-hidden
                 />
                 <Input
@@ -66,7 +66,7 @@ export function ListingTableCard({
             ) : null}
           </div>
         ) : null}
-        <div className="flex min-h-0 flex-1 flex-col overflow-auto px-4 pb-4 pt-4">
+        <div className="flex min-h-0 flex-1 flex-col overflow-auto px-4 pt-4 pb-4">
           {children}
         </div>
       </CardContent>

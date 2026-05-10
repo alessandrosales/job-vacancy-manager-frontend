@@ -1,8 +1,5 @@
 import { apiRequestJson, apiRequestNoContent } from "~/lib/api/client"
-import type {
-  ApiIndexParams,
-  PaginatedEnvelope,
-} from "~/lib/api/pagination"
+import type { ApiIndexParams, PaginatedEnvelope } from "~/lib/api/pagination"
 import { toIndexQuery } from "~/lib/api/pagination"
 import type { ApiSkill } from "~/lib/api/resources/skills"
 
@@ -26,15 +23,22 @@ export interface ApiWorkExperience {
 
 export type ApiWorkExperienceWrite = Pick<
   ApiWorkExperience,
-  "title" | "description" | "company_name" | "is_remote" | "date_from" | "date_to"
+  | "title"
+  | "description"
+  | "company_name"
+  | "is_remote"
+  | "date_from"
+  | "date_to"
 >
 
 export async function listWorkExperiences(params: {
   paginated: false
 }): Promise<ApiWorkExperience[]>
-export async function listWorkExperiences(
-  params?: { paginated?: true; page?: number; per_page?: number }
-): Promise<PaginatedEnvelope<ApiWorkExperience>>
+export async function listWorkExperiences(params?: {
+  paginated?: true
+  page?: number
+  per_page?: number
+}): Promise<PaginatedEnvelope<ApiWorkExperience>>
 export async function listWorkExperiences(
   params?: ApiIndexParams
 ): Promise<PaginatedEnvelope<ApiWorkExperience> | ApiWorkExperience[]> {
@@ -53,7 +57,9 @@ export async function listWorkExperiences(
   })
 }
 
-export async function getWorkExperience(id: string): Promise<ApiWorkExperience> {
+export async function getWorkExperience(
+  id: string
+): Promise<ApiWorkExperience> {
   return apiRequestJson<ApiWorkExperience>({
     path: `${BASE}/${encodeURIComponent(id)}`,
     method: "GET",

@@ -11,7 +11,9 @@ export class ApiError extends Error {
   }
 }
 
-export function normalizeRailsErrors(raw: Record<string, unknown>): Record<string, string[]> {
+export function normalizeRailsErrors(
+  raw: Record<string, unknown>
+): Record<string, string[]> {
   const out: Record<string, string[]> = {}
   for (const [key, val] of Object.entries(raw)) {
     if (Array.isArray(val)) {

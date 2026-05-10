@@ -99,7 +99,9 @@ function InterestStars({ level }: { level: number }) {
           key={i}
           className={cn(
             "size-3.5",
-            i < level ? "fill-current text-amber-500" : "text-muted-foreground/35"
+            i < level
+              ? "fill-current text-amber-500"
+              : "text-muted-foreground/35"
           )}
         />
       ))}
@@ -124,10 +126,10 @@ function DashboardOpportunityRow({
       <TableCell>
         <InterestStars level={opp.interest_level} />
       </TableCell>
-      <TableCell className="text-muted-foreground whitespace-nowrap text-sm">
+      <TableCell className="text-sm whitespace-nowrap text-muted-foreground">
         {formatOpportunityHourlyRate(opp.hourly_rate)}
       </TableCell>
-      <TableCell className="text-muted-foreground whitespace-nowrap text-sm">
+      <TableCell className="text-sm whitespace-nowrap text-muted-foreground">
         {formatOpportunityAnnualSalary(opp.annual_salary)}
       </TableCell>
       <TableCell>
@@ -139,9 +141,9 @@ function DashboardOpportunityRow({
 
 export default function DashboardPage() {
   const { t } = useTranslation(pagesI18nNs)
-  const [loadState, setLoadState] = React.useState<"loading" | "idle" | "error">(
-    "loading"
-  )
+  const [loadState, setLoadState] = React.useState<
+    "loading" | "idle" | "error"
+  >("loading")
   const [loadError, setLoadError] = React.useState<string | null>(null)
   const [payload, setPayload] = React.useState<Awaited<
     ReturnType<typeof getDashboard>
@@ -207,7 +209,8 @@ export default function DashboardPage() {
   )
 
   const lineData = React.useMemo(() => {
-    if (!payload?.trend_by_week.length || !payload.status_series.length) return []
+    if (!payload?.trend_by_week.length || !payload.status_series.length)
+      return []
     return payload.trend_by_week.map((week) => {
       const row: Record<string, string | number> = {
         week: week.week_label,
@@ -249,15 +252,19 @@ export default function DashboardPage() {
 
       {loadState === "error" ? (
         <div className="flex flex-col gap-3 py-6" role="alert">
-          <p className="text-destructive text-sm">{loadError}</p>
-          <Button type="button" variant="outline" onClick={() => void fetchDashboard()}>
+          <p className="text-sm text-destructive">{loadError}</p>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => void fetchDashboard()}
+          >
             {t("dashboard.retry")}
           </Button>
         </div>
       ) : null}
 
       {loadState === "loading" && !payload ? (
-        <p className="text-muted-foreground py-8 text-center text-sm">
+        <p className="py-8 text-center text-sm text-muted-foreground">
           {t("dashboard.loading")}
         </p>
       ) : null}
@@ -274,13 +281,18 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 {pieData.length === 0 ? (
-                  <p className="text-muted-foreground py-8 text-center text-sm">
+                  <p className="py-8 text-center text-sm text-muted-foreground">
                     {t("dashboard.no_opportunities_chart")}
                   </p>
                 ) : (
-                  <ChartContainer config={pieConfig} className="mx-auto max-h-52">
+                  <ChartContainer
+                    config={pieConfig}
+                    className="mx-auto max-h-52"
+                  >
                     <PieChart>
-                      <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                      <ChartTooltip
+                        content={<ChartTooltipContent hideLabel />}
+                      />
                       <Pie
                         data={pieData}
                         dataKey="count"
@@ -296,7 +308,9 @@ export default function DashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle>{t("dashboard.chart_by_day_title")}</CardTitle>
-                <CardDescription>{t("dashboard.chart_by_day_desc")}</CardDescription>
+                <CardDescription>
+                  {t("dashboard.chart_by_day_desc")}
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <ChartContainer config={barConfig} className="max-h-52 w-full">
@@ -314,15 +328,20 @@ export default function DashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle>{t("dashboard.chart_trend_title")}</CardTitle>
-                <CardDescription>{t("dashboard.chart_trend_desc")}</CardDescription>
+                <CardDescription>
+                  {t("dashboard.chart_trend_desc")}
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 {lineData.length === 0 || !payload.status_series.length ? (
-                  <p className="text-muted-foreground py-8 text-center text-sm">
+                  <p className="py-8 text-center text-sm text-muted-foreground">
                     {t("dashboard.no_trend")}
                   </p>
                 ) : (
-                  <ChartContainer config={lineConfig} className="max-h-52 w-full">
+                  <ChartContainer
+                    config={lineConfig}
+                    className="max-h-52 w-full"
+                  >
                     <LineChart data={lineData}>
                       <CartesianGrid vertical={false} />
                       <XAxis dataKey="week" tickLine={false} axisLine={false} />
@@ -358,7 +377,9 @@ export default function DashboardPage() {
                   <TableRow>
                     <TableHead>{t("shared.company")}</TableHead>
                     <TableHead>{t("shared.role")}</TableHead>
-                    <TableHead className="w-36">{t("shared.interest")}</TableHead>
+                    <TableHead className="w-36">
+                      {t("shared.interest")}
+                    </TableHead>
                     <TableHead>{t("shared.hourly_rate")}</TableHead>
                     <TableHead>{t("shared.annual_salary")}</TableHead>
                     <TableHead>{t("shared.status")}</TableHead>
@@ -398,7 +419,9 @@ export default function DashboardPage() {
                   <TableRow>
                     <TableHead>{t("shared.company")}</TableHead>
                     <TableHead>{t("shared.role")}</TableHead>
-                    <TableHead className="w-36">{t("shared.interest")}</TableHead>
+                    <TableHead className="w-36">
+                      {t("shared.interest")}
+                    </TableHead>
                     <TableHead>{t("shared.hourly_rate")}</TableHead>
                     <TableHead>{t("shared.annual_salary")}</TableHead>
                     <TableHead>{t("shared.status")}</TableHead>

@@ -2,7 +2,12 @@
 
 import * as React from "react"
 import { useTranslation } from "react-i18next"
-import { ChevronDownIcon, DownloadIcon, FileTextIcon, Loader2Icon } from "lucide-react"
+import {
+  ChevronDownIcon,
+  DownloadIcon,
+  FileTextIcon,
+  Loader2Icon,
+} from "lucide-react"
 
 import { Button } from "~/components/ui/button"
 import {
@@ -42,7 +47,9 @@ export function ResumeCompiledDownloadMenu({
   compiledMarkdown,
 }: ResumeCompiledDownloadMenuProps) {
   const { t } = useTranslation(pagesI18nNs)
-  const [busy, setBusy] = React.useState<ResumeCompiledExportFormat | null>(null)
+  const [busy, setBusy] = React.useState<ResumeCompiledExportFormat | null>(
+    null
+  )
   const [error, setError] = React.useState<string | null>(null)
 
   if (!compiledMarkdown?.trim()) {
@@ -80,7 +87,10 @@ export function ResumeCompiledDownloadMenu({
             })}
           >
             {busy !== null ? (
-              <Loader2Icon className="size-4 shrink-0 animate-spin" aria-hidden />
+              <Loader2Icon
+                className="size-4 shrink-0 animate-spin"
+                aria-hidden
+              />
             ) : (
               <DownloadIcon className="size-4 shrink-0" aria-hidden />
             )}
@@ -89,7 +99,9 @@ export function ResumeCompiledDownloadMenu({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-[12rem]">
-          <DropdownMenuGroup aria-label={t("resume.export_menu.formats_group_aria")}>
+          <DropdownMenuGroup
+            aria-label={t("resume.export_menu.formats_group_aria")}
+          >
             <DropdownMenuItem
               disabled={busy !== null}
               onSelect={(ev) => {
@@ -133,7 +145,10 @@ export function ResumeCompiledDownloadMenu({
         </DropdownMenuContent>
       </DropdownMenu>
       {error ? (
-        <p className="text-destructive max-w-[14rem] text-xs leading-snug" role="alert">
+        <p
+          className="max-w-[14rem] text-xs leading-snug text-destructive"
+          role="alert"
+        >
           {error}
         </p>
       ) : null}

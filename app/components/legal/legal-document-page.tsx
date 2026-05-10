@@ -50,7 +50,7 @@ export function LegalDocumentPage({ doc }: { doc: LegalDoc }) {
             >
               {t("nav_home")}
             </Link>
-            <span aria-hidden className="select-none text-muted-foreground/50">
+            <span aria-hidden className="text-muted-foreground/50 select-none">
               ·
             </span>
             <Link
@@ -59,7 +59,7 @@ export function LegalDocumentPage({ doc }: { doc: LegalDoc }) {
             >
               {t("nav_login")}
             </Link>
-            <span aria-hidden className="select-none text-muted-foreground/50">
+            <span aria-hidden className="text-muted-foreground/50 select-none">
               ·
             </span>
             <Link

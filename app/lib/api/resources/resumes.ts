@@ -4,10 +4,7 @@ import {
   apiRequestMultipartJson,
   apiRequestNoContent,
 } from "~/lib/api/client"
-import type {
-  ApiIndexParams,
-  PaginatedEnvelope,
-} from "~/lib/api/pagination"
+import type { ApiIndexParams, PaginatedEnvelope } from "~/lib/api/pagination"
 import { toIndexQuery } from "~/lib/api/pagination"
 import type { ApiCertification } from "~/lib/api/resources/certifications"
 import type { ApiEducation } from "~/lib/api/resources/educations"
@@ -39,7 +36,9 @@ export interface ApiResume {
 export function apiResumeToResumeDocument(api: ApiResume): ResumeDocument {
   const row = api as unknown as Record<string, unknown>
   const prefRaw =
-    row.preferred_language ?? row.preferredLanguage ?? (api as ApiResume).preferred_language
+    row.preferred_language ??
+    row.preferredLanguage ??
+    (api as ApiResume).preferred_language
 
   const rawRoleId = api.role_id
   return {
@@ -49,9 +48,7 @@ export function apiResumeToResumeDocument(api: ApiResume): ResumeDocument {
     preferred_language: normalizeResumePreferredLanguage(prefRaw),
     updated_at: api.updated_at,
     role_id:
-      rawRoleId == null || rawRoleId === ""
-        ? ""
-        : String(rawRoleId).trim(),
+      rawRoleId == null || rawRoleId === "" ? "" : String(rawRoleId).trim(),
     compiled_markdown: api.compiled_markdown ?? null,
     work_experience_ids: api.work_experience_ids ?? [],
     certification_ids: api.certification_ids ?? [],
@@ -106,9 +103,11 @@ export type ApiResumeWrite = Pick<
 export async function listResumes(params: {
   paginated: false
 }): Promise<ApiResume[]>
-export async function listResumes(
-  params?: { paginated?: true; page?: number; per_page?: number }
-): Promise<PaginatedEnvelope<ApiResume>>
+export async function listResumes(params?: {
+  paginated?: true
+  page?: number
+  per_page?: number
+}): Promise<PaginatedEnvelope<ApiResume>>
 export async function listResumes(
   params?: ApiIndexParams
 ): Promise<PaginatedEnvelope<ApiResume> | ApiResume[]> {

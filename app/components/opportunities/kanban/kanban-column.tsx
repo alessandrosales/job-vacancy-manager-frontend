@@ -95,15 +95,20 @@ export function KanbanColumn({
   return (
     <div className="flex h-full min-h-0 w-[min(100%,280px)] shrink-0 flex-col sm:w-72">
       <div className="mb-2 flex shrink-0 items-center justify-between gap-2 px-0.5">
-        <span className="truncate text-sm font-medium text-foreground" title={title}>
+        <span
+          className="truncate text-sm font-medium text-foreground"
+          title={title}
+        >
           {title}
         </span>
         <div className="flex items-center gap-1">
           <button
             type="button"
-            aria-label={t("opportunities.kanban_reorder_column_aria", { title })}
+            aria-label={t("opportunities.kanban_reorder_column_aria", {
+              title,
+            })}
             className={cn(
-              "text-muted-foreground hover:text-foreground inline-flex size-6 cursor-grab items-center justify-center rounded-sm active:cursor-grabbing",
+              "inline-flex size-6 cursor-grab items-center justify-center rounded-sm text-muted-foreground hover:text-foreground active:cursor-grabbing",
               isDraggingColumn && "cursor-grabbing"
             )}
             {...dragHandleAttributes}
@@ -152,7 +157,7 @@ export function KanbanColumn({
             })}
             <div ref={sentinelRef} className="shrink-0 py-1 text-center">
               {hasMore ? (
-                <span className="text-muted-foreground inline-flex items-center gap-1.5 text-[11px]">
+                <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
                   <Loader2Icon className="size-3 animate-spin" />
                   {t("opportunities.kanban_loading_more", {
                     loaded: ids.length,

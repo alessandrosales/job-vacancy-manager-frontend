@@ -14,11 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card"
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from "~/components/ui/field"
+import { Field, FieldGroup, FieldLabel } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 import { ApiError } from "~/lib/api/errors"
@@ -123,7 +119,9 @@ export default function ReferenceLinkPage() {
     }
   }
 
-  const pageTitle = isEdit ? t("reference_link.edit_title") : t("reference_link.new_title")
+  const pageTitle = isEdit
+    ? t("reference_link.edit_title")
+    : t("reference_link.new_title")
   const crumbAction = isEdit ? t("shared.crumb_edit") : t("shared.crumb_new")
   const breadcrumbs = [
     { label: tc("breadcrumb_dashboard"), to: "/dashboard" },
@@ -133,8 +131,13 @@ export default function ReferenceLinkPage() {
 
   if (isEdit && loadState === "loading") {
     return (
-      <AppLayout title={t("reference_link.edit_title")} breadcrumbs={breadcrumbs}>
-        <p className="text-muted-foreground">{t("reference_link.load_loading")}</p>
+      <AppLayout
+        title={t("reference_link.edit_title")}
+        breadcrumbs={breadcrumbs}
+      >
+        <p className="text-muted-foreground">
+          {t("reference_link.load_loading")}
+        </p>
       </AppLayout>
     )
   }
@@ -146,7 +149,9 @@ export default function ReferenceLinkPage() {
           <CardHeader>
             <CardTitle>{pageTitle}</CardTitle>
             <CardDescription>
-              {isEdit ? t("reference_link.card_desc_edit") : t("reference_link.card_desc_new")}
+              {isEdit
+                ? t("reference_link.card_desc_edit")
+                : t("reference_link.card_desc_new")}
             </CardDescription>
           </CardHeader>
           <form
@@ -161,7 +166,9 @@ export default function ReferenceLinkPage() {
                   </p>
                 ) : null}
                 <Field>
-                  <FieldLabel htmlFor="ref-link-title">{t("reference_link.field_title")}</FieldLabel>
+                  <FieldLabel htmlFor="ref-link-title">
+                    {t("reference_link.field_title")}
+                  </FieldLabel>
                   <Input
                     id="ref-link-title"
                     value={title}
@@ -171,7 +178,9 @@ export default function ReferenceLinkPage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="ref-link-url">{t("shared.url")}</FieldLabel>
+                  <FieldLabel htmlFor="ref-link-url">
+                    {t("shared.url")}
+                  </FieldLabel>
                   <Input
                     id="ref-link-url"
                     type="text"
@@ -196,7 +205,11 @@ export default function ReferenceLinkPage() {
                 {t("shared.cancel")}
               </Button>
               <Button type="submit" disabled={submitting}>
-                {submitting ? t("shared.saving") : isEdit ? t("shared.save_changes") : t("shared.save")}
+                {submitting
+                  ? t("shared.saving")
+                  : isEdit
+                    ? t("shared.save_changes")
+                    : t("shared.save")}
               </Button>
             </CardFooter>
           </form>

@@ -100,9 +100,7 @@ export function LoginForm({
               .flat()
               .filter(Boolean)
             setFormError(
-              parts.length > 0
-                ? parts.join(" ")
-                : t("auth.invalid_credentials")
+              parts.length > 0 ? parts.join(" ") : t("auth.invalid_credentials")
             )
             return
           }
@@ -190,7 +188,9 @@ export function LoginForm({
               </Field>
               <Field>
                 <div className="flex items-center">
-                  <FieldLabel htmlFor="password">{t("shared.password")}</FieldLabel>
+                  <FieldLabel htmlFor="password">
+                    {t("shared.password")}
+                  </FieldLabel>
                   <Link
                     to="/recover-password"
                     className="ms-auto text-sm underline-offset-4 hover:underline"

@@ -1,8 +1,5 @@
 import { apiRequestJson, apiRequestNoContent } from "~/lib/api/client"
-import type {
-  ApiIndexParams,
-  PaginatedEnvelope,
-} from "~/lib/api/pagination"
+import type { ApiIndexParams, PaginatedEnvelope } from "~/lib/api/pagination"
 import { toIndexQuery } from "~/lib/api/pagination"
 import type { ApiSessionUser } from "~/lib/api/resources/auth"
 
@@ -35,10 +32,14 @@ export type ApiUserUpdate = Partial<{
 }>
 
 /** Lista contém apenas o usuário autenticado. */
-export async function listUsers(params: { paginated: false }): Promise<ApiUser[]>
-export async function listUsers(
-  params?: { paginated?: true; page?: number; per_page?: number }
-): Promise<PaginatedEnvelope<ApiUser>>
+export async function listUsers(params: {
+  paginated: false
+}): Promise<ApiUser[]>
+export async function listUsers(params?: {
+  paginated?: true
+  page?: number
+  per_page?: number
+}): Promise<PaginatedEnvelope<ApiUser>>
 export async function listUsers(
   params?: ApiIndexParams
 ): Promise<PaginatedEnvelope<ApiUser> | ApiUser[]> {

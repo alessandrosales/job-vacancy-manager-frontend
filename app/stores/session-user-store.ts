@@ -147,14 +147,18 @@ export const useSessionUserStore = create<SessionUserStoreState>()(
               user: {
                 ...u,
                 preferred_language:
-                  typeof u.preferred_language === "string" ? u.preferred_language : "en",
+                  typeof u.preferred_language === "string"
+                    ? u.preferred_language
+                    : "en",
               },
             }
           }
           if (oldVersion < 6 && state.user && typeof state.user === "object") {
             const u = state.user as Record<string, unknown>
             const pl =
-              typeof u.preferred_language === "string" ? u.preferred_language : "en"
+              typeof u.preferred_language === "string"
+                ? u.preferred_language
+                : "en"
             return {
               ...state,
               user: {

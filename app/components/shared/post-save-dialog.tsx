@@ -29,15 +29,18 @@ export function PostSaveDialog({
   const { t } = useTranslation(pagesI18nNs)
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onGoToList() }}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onGoToList()
+      }}
+    >
       <DialogContent showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>
             {t("post_save.title", { entity: entityLabel })}
           </DialogTitle>
-          <DialogDescription>
-            {t("post_save.description")}
-          </DialogDescription>
+          <DialogDescription>{t("post_save.description")}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button type="button" variant="outline" onClick={onGoToList}>
