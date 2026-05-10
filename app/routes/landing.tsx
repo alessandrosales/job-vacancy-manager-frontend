@@ -6,7 +6,7 @@ import landingPtBr from "~/locales/pt_br/landing.json"
 import { resolveRequestUiLanguage } from "~/lib/i18n/resolve-request-ui-language"
 
 export async function loader({ request }: Route.LoaderArgs) {
-  console.log("[landing] loader hit (deploy smoke test)", {
+  console.error("[landing] loader (deploy smoke)", {
     url: request.url,
     at: new Date().toISOString(),
   })
