@@ -9,6 +9,11 @@ import {
 } from "react-router"
 
 import type { Route } from "./+types/root"
+import {
+  GTM_ID,
+  gtmInlineScript,
+  gtmNoscriptIframeSrc,
+} from "~/lib/analytics/gtm"
 import { AppDataProvider } from "~/components/providers/app-data-provider"
 import { SessionUserProvider } from "~/components/providers/session-user-provider"
 import { preferredLanguageToHtmlLang } from "~/lib/i18n/preferred-language"
@@ -29,6 +34,25 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: gtmInlineScript(),
+          }}
+        />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/png" href="/icon-p.png" />
+        <link rel="apple-touch-icon" href="/icon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <meta
+          name="theme-color"
+          content="#ffffff"
+          media="(prefers-color-scheme: light)"
+        />
+        <meta
+          name="theme-color"
+          content="#0a0a0a"
+          media="(prefers-color-scheme: dark)"
+        />
         <Meta />
         <Links />
         <script
@@ -38,6 +62,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
         />
       </head>
       <body suppressHydrationWarning>
+        <noscript>
+          <iframe
+            src={gtmNoscriptIframeSrc()}
+            title={`Google Tag Manager (${GTM_ID})`}
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          />
+        </noscript>
         <TooltipProvider>
           <AppDataProvider>
             <SessionUserProvider>{children}</SessionUserProvider>

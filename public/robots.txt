@@ -1,0 +1,35 @@
+User-agent: *
+Allow: /
+Allow: /privacy-policy
+Allow: /terms-of-use
+
+Disallow: /home
+Disallow: /dashboard
+Disallow: /opportunities
+Disallow: /opportunities/
+Disallow: /resumes
+Disallow: /resumes/
+Disallow: /companies
+Disallow: /companies/
+Disallow: /roles
+Disallow: /roles/
+Disallow: /skills
+Disallow: /skills/
+Disallow: /links
+Disallow: /links/
+Disallow: /languages
+Disallow: /languages/
+Disallow: /work-experiences
+Disallow: /work-experiences/
+Disallow: /certifications
+Disallow: /certifications/
+Disallow: /educations
+Disallow: /educations/
+Disallow: /my-data
+Disallow: /login
+Disallow: /register
+Disallow: /recover-password
+Disallow: /reset-password
+Disallow: /.well-known/
+
+Sitemap: https://hireest.com/sitemap.xml
