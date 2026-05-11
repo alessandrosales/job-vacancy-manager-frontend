@@ -31,6 +31,7 @@ import { setAuthToken } from "~/lib/auth-token"
 import { firebaseAuthErrorMessage } from "~/lib/firebase-auth"
 import { syncFirebaseUserToApiSession } from "~/lib/firebase-auth-session"
 import { firebaseAuth } from "~/lib/firebase.client"
+import { markPendingRegistrationOnboarding } from "~/lib/registration-onboarding-session"
 import { useSessionUserStore } from "~/stores/session-user-store"
 import { pagesI18nNs } from "~/lib/i18n/config"
 
@@ -69,7 +70,13 @@ export function RegisterForm({
   const completeAuthSession = React.useCallback(
     async (user: User) => {
       await syncFirebaseUserToApiSession(user)
-      navigate("/dashboard", { replace: true })
+      const sessionUser = useSessionUserStore.getState().user
+      if (!sessionUser.ai_token_configured) {
+        markPendingRegistrationOnboarding()
+        navigate("/onboarding", { replace: true })
+      } else {
+        navigate("/dashboard", { replace: true })
+      }
     },
     [navigate]
   )
@@ -102,7 +109,12 @@ export function RegisterForm({
       useSessionUserStore
         .getState()
         .hydrateFromAuthMeResponse(session.token, session.user)
-      navigate("/dashboard", { replace: true })
+      if (!session.user.ai_token_configured) {
+        markPendingRegistrationOnboarding()
+        navigate("/onboarding", { replace: true })
+      } else {
+        navigate("/dashboard", { replace: true })
+      }
     } catch (err) {
       if (err instanceof ApiError) {
         setFieldErrors(err.fieldErrors)

@@ -9,6 +9,7 @@ export default [
   route("login", "routes/login.tsx"),
   route("home", "routes/home.tsx"),
   route("register", "routes/register.tsx"),
+  route("onboarding", "routes/onboarding.tsx"),
   route("privacy-policy", "routes/privacy-policy.tsx"),
   route("terms-of-use", "routes/terms-of-use.tsx"),
   route("recover-password", "routes/recover-password.tsx"),

@@ -214,4 +214,42 @@
     background-blend-mode: overlay, overlay, normal, screen;
     animation: app-layout-crystal-shimmer 15s ease-in-out infinite;
   }
+
+  @keyframes onboarding-success-icon-pulse-light {
+    0%,
+    100% {
+      transform: scale(1);
+      filter: drop-shadow(0 0 8px rgba(5, 105, 55, 0.4));
+    }
+    50% {
+      transform: scale(1.08);
+      filter: drop-shadow(0 0 18px rgba(5, 105, 55, 0.55));
+    }
+  }
+
+  @keyframes onboarding-success-icon-pulse-neon {
+    0%,
+    100% {
+      transform: scale(1);
+      filter: drop-shadow(0 0 10px rgba(57, 255, 20, 0.45));
+    }
+    50% {
+      transform: scale(1.08);
+      filter: drop-shadow(0 0 20px rgba(57, 255, 20, 0.75));
+    }
+  }
+
+  .onboarding-success-icon-ring {
+    animation: onboarding-success-icon-pulse-light 2.1s ease-in-out infinite;
+  }
+
+  .dark .onboarding-success-icon-ring {
+    animation: onboarding-success-icon-pulse-neon 2.1s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .onboarding-success-icon-ring {
+      animation: none;
+    }
+  }
 }

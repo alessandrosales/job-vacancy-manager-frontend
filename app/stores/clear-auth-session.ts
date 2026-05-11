@@ -1,6 +1,6 @@
 import { GUEST_UI_LANG_STORAGE_KEY } from "~/lib/i18n/constants"
 import { normalizeUiLanguage } from "~/lib/i18n/preferred-language"
-import { clearOpenAiOnboardingSessionFlag } from "~/lib/openai-key-onboarding-session"
+import { clearRegistrationOnboardingSession } from "~/lib/registration-onboarding-session"
 import { useAuthStore } from "~/stores/auth-store"
 import { useSessionUserStore } from "~/stores/session-user-store"
 
@@ -12,7 +12,7 @@ export function clearAuthSession(): void {
   } catch {
     /* ignore */
   }
-  clearOpenAiOnboardingSessionFlag()
+  clearRegistrationOnboardingSession()
   useAuthStore.getState().clearToken()
   useSessionUserStore.getState().resetUser()
 }
