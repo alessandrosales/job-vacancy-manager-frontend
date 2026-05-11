@@ -1,5 +1,6 @@
 import { apiRequestJson } from "~/lib/api/client"
 import { ApiError, invalidResponseError } from "~/lib/api/errors"
+import type { UiLanguageCode } from "~/lib/i18n/preferred-language"
 
 /** Usuário como retornado por `User#as_api_json` (Rails). */
 export interface ApiSessionUser {
@@ -99,6 +100,8 @@ export async function registerWithEmail(params: {
   email: string
   password: string
   password_confirmation: string
+  /** Idioma escolhido na landing/login — vira o `preferred_language` inicial do novo usuário. */
+  preferred_language?: UiLanguageCode
 }): Promise<AuthSessionPayload> {
   const data = await apiRequestJson<unknown>({
     path: "auth/register",
@@ -110,6 +113,9 @@ export async function registerWithEmail(params: {
         email: params.email,
         password: params.password,
         password_confirmation: params.password_confirmation,
+        ...(params.preferred_language
+          ? { preferred_language: params.preferred_language }
+          : {}),
       },
     },
   })
@@ -144,7 +150,14 @@ export async function loginWithEmail(params: {
 }
 
 export async function loginWithFirebaseIdToken(
-  id_token: string
+  id_token: string,
+  options?: {
+    /**
+     * Idioma escolhido na landing/login. O backend só aplica em criações de
+     * usuário (Google novo); logins subsequentes preservam a preferência salva.
+     */
+    preferred_language?: UiLanguageCode
+  }
 ): Promise<AuthSessionPayload> {
   try {
     const data = await apiRequestJson<unknown>({
@@ -152,7 +165,12 @@ export async function loginWithFirebaseIdToken(
       method: "POST",
       auth: false,
       body: {
-        auth: { id_token },
+        auth: {
+          id_token,
+          ...(options?.preferred_language
+            ? { preferred_language: options.preferred_language }
+            : {}),
+        },
       },
     })
     return parseAuthSessionPayload(data)

@@ -34,6 +34,7 @@ import { firebaseAuth } from "~/lib/firebase.client"
 import { markPendingRegistrationOnboarding } from "~/lib/registration-onboarding-session"
 import { useSessionUserStore } from "~/stores/session-user-store"
 import { pagesI18nNs } from "~/lib/i18n/config"
+import { normalizeUiLanguage } from "~/lib/i18n/preferred-language"
 
 function messagesFor(
   errors: Record<string, string[]>,
@@ -47,7 +48,7 @@ export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const { t } = useTranslation(pagesI18nNs)
+  const { t, i18n } = useTranslation(pagesI18nNs)
   const navigate = useNavigate()
 
   const [name, setName] = React.useState("")
@@ -69,7 +70,9 @@ export function RegisterForm({
 
   const completeAuthSession = React.useCallback(
     async (user: User) => {
-      await syncFirebaseUserToApiSession(user)
+      await syncFirebaseUserToApiSession(user, {
+        preferred_language: normalizeUiLanguage(i18n.language),
+      })
       const sessionUser = useSessionUserStore.getState().user
       if (!sessionUser.ai_token_configured) {
         markPendingRegistrationOnboarding()
@@ -78,7 +81,7 @@ export function RegisterForm({
         navigate("/dashboard", { replace: true })
       }
     },
-    [navigate]
+    [navigate, i18n.language]
   )
 
   async function submitRegister() {
@@ -104,6 +107,7 @@ export function RegisterForm({
         email: email.trim(),
         password,
         password_confirmation: passwordConfirmation,
+        preferred_language: normalizeUiLanguage(i18n.language),
       })
       setAuthToken(session.token)
       useSessionUserStore

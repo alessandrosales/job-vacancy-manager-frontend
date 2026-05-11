@@ -39,6 +39,7 @@ import { firebaseAuth } from "~/lib/firebase.client"
 import { markPendingRegistrationOnboarding } from "~/lib/registration-onboarding-session"
 import { useSessionUserStore } from "~/stores/session-user-store"
 import { pagesI18nNs } from "~/lib/i18n/config"
+import { normalizeUiLanguage } from "~/lib/i18n/preferred-language"
 import { AuthLegalLinks } from "~/components/auth/auth-legal-links"
 import { AuthUiLanguageSelect } from "~/components/auth/auth-ui-language-select"
 
@@ -46,7 +47,7 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const { t } = useTranslation(pagesI18nNs)
+  const { t, i18n } = useTranslation(pagesI18nNs)
   const navigate = useNavigate()
 
   const [email, setEmail] = React.useState("")
@@ -72,10 +73,12 @@ export function LoginForm({
 
   const completeAuthSession = React.useCallback(
     async (user: User) => {
-      await syncFirebaseUserToApiSession(user)
+      await syncFirebaseUserToApiSession(user, {
+        preferred_language: normalizeUiLanguage(i18n.language),
+      })
       navigatePostAuth()
     },
-    [navigatePostAuth]
+    [navigatePostAuth, i18n.language]
   )
 
   async function submitLogin() {
