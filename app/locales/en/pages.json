@@ -172,7 +172,7 @@
     "top_jobs_title": "Top jobs",
     "top_jobs_desc": "Up to {{limit}} roles: highest interest first; ties by most recently updated.",
     "recent_title": "Recent opportunities",
-    "recent_desc": "Last {{limit}} by last update (`updated_at`)",
+    "recent_desc": "Last {{limit}} by most recent update",
     "empty_table": "No opportunities yet. Add some under Opportunities."
   },
   "opportunities": {
