@@ -321,7 +321,8 @@
     "new_title": "Nuevo rol",
     "card_desc_edit": "Actualiza este rol.",
     "card_desc_new": "Añade un rol que te importe.",
-    "form_error": "No se pudo guardar el rol."
+    "form_error": "No se pudo guardar el rol.",
+    "name_taken": "Ya tienes un rol con ese nombre (misma escritura, sin distinguir mayúsculas y minúsculas)."
   },
   "skills": {
     "title": "Habilidades",
