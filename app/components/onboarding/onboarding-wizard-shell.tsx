@@ -61,7 +61,7 @@ export function OnboardingWizardShell({
                   key={n}
                   className={cn(
                     "h-1.5 min-w-0 flex-1 rounded-full transition-colors",
-                    done || current ? "bg-primary" : "bg-muted",
+                    done || current ? "bg-primary" : "bg-muted"
                   )}
                 />
               )

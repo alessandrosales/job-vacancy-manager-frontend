@@ -88,10 +88,7 @@ export function OnboardingStepRole({
     const descriptionValue =
       description.trim() === "" ? null : description.trim()
 
-    if (
-      nameTrim !== "" &&
-      existingNamesLower.has(nameTrim.toLowerCase())
-    ) {
+    if (nameTrim !== "" && existingNamesLower.has(nameTrim.toLowerCase())) {
       setFormError(t("role.name_taken"))
       return
     }

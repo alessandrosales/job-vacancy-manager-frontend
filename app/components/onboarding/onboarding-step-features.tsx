@@ -20,11 +20,7 @@ import { pagesI18nNs } from "~/lib/i18n/config"
 import type { UiLanguageCode } from "~/lib/i18n/preferred-language"
 import { useSessionUserStore } from "~/stores/session-user-store"
 
-export function OnboardingStepFeatures({
-  onNext,
-}: {
-  onNext: () => void
-}) {
+export function OnboardingStepFeatures({ onNext }: { onNext: () => void }) {
   const { t } = useTranslation(pagesI18nNs)
 
   async function persistPreferredLanguageToProfile(code: UiLanguageCode) {
