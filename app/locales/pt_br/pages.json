@@ -172,7 +172,7 @@
     "top_jobs_title": "Principais vagas",
     "top_jobs_desc": "Até {{limit}} cargos: maior interesse primeiro; empates por atualização mais recente.",
     "recent_title": "Oportunidades recentes",
-    "recent_desc": "Últimas {{limit}} por última atualização (`updated_at`)",
+    "recent_desc": "Últimas {{limit}} por atualização mais recente",
     "empty_table": "Ainda não há oportunidades. Adicione em Oportunidades."
   },
   "opportunities": {
