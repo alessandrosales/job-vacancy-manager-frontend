@@ -48,11 +48,12 @@ import {
   type ApiResume,
 } from "~/lib/api/resources/resumes"
 import {
-  DEFAULT_RESUME_PREFERRED_LANGUAGE,
   RESUME_PREFERRED_LANGUAGE_OPTIONS,
+  defaultResumePreferredLanguageForUser,
   type ResumePreferredLanguage,
 } from "~/lib/resume-preferred-language"
 import { cn } from "~/lib/utils"
+import { useSessionUserStore } from "~/stores/session-user-store"
 import { pagesI18nNs } from "~/lib/i18n/config"
 
 const PDF_ACCEPT = ".pdf,application/pdf"
@@ -274,7 +275,11 @@ export function ResumeImportPdfDialog({
   const [submitting, setSubmitting] = React.useState(false)
   const [pdfImportStageIndex, setPdfImportStageIndex] = React.useState(0)
   const [preferredLanguage, setPreferredLanguage] =
-    React.useState<ResumePreferredLanguage>(DEFAULT_RESUME_PREFERRED_LANGUAGE)
+    React.useState<ResumePreferredLanguage>(() =>
+      defaultResumePreferredLanguageForUser(
+        useSessionUserStore.getState().user.preferred_language
+      )
+    )
 
   React.useEffect(() => {
     if (!open) return
@@ -285,7 +290,11 @@ export function ResumeImportPdfDialog({
     setSubmitting(false)
     setPdfImportStageIndex(0)
     setRoleId("")
-    setPreferredLanguage(DEFAULT_RESUME_PREFERRED_LANGUAGE)
+    setPreferredLanguage(
+      defaultResumePreferredLanguageForUser(
+        useSessionUserStore.getState().user.preferred_language
+      )
+    )
     if (inputRef.current) inputRef.current.value = ""
   }, [open])
 
@@ -470,10 +479,17 @@ export function ResumeImportPdfDialog({
             <FieldLabel className="text-foreground">
               {t("resume.pdf_import.pdf_file_label")}
             </FieldLabel>
+            <FieldDescription
+              id="resume-import-linkedin-hint"
+              className="text-pretty"
+            >
+              {t("resume.pdf_import.linkedin_hint")}
+            </FieldDescription>
             <div
               role="button"
               tabIndex={submitting ? -1 : 0}
               aria-label={t("resume.pdf_import.drop_zone_aria")}
+              aria-describedby="resume-import-linkedin-hint"
               aria-disabled={submitting}
               className={cn(
                 "flex min-h-[11rem] flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-muted-foreground/35 bg-muted/25 px-4 py-8 text-center text-muted-foreground transition-colors outline-none",

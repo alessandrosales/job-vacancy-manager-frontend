@@ -15,6 +15,13 @@ export const RESUME_PREFERRED_LANGUAGE_OPTIONS: ReadonlyArray<{
   { value: "es", label: "Español" },
 ]
 
+/** Idioma inicial em formulários de currículo novo: alinha ao `preferred_language` do perfil (en / pt_br / es). */
+export function defaultResumePreferredLanguageForUser(
+  userPreferredLanguage: unknown
+): ResumePreferredLanguage {
+  return normalizeResumePreferredLanguage(userPreferredLanguage)
+}
+
 /** Normaliza códigos vindos da API / legado (hífen, camelCase, caixa). */
 export function normalizeResumePreferredLanguage(
   raw: unknown

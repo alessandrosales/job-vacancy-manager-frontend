@@ -81,11 +81,12 @@ import {
 import { PostSaveDialog } from "~/components/shared/post-save-dialog"
 import { pagesI18nNs } from "~/lib/i18n/config"
 import {
-  DEFAULT_RESUME_PREFERRED_LANGUAGE,
   RESUME_PREFERRED_LANGUAGE_OPTIONS,
+  defaultResumePreferredLanguageForUser,
   normalizeResumePreferredLanguage,
   type ResumePreferredLanguage,
 } from "~/lib/resume-preferred-language"
+import { useSessionUserStore } from "~/stores/session-user-store"
 
 function apiErrorText(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
@@ -183,6 +184,10 @@ export default function ResumeDocumentPage() {
   const { id } = useParams()
   const isEdit = Boolean(id)
 
+  const userPreferredResumeLang = useSessionUserStore((s) =>
+    defaultResumePreferredLanguageForUser(s.user.preferred_language)
+  )
+
   const [roles, setRoles] = React.useState<Role[]>([])
   const [workExperiences, setWorkExperiences] = React.useState<
     WorkExperience[]
@@ -206,7 +211,11 @@ export default function ResumeDocumentPage() {
   const [description, setDescription] = React.useState("")
   const [roleId, setRoleId] = React.useState("")
   const [preferredLanguage, setPreferredLanguage] =
-    React.useState<ResumePreferredLanguage>(DEFAULT_RESUME_PREFERRED_LANGUAGE)
+    React.useState<ResumePreferredLanguage>(() =>
+      defaultResumePreferredLanguageForUser(
+        useSessionUserStore.getState().user.preferred_language
+      )
+    )
   const [workExperienceIds, setWorkExperienceIds] = React.useState<string[]>([])
   const [certificationIds, setCertificationIds] = React.useState<string[]>([])
   const [educationIds, setEducationIds] = React.useState<string[]>([])
@@ -263,7 +272,11 @@ export default function ResumeDocumentPage() {
         setTitle("")
         setDescription("")
         setRoleId("")
-        setPreferredLanguage(DEFAULT_RESUME_PREFERRED_LANGUAGE)
+        setPreferredLanguage(
+          defaultResumePreferredLanguageForUser(
+            useSessionUserStore.getState().user.preferred_language
+          )
+        )
         setWorkExperienceIds([])
         setCertificationIds([])
         setEducationIds([])
@@ -315,6 +328,12 @@ export default function ResumeDocumentPage() {
     }
   }, [id, retryNonce, reloadReferenceLists, t])
 
+  React.useEffect(() => {
+    if (id) return
+    if (pageStatus !== "ready") return
+    setPreferredLanguage(userPreferredResumeLang)
+  }, [id, pageStatus, userPreferredResumeLang])
+
   const rolesIdSignature = React.useMemo(
     () =>
       roles
@@ -338,7 +357,11 @@ export default function ResumeDocumentPage() {
     setTitle("")
     setDescription("")
     setRoleId("")
-    setPreferredLanguage(DEFAULT_RESUME_PREFERRED_LANGUAGE)
+    setPreferredLanguage(
+      defaultResumePreferredLanguageForUser(
+        useSessionUserStore.getState().user.preferred_language
+      )
+    )
     setWorkExperienceIds([])
     setCertificationIds([])
     setEducationIds([])
