@@ -231,11 +231,32 @@ export default function ResumesPage() {
               {t("resumes.loading")}
             </p>
           ) : resumes.length === 0 ? (
-            <div className="flex flex-1 flex-col items-center justify-center gap-2 py-16 text-center text-sm text-muted-foreground">
-              <p>{t("resumes.empty")}</p>
-              <Button asChild variant="outline" size="sm">
-                <Link to="/resumes/resume">{t("resumes.add_first")}</Link>
-              </Button>
+            <div className="flex flex-1 flex-col items-center justify-center gap-4 px-4 py-16 text-center">
+              <div className="flex max-w-md flex-col gap-3">
+                <p className="text-base font-medium text-foreground">
+                  {t("resumes.empty")}
+                </p>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {t("resumes.empty_linkedin_body")}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <Button asChild size="sm">
+                  <Link to="/resumes/resume">
+                    <PlusIcon data-icon="inline-start" />
+                    {t("resumes.add_first")}
+                  </Link>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setImportPdfOpen(true)}
+                >
+                  <FileUpIcon data-icon="inline-start" />
+                  {t("resumes.import_pdf")}
+                </Button>
+              </div>
             </div>
           ) : filtered.length === 0 ? (
             <p className="py-12 text-center text-sm text-muted-foreground">

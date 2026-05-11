@@ -488,6 +488,7 @@
     "search_placeholder": "Search resumes…",
     "loading": "Loading resumes…",
     "empty": "No resumes yet.",
+    "empty_linkedin_body": "Create a new resume or import a PDF. For LinkedIn: on your profile, open More at the top and save or download your profile as PDF, then use Import PDF and upload the file.",
     "add_first": "Add your first resume",
     "saved_stats": "{{count}} saved",
     "updated_prefix": "Updated",
@@ -583,6 +584,7 @@
     },
     "pdf_import": {
       "title": "Import resume from PDF",
+      "linkedin_hint": "A PDF exported from your own LinkedIn profile (More › save profile to PDF — wording may vary) works great here.",
       "preferred_lang_hint": "Choose this first: it sets the locale for the resume we create from your PDF.",
       "role_placeholder": "Select a role",
       "no_roles_before": "No roles yet.",

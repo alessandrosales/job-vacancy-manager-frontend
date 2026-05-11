@@ -4,7 +4,7 @@ import { cn } from "~/lib/utils"
 
 type ListingPageHeaderProps = {
   title: string
-  description: string
+  description: React.ReactNode
   /** Inline controls immediately after the title (e.g. list / board toggle). */
   titleAccessory?: React.ReactNode
   /** Primary action (e.g. Add button) — rendered on the right on larger screens */
@@ -39,7 +39,9 @@ export function ListingPageHeader({
             <div className="flex shrink-0 items-center">{titleAccessory}</div>
           ) : null}
         </div>
-        <p className="text-sm text-muted-foreground">{description}</p>
+        <div className="space-y-1.5 text-sm text-muted-foreground">
+          {description}
+        </div>
       </div>
       <div className="flex shrink-0 self-end sm:self-start sm:pt-0.5">
         {action}

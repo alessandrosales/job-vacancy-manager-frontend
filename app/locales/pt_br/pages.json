@@ -488,6 +488,7 @@
     "search_placeholder": "Buscar currículos…",
     "loading": "Carregando currículos…",
     "empty": "Nenhum currículo ainda.",
+    "empty_linkedin_body": "Crie um currículo do zero ou importe um PDF. Para usar o LinkedIn: no perfil, abra Mais no topo e salve ou baixe o perfil como PDF; depois use Importar PDF e envie o arquivo.",
     "add_first": "Adicione seu primeiro currículo",
     "saved_stats": "{{count}} salvos",
     "updated_prefix": "Atualizado",
@@ -583,6 +584,7 @@
     },
     "pdf_import": {
       "title": "Importar currículo de PDF",
+      "linkedin_hint": "Um PDF exportado pelo LinkedIn no seu próprio perfil (Mais no topo › salvar ou baixar perfil como PDF — o texto pode variar) funciona bem aqui.",
       "preferred_lang_hint": "Escolha primeiro: define o idioma do currículo que criamos a partir do seu PDF.",
       "role_placeholder": "Selecione um cargo",
       "no_roles_before": "Ainda não há cargos.",
