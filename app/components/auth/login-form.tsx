@@ -36,6 +36,7 @@ import {
 } from "~/lib/firebase-auth"
 import { syncFirebaseUserToApiSession } from "~/lib/firebase-auth-session"
 import { firebaseAuth } from "~/lib/firebase.client"
+import { markPendingRegistrationOnboarding } from "~/lib/registration-onboarding-session"
 import { useSessionUserStore } from "~/stores/session-user-store"
 import { pagesI18nNs } from "~/lib/i18n/config"
 import { AuthLegalLinks } from "~/components/auth/auth-legal-links"
@@ -59,12 +60,22 @@ export function LoginForm({
     void submitLogin()
   }
 
+  const navigatePostAuth = React.useCallback(() => {
+    const sessionUser = useSessionUserStore.getState().user
+    if (!sessionUser.ai_token_configured) {
+      markPendingRegistrationOnboarding()
+      navigate("/onboarding", { replace: true })
+    } else {
+      navigate("/dashboard", { replace: true })
+    }
+  }, [navigate])
+
   const completeAuthSession = React.useCallback(
     async (user: User) => {
       await syncFirebaseUserToApiSession(user)
-      navigate("/dashboard", { replace: true })
+      navigatePostAuth()
     },
-    [navigate]
+    [navigatePostAuth]
   )
 
   async function submitLogin() {
@@ -93,7 +104,7 @@ export function LoginForm({
           useSessionUserStore
             .getState()
             .hydrateFromAuthMeResponse(session.token, session.user)
-          navigate("/dashboard", { replace: true })
+          navigatePostAuth()
         } catch (apiErr) {
           if (apiErr instanceof ApiError) {
             const parts = Object.values(apiErr.fieldErrors)

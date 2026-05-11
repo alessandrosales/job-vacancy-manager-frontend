@@ -2,10 +2,9 @@
 
 import * as React from "react"
 import { useTranslation } from "react-i18next"
-import { Link, useLocation } from "react-router"
+import { Link, useLocation, useNavigate } from "react-router"
 
 import { AuthenticatedSessionBootstrap } from "~/components/layout/authenticated-session-bootstrap"
-import { OpenAiKeyOnboardingDialog } from "~/components/onboarding/open-ai-key-onboarding-dialog"
 import { AppSidebar } from "~/components/layout/app-sidebar"
 import { FloatingAgentAssistant } from "~/components/layout/floating-agent-assistant"
 import {
@@ -22,6 +21,9 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "~/components/ui/sidebar"
+import { getAuthToken } from "~/lib/auth-token"
+import { isPendingRegistrationOnboarding } from "~/lib/registration-onboarding-session"
+import { rehydrateAppStores } from "~/stores/rehydrate-app-stores"
 
 export interface AppLayoutBreadcrumb {
   label: string
@@ -37,6 +39,21 @@ interface AppLayoutProps {
 export function AppLayout({ title, breadcrumbs, children }: AppLayoutProps) {
   const { t: tc } = useTranslation("common")
   const location = useLocation()
+  const navigate = useNavigate()
+
+  React.useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      await rehydrateAppStores()
+      if (cancelled) return
+      const token = getAuthToken()
+      if (!token || !isPendingRegistrationOnboarding()) return
+      navigate("/onboarding", { replace: true })
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [location.pathname, navigate])
   const isDashboardPath = location.pathname === "/dashboard"
   const dashboardLabel = tc("breadcrumb_dashboard")
   const crumbs: AppLayoutBreadcrumb[] =
@@ -48,7 +65,6 @@ export function AppLayout({ title, breadcrumbs, children }: AppLayoutProps) {
   return (
     <SidebarProvider>
       <AuthenticatedSessionBootstrap />
-      <OpenAiKeyOnboardingDialog />
       <AppSidebar />
       <SidebarInset className="relative min-h-0 overflow-hidden">
         <div

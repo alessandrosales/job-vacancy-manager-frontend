@@ -30,6 +30,7 @@ export function AuthUiLanguageSelect({
   triggerClassName,
   triggerSize = "sm",
   menuAlign = "center",
+  onLanguageCommitted,
 }: {
   /** Header / marketing: só o select, sem label visível. */
   compact?: boolean
@@ -39,6 +40,8 @@ export function AuthUiLanguageSelect({
   triggerSize?: "sm" | "default"
   /** Alinhamento do painel do select (útil no header à direita). */
   menuAlign?: "start" | "center" | "end"
+  /** Depois de persistir idioma da UI e sincronizar i18n (ex.: salvar `preferred_language` no perfil). */
+  onLanguageCommitted?: (code: UiLanguageCode) => void | Promise<void>
 }) {
   const { t, i18n } = useTranslation(pagesI18nNs)
   const value = normalizeUiLanguage(i18n.language)
@@ -46,7 +49,10 @@ export function AuthUiLanguageSelect({
   function onValueChange(next: string) {
     const code = normalizeUiLanguage(next)
     persistGuestUiLanguage(code)
-    void syncAppLanguageTo(code)
+    void (async () => {
+      await syncAppLanguageTo(code)
+      await onLanguageCommitted?.(code)
+    })()
   }
 
   const select = (

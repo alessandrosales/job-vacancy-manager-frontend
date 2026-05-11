@@ -8,10 +8,17 @@ import { Button } from "~/components/ui/button"
 import { applyTheme, getStoredTheme, type ThemeMode } from "~/lib/theme"
 import { defaultI18nNs } from "~/lib/i18n/config"
 
+type LandingThemeToggleProps = {
+  /** Alinha com controles compactos (ex.: select `sm` = h-7). */
+  toggleButtonSize?: "icon" | "icon-sm"
+}
+
 /**
  * Alterna claro/escuro na landing (mesma persistência do app autenticado).
  */
-export function LandingThemeToggle() {
+export function LandingThemeToggle({
+  toggleButtonSize = "icon",
+}: LandingThemeToggleProps) {
   const { t } = useTranslation(defaultI18nNs)
   const [mode, setMode] = React.useState<ThemeMode>("dark")
 
@@ -39,7 +46,7 @@ export function LandingThemeToggle() {
     <Button
       type="button"
       variant="outline"
-      size="icon"
+      size={toggleButtonSize}
       onClick={toggle}
       aria-label={label}
       aria-pressed={isDark}
