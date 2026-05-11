@@ -17,11 +17,7 @@ import { clearRegistrationOnboardingSession } from "~/lib/registration-onboardin
 import { pagesI18nNs } from "~/lib/i18n/config"
 import { cn } from "~/lib/utils"
 
-export function OnboardingStepSuccess({
-  onBack,
-}: {
-  onBack: () => void
-}) {
+export function OnboardingStepSuccess({ onBack }: { onBack: () => void }) {
   const { t } = useTranslation(pagesI18nNs)
   const navigate = useNavigate()
 

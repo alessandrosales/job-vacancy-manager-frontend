@@ -4,9 +4,10 @@
 
 name: CI
 
-# Apenas push em main/master (merge na branch dispara uma execução; sem pull_request evita CI duplicado no PR + no merge).
+# Apenas em pull_request para main/master: valida ANTES do merge (permite branch protection
+# exigir CI verde como pré-requisito) e evita o run duplicado que aconteceria com `push` + PR.
 on:
-  push:
+  pull_request:
     branches: [main, master]
 
 permissions:
