@@ -321,7 +321,8 @@
     "new_title": "New role",
     "card_desc_edit": "Update this role.",
     "card_desc_new": "Add a job role you care about.",
-    "form_error": "Could not save role."
+    "form_error": "Could not save role.",
+    "name_taken": "You already have a role with this name (same spelling, ignoring uppercase and lowercase)."
   },
   "skills": {
     "title": "Skills",

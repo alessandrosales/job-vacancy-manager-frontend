@@ -321,7 +321,8 @@
     "new_title": "Novo cargo",
     "card_desc_edit": "Atualize este cargo.",
     "card_desc_new": "Adicione um cargo de interesse.",
-    "form_error": "Não foi possível salvar o cargo."
+    "form_error": "Não foi possível salvar o cargo.",
+    "name_taken": "Você já tem um cargo com esse nome (mesma grafia, ignorando maiúsculas e minúsculas)."
   },
   "skills": {
     "title": "Habilidades",
